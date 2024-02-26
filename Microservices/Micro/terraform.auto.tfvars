@@ -1,0 +1,16 @@
+aws_region = "ap-southeast-2"
+vpc_name = "ManlyVPC"
+vpc_cidr_block = "10.0.0.0/16"
+internet_gateway_name = "IG"
+public_subnet_cidr_block_az1 = "public1"
+availability_zone = "ap-southeast2a"
+public_subnet_name_az1 = "a"
+public_route_table_name = "a"
+security_group_name = "new-sg"
+security_group_description = "this is se"
+iam_role_name = "Role"
+ecs_cluster_name = "cluster"
+ecs_task_family = "a"
+ecs_task_cpu = 2
+ecs_task_memory = 3
+ecs_service_name = "serv"
