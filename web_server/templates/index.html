@@ -67,38 +67,40 @@
                     <div class="card-body">
                         <h5 class="card-title text-center">Instance Status</h5>
                         <p id="statusMessage" class="text-center"></p>
-                        <table id="instanceStatusTable" class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th class="small-font">Instance ID</th>
-                                    <th class="small-font">Instance Type</th>
-                                    <th class="small-font">AMI-ID</th>
-                                    <th class="small-font">Availabilty zone</th>
-                                    <th class="small-font">Region</th>
-                                    <th class="small-font">State</th>
-                                    <!-- <th class="small-font">Instance Type</th> -->
-                                    <th class="small-font">Key-Name</th>
-                                    <th class="small-font">Private-IP</th>
-                                    <th class="small-font">Destroy</th>
-                                </tr>
-                            </thead>
-                            <tbody id="instanceStatusBody">
-                                <!-- Table rows will be dynamically populated here -->
-                                {% for instance in instance_data %}
-                                <tr>
-                                    <td>{{ instance_data.instance_id }}</td>
-                                    <td>{{ instance_data.instance_type }}</td>
-                                    <td>{{ instance_data.ami_id }}</td>
-                                    <td>{{ instance_data.availability_zone }}</td>
-                                    <td>{{ instance_data.instance_region }}</td>
-                                    <td>{{ instance_data.instance_state }}</td>
-                                    <td>{{ instance_data.key_name }}</td>
-                                    <td>{{ instance_data.public_ip }}</td>
-                                    <td><button class="btn btn-danger">Destroy</button></td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                        <div class="table-responsive"> <!-- Add this wrapper for responsive tables -->
+                            <table id="instanceStatusTable" class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th class="small-font col-md-1">Instance ID</th>
+                                        <th class="small-font col-md-1">Instance Type</th>
+                                        <th class="small-font col-md-1">AMI-ID</th>
+                                        <th class="small-font col-md-1">Availabilty zone</th>
+                                        <th class="small-font col-md-1">Region</th>
+                                        <th class="small-font col-md-1">State</th>
+                                        <!-- <th class="small-font">Instance Type</th> -->
+                                        <th class="small-font col-md-1">Key-Name</th>
+                                        <th class="small-font col-md-1">Private-IP</th>
+                                        <th class="small-font col-md-1">Destroy</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="instanceStatusBody">
+                                    <!-- Table rows will be dynamically populated here -->
+                                    {% for instance in instance_data %}
+                                    <tr>
+                                        <td class="small col-md-1">{{ instance.instance_id }}</td>
+                                        <td class="small col-md-1">{{ instance.instance_type }}</td>
+                                        <td class="small col-md-1">{{ instance.ami_id }}</td>
+                                        <td class="small col-md-1">{{ instance.availability_zone }}</td>
+                                        <td class="small col-md-1">{{ instance.instance_region }}</td>
+                                        <td class="small col-md-1">{{ instance.instance_state }}</td>
+                                        <td class="small col-md-1">{{ instance.key_name }}</td>
+                                        <td class="small col-md-1">{{ instance.public_ip }}</td>
+                                        <td class="small col-md-1"><button class="btn btn-danger btn-sm">Destroy</button></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

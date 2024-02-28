@@ -47,10 +47,10 @@ output "key_name" {
   value = aws_instance.EC2-create-from-button.key_name
 }
 
-output "aami_id" {
-  value = aws_instance.EC2-create-from-button.ami
-  description = "Fake output, to take real ami_id in the Parsed body in utils.js"
-}
+# output "aami_id" {
+#   value = aws_instance.EC2-create-from-button.ami
+#   description = "Fake output, to take real ami_id in the Parsed body in utils.js"
+# }
 
 # output "instance_region" {
 #   value = aws_instance.EC2-create-from-button.region

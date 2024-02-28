@@ -1,4 +1,6 @@
+import json
 import os
+import time
 from flask import jsonify
 import subprocess
 from flask import Flask, render_template
@@ -12,10 +14,10 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     
-    instance_data = get_instance_data_from_s3(bucket_name, key)
+    instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+    # instance_data = json.dumps(instance_data, indent=4)
     print("Instance data retrieved from S3:", instance_data)
-
-    #     # Render template with instance data
+    # Render template with instance data
     return render_template('index.html', instance_data=instance_data)
     # return render_template('index.html',)
     # return render_template('index.html')
@@ -51,10 +53,11 @@ def create_ec2():
         # Save captured data to S3 bucket
         # bucket_name = 'xmops-data-bucket-team2'
         # key = 'instance_data.json'
-        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key)
+        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
 
-        instance_data = get_instance_data_from_s3(bucket_name, key)
+        instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         print("Instance data retrieved from S3:", instance_data)
+        refresh_page()
         return jsonify(instance_data)  # Return instance data as JSON response
 
         # Render template with instance data
@@ -97,11 +100,21 @@ def create_lightsail():
         # Save captured data to S3 bucket
         # bucket_name = 'xmops-data-bucket-team2'
         # key = 'instance_data.json'
-        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key)
+        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
 
-        return 'Wordpress installed on Lightsail instance successfully.'
+        instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+        print("Instance data retrieved from S3:", instance_data)
+        refresh_page()
+        return jsonify(instance_data)  # Return instance data as JSON response
+
     except subprocess.CalledProcessError as e:
         return f'Error Installing Wordpress on Lightsail instance : {e}'
+    
+    except FileNotFoundError as e:
+        return f'File not found error: {e}'
+
+    except Exception as e:
+        return f'Error: {e}'
     finally:
         os.chdir(original_dir)
     
@@ -118,6 +131,11 @@ def destroy_lightsail():
         os.chdir(original_dir)
 
 
+def refresh_page():
+    time.sleep(1)
+    return jsonify({'message': 'Page refreshed'})
+
+
 # @app.route('/get-instance-data')
 # def get_instance_data_from_s3():
 #     #initialize
@@ -128,9 +146,11 @@ if __name__ == '__main__':
     original_dir = os.getcwd()
 
     bucket_name = 'xmops-data-bucket-team2'
-    key = 'instance_data.json'
+    key_prefix = 'instance_record/instance_data.json' 
 
     # Creating S3 Bucket when
     create_s3_bucket()
+    # get_instance_data_from_s3(bucket_name, key_prefix)
 
     app.run(debug=True, port=4000)
+    # refresh_page()

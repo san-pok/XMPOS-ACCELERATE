@@ -1,23 +1,12 @@
 from cmath import e
 import subprocess
 import json
+import uuid
 import boto3
 
 def capture_ec2_and_lightsail_instance_output():
     output = subprocess.check_output(['terraform', 'output', '-json']).decode('utf-8')
     output_json = json.loads(output)
-
-    # # Filter and transform the received data to align with proposed data
-    # received_data = {
-    #     'ami_id': output_json['ami_id']['value'],
-    #     'availability_zone': output_json['availability_zone']['value'],
-    #     'instance_id': output_json['instance_id']['value'],
-    #     'instance_region': output_json['instance_region']['value'],
-    #     'instance_state': output_json['instance_state']['value'],
-    #     'instance_type': output_json['instance_type']['value'],
-    #     'key_name': output_json['key_name']['value'],
-    #     'public_ip': output_json['public_ip']['value']
-    # }
 
     # Extracting values with graceful handling of missing keys
     received_data = {
@@ -31,34 +20,53 @@ def capture_ec2_and_lightsail_instance_output():
         'public_ip': output_json.get('public_ip', {}).get('value', 'N/A')
     }
 
-    formatted_received_data = json.dumps(received_data, indent=4)
-    return (formatted_received_data)
+    # formatted_received_data = json.dumps(received_data, indent=4)
+    return (received_data)
 
 
 
-def save_instance_data_to_s3(data, bucket_name, key):
+def save_instance_data_to_s3(new_data, bucket_name, key):
     # Initialize an S3 client
     s3 = boto3.client('s3')
-    
+  
     try:
-        # Upload the JSON data to the specified S3 bucket and key
-        s3.put_object(Bucket=bucket_name, Key=key, Body=data)
-        print("Key is this: .", key)
-        print("Data saved to S3 successfully.", data)
+        # Retrieve existing data from S3 or initialize as empty list if not found
+        try:
+            response = s3.get_object(Bucket=bucket_name, Key=key)
+            existing_data = response['Body'].read().decode('utf-8')
+            print("Existing data: \n", existing_data)
+            existing_data_list = json.loads(existing_data)
+        except s3.exceptions.NoSuchKey:
+            # Key doesn't exist yet, initialize as empty list
+            existing_data_list = []
+
+        # Append new data to the existing list
+        existing_data_list.append(new_data)
+        print("New data:\n", new_data)
+
+        # Upload the updated JSON data to the specified S3 bucket and key
+        updated_data = json.dumps(existing_data_list, indent=4)
+        s3.put_object(Bucket=bucket_name, Key=key, Body=updated_data.encode('utf-8'))
+        print("Data saved to S3 successfully. Updated data:", updated_data)
+        print("Key for the new JSON file:", key)
+        
     except Exception as e:
         print(f"Error saving data to S3: {e}")
+    
+
 
 
 def get_instance_data_from_s3(bucket_name, key):
     # Initialize an S3 client
     s3 = boto3.client('s3')
-
     try:
+        print("In the get instance data from s3 function IN TRY: \n")
         # Retrieve the Json data from S3
         response = s3.get_object(Bucket=bucket_name, Key=key)
-        data = response['Body'].read().decode('utf-8')
-        instance_data = json.loads(data)
+        instance_data = json.loads(response['Body'].read().decode('utf-8'))
+        print("instance data from s3 bucket: \n",instance_data)
         return instance_data
+        
     except:
         print(f"Error retriving instance json datta from S3: {e} ")
         return[]

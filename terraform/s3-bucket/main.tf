@@ -3,6 +3,8 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "team2_s3" {
+  count   = var.create_bucket ? 1 : 0
+
   bucket = var.bucket_name
 
   tags = {
@@ -37,6 +39,6 @@ variable "create_bucket" {
   default     = true
 }
 
-# output "bucket_name" {
-#   value = aws_s3_bucket.team2_s3[*].bucket
-# }
+output "bucket_created_message" {
+  value = aws_s3_bucket.team2_s3[0].bucket != "" ? "S3 Bucket ${var.bucket_name} created successfully." : "S3 Bucket ${var.bucket_name} already exists."
+}
