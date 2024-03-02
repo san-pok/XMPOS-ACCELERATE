@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highly Available Form</title>
+    <link rel="stylesheet" type="text/css" href="input.css">
+</head>
+<body>
+
+<div class="container">
+    <h2>Highly Available Form</h2>
+    <form id="myForm">
+        <div class="form-group">
+            <label for="aws_region">AWS Region</label>
+            <select id="aws_region" name="aws_region">
+                <option value="ap-southeast-2">Sydney Region</option>
+                <option value="ap-southeast-1">Singapore Region</option>
+                <option value="us-west-1">North California Region</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="min_instances">Minimum Instances</label>
+            <input type="number" id="min_instances" name="min_instances">
+        </div>
+
+        <div class="form-group">
+            <label for="max_instances">Maximum Instances</label>
+            <input type="number" id="max_instances" name="max_instances">
+        </div>
+
+        <div class="form-group">
+            <label for="instance_type">Instance Type</label>
+            <select id="instance_type" name="instance_type">
+                <option value="t2.micro">t2.micro</option>
+                <option value="t2.medium">t2.medium</option>
+                <option value="t3.medium">t3.medium</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="key_pair_name">Key Pair</label>
+            <input type="text" id="key_pair_name" name="key_pair_name">
+        </div>
+
+
+        <div class="form-group">
+            <label for="storage_size">Storage Size</label>
+            <input type="number" id="storage_size" name="storage_size">
+        </div>
+
+        <div class="form-group">
+            <label for="storage_type">Storage Type</label>
+            <select id="storage_type" name="storage_type">
+                <option value="gp2">gp2</option>
+                <option value="gp3">gp3</option>
+            </select>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <!-- Example success message placeholder -->
+        <div id="successMessage" class="success-message"></div>
+        <div class="form-group">
+            <button type="submit" class="btn">Submit</button>
+        </div>
+    </form>
+</div>
+
+<script src="input.js"></script>
+
+</body>
+</html>

@@ -2,6 +2,7 @@ variable "aws_region" {
   default = "ap-southeast-2"
   description = "The AWS region where the resources will be provisioned."
 }
+#Singapore ap-southeast-1 ,Australia ap-southeast-2 ,North California us-west-1
 
 variable "vpc_name" {
   default = "HighVPC"
