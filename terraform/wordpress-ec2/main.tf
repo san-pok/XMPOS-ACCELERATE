@@ -8,7 +8,7 @@ resource "aws_instance" "EC2-create-from-button" {
   ami           = var.ami_id
   instance_type = var.instance_type
 
-  key_name      = "wordpress_server"
+  key_name      = "xmop"
   vpc_security_group_ids = [aws_security_group.wordpress_sg.id]  # Associate the security group
 
   tags = {

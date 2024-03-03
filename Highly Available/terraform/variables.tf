@@ -31,6 +31,18 @@ variable "instance_type" {
   description = "The type of EC2 instance to launch."
 }
 
+variable "min_instances" {
+  description = "The minimum number of  EC2 instance to launch."
+}
+
+variable "max_instances" {
+  description = "The maximum number of  EC2 instance to launch."
+}
+
+variable "desired_instances" {
+  description = "The desired number of  EC2 instance to launch."
+}
+
 variable "key_pair_name" {
   description = "The name of the key pair to associate with the EC2 instance."
 }
