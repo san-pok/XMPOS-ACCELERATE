@@ -47,7 +47,11 @@ def create_s3_bucket():
         subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)
         return 'S3 bucket created successfully'
     except subprocess.CalledProcessError as e:
-        return f'Error creating S3 bucket: {e}'
+        error_message = str(e)
+        if "BucketAlreadyOwnedByYou:" in error_message:
+            return 'S3 bucket already exists and is owned by you'
+        else:
+            return f'Error creating S3 bucket: {error_message}'
     finally:
         os.chdir(original_dir)
 
@@ -84,6 +88,9 @@ def submit_form_monolith():
 
         output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
         print('incoming data from creation ec2 \n', output_data_of_ec2)
+
+        # Add deployment type to instance data
+        output_data_of_ec2['deployment_type'] = 'Monolith'
 
         save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
         save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
@@ -173,6 +180,9 @@ def submit_form_lightsail():
         output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
         print('incoming data from creation ec2 \n', output_data_of_ec2)
 
+        # Add deployment type to instance data
+        output_data_of_ec2['deployment_type'] = 'Lightsail'
+
         save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
         save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
 
@@ -189,13 +199,29 @@ def submit_form_lightsail():
         return f'Error: {error_message}', 500 # Return an error response with status code 500
     finally:
         os.chdir(original_dir)
-    
+
 @app.route('/destroy-lightsail')
 def destroy_lightsail():
     os.chdir('./terraform/wordpress-lightsail')
+
     # Run Terraform Command to destroy EC2 instance
     try:
         subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
+
+        # Generate current timestamp
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # After destroying EC2, update the deployment history
+        # update_deployment_history()
+        # Define the new entry for deployment history
+        new_entry = {
+            'timestamp': current_timestamp,
+            'type': 'Lightsail',
+            'status': 'Destroyed'
+        }
+        deployment_history.append(new_entry)
+        # # Update deployment history in S3
+        # update_deployment_history(new_entry, bucket_name, key_prefix_history )
+
         return 'Lightsail instance destroyed successfully'
     except subprocess.CalledProcessError as e:
         return f'Error destroying Lightsail instance : {e}'
@@ -207,63 +233,6 @@ def refresh_page():
     time.sleep(1)
     return jsonify({'message': 'Page refreshed'})
 
-
-
-
-# @app.route('/worpress-install-ec2')
-# def create_ec2():
-#     os.chdir('./terraform/wordpress-ec2')
-
-#     #Run Terraform Command
-#     try:
-#         subprocess.run(['terraform', 'init'], check=True)
-#         subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)
-
-#         output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
-#         print('incoming data from creation ec2 \n', output_data_of_ec2)
-
-#         # Convert string to dictionary
-#         # instance_data_dict = json.loads(output_data_of_ec2)
-#         # print('Converted data \n', instance_data_dict)
-        
-
-#         # save_instance_data_to_s3(output_data)
-
-#         # Save captured data to S3 bucket
-#         # bucket_name = 'xmops-data-bucket-team2'
-#         # key = 'instance_data.json'
-#         save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
-
-#         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
-        
-       
-#         # instance_data =  display_database_data(database_name)
-#         # print("****************************************************")
-#         # print("retrieved data from database rec: ", instance_data)
-#         # insert_instance_data_to_sqlite(database_name, instance_data)
-        
-#         # instance_data = insert_instance_data_to_sqlite(database_name, output_data_of_ec2)
-#         # print("Returned data: \n\n",instance_data)
-#         # instance_data = json.dumps(instance_data, indent=4)
-
-#         print("Instance data retrieved from S3:", instance_data)
-#         # refresh_page()
-#         return jsonify(instance_data)  # Return instance data as JSON response
-
-#         # Render template with instance data
-#         return render_template('index.html', instance_data=instance_data)
-
-#         # return 'Wordpress installed on EC2 instance successfully.'
-#     except subprocess.CalledProcessError as e:
-#         return f'Error Installing Wordpress on EC2 instance : {e}'
-#     finally:
-#         os.chdir(original_dir)
-    
-
-
-# @app.route('/get-instance-data')
-# def get_instance_data_from_s3():
-#     #initialize
     
 if __name__ == '__main__':
 

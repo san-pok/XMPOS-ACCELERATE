@@ -107,3 +107,9 @@ footer {
     letter-spacing: 1px; /* Add letter spacing */
     width: 100%; /* Make the select element full width */
 }
+
+
+.table-smaller th,
+.table-smaller td {
+    padding: 0.25rem; /* Adjust the padding as needed */
+}

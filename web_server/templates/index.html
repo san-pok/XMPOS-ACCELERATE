@@ -109,10 +109,11 @@
                                     <h5 class="card-title text-center">Instance Status</h5>
                                     <p id="statusMessage" class="text-center"></p>
                                     <div class="table-responsive"> <!-- Add this wrapper for responsive tables -->
-                                        <table id="instanceStatusTable" class="table table-bordered">
+                                        <table id="instanceStatusTable" class="table table-bordered table-sm table-smaller">
                                             <thead>
                                             <tr>
                                                 <!-- <th class="small-font ">Primary_key</th> -->
+                                                <th class="small-font">Deployment Type</th>
                                                 <th class="small-font ">Instance ID</th>
                                                 <th class="small-font ">Instance Type</th>
                                                 <!-- <th class="small-font ">AMI-ID</th> -->
@@ -129,6 +130,7 @@
                                             <!-- Table rows will be dynamically populated here -->
                                             {% for instance in instance_data %}
                                             <tr>
+                                                <td class="small">{{ instance.deployment_type }}</td>
                                                 <!-- <td class="small ">{{ instance.id }}</td> -->
                                                 <td class="small " style="width: 100px;">{{ instance.instance_id }}</td>
                                                 <td class="small ">{{ instance.instance_type }}</td>
@@ -139,6 +141,7 @@
                                                 <!-- <td class="small ">{{ instance.key_name }}</td> -->
                                                 <td class="small ">{{ instance.public_ip }}</td>
                                                 <td class="small "><button id="destroyEc2Btn" class="btn btn-danger btn-sm">Destroy</button></td>
+                                                <!-- <td class="small "><button id="destroyLightsailBtn" class="btn btn-danger btn-sm">Destroy</button></td> -->
                                             </tr>
                                             {% endfor %}
                                             </tbody>

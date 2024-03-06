@@ -1,0 +1,16 @@
+.DS_Store
+app.log
+team2.db
+terraform/s3-bucket/.terraform.lock.hcl
+terraform/s3-bucket/.terraform/
+terraform/s3-bucket/terraform.tfstate
+terraform/wordpress-ec2/.terraform.lock.hcl
+terraform/wordpress-ec2/.terraform/
+terraform/wordpress-ec2/terraform.tfstate
+terraform/wordpress-ec2/terraform.tfstate.backup
+terraform/wordpress-lightsail/.terraform.lock.hcl
+terraform/wordpress-lightsail/.terraform/
+terraform/wordpress-lightsail/terraform.tfstate
+terraform/wordpress-lightsail/terraform.tfstate.backup
+web_server/.DS_Store
+web_server/__pycache__/

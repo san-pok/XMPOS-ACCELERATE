@@ -25,6 +25,10 @@ def capture_ec2_and_lightsail_instance_output():
         'public_ip': output_json.get('public_ip', {}).get('value', 'N/A')
     }
 
+    # # Determine the deployment tyope based on the instance type
+    # instance_type = received_data.get('instance_type')
+    # if instance_type.startwith
+
     # formatted_received_data = json.dumps(received_data, indent=4)
     return (received_data)
 
@@ -273,17 +277,3 @@ def empty_instance_table(database_name):
 
     except sqlite3.Error as e:
         print("Error emptying table:", e)
-
-
-
-
-
-# app = Flask(__name__)
-
-# @app.route('/empty-instances-table')
-# def empty_table():
-#     empty_instance_table('inputs.db')
-#     return 'Instances table emptied successfully.'
-
-# if __name__ == '__main__':
-#     app.run(debug=True)
