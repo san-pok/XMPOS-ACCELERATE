@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monolith Deployment</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/styles.css">
+</head>
+<body>
+<header>
+    <!-- Header content -->
+</header>
+
+<main>
+    <section id="monolith-deployment">
+        <div class="container-md">
+            <h2 class="text-center mt-5">Monolith Deployment</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <form action="/monolith-deploy" id="monolith-deployment-form" method="post" class="mt-4">
+                        <div class="row">
+                            <div class="">
+                                <div class="form-group">
+                                    <label for="aws-region">AWS Region</label>
+                                    <!-- <input type="text" class="form-control" id="aws-region" name="aws-region"> -->
+                                    <div class="dropdown">
+                                        <select id="region" name="region" class="col-md-12 mt-2">
+                                            <option value="ap-southeast-2">Asia Pasific (Sydney) ap-southeast-2</option>
+                                            <option value="us-east-1">US East (N. Virginia) us-east-1</option>
+                                            <option value="us-west-2">US West (Oregon) us-west-2</option>
+                                            <!-- Add more options as needed -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="image">Image (OS)</label>
+                                    <select id="image" name="image" class="col-md-12 mt-2">
+                                        <option value="ami-04f5097681773b989">Ubuntu (Free tier)</option>
+                                        <option value="">macOS (Free tier)</option>
+                                        <option value="">Amazon Linux (Free tier)</option>
+                                        <!-- Add more options as needed -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="instance-type">Instance Type</label>
+                                    <select  id="instance-type" name="instance-type" class="col-md-12 mt-2">
+                                        <option value="t2.micro">t2.micro (Free tier)</option>
+                                       
+                                        <!-- Add more options as needed -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="key-pair">Key Pair Name</label>
+                                    <input type="text" class="form-control" id="key-pair" name="key-pair">
+                                    <small class="form-text text-muted">Choose "new" for new key pair or "existing" for existing key pair</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Security Group Settings:</label><br>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="allow-ssh" name="allow-ssh">
+                                        <label class="form-check-label" for="allow-ssh">Allow SSH</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" id="allow-http" name="allow-http">
+                                        <label class="form-check-label" for="allow-http">Allow HTTP</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="storage">Storage in GiB for EBS (Elastic Block Store) Volume </label>
+                                    <input type="number" id="storage" name="storage" class="form-control col-md-12 mt-2" placeholder="Enter storage capacity (between 8 and 30 GiB)" min="8" max="30" required>
+                                    <small class="form-text text-muted">Please enter the storage capacity in GiB. The value should be between 8 and 30 GiB to comply with the free tier usage limits.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="db-type">DB Type</label>
+                                    <select id="db-type" name="db-type" class="col-md-12 mt-2" required>
+                                        <!-- <option value="" disabled selected>Select the type of database</option> -->
+                                        <option value="MySQL">MySQL</option>
+                                        <option value="PostgreSQL">PostgreSQL</option>
+                                        <option value="MariaDB">MariaDB</option>
+                                        <!-- Add more database types as needed -->
+                                    </select>
+                                    <small class="form-text text-muted">Choose the type of database you intend to use with the WordPress installation.</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="php-version">PHP Version</label>
+                                    <select id="php-version" name="php-version" class="col-md-12 mt-2" required>
+                                        <option value="7.4">PHP 7.4</option>
+                                        <option value="7.3">PHP 7.3</option>
+                                        <option value="7.2">PHP 7.2</option>
+                                        <!-- Add more PHP versions as needed -->
+                                    </select>
+                                    <small class="form-text text-muted">Choose the version of PHP you want to use for your application.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="web-server">Web Server (Apache or Nginx)</label>
+                                    <select id="web-server" name="web-server" class="col-md-12 mt-2" required>
+                                        <option value="Apache">Apache</option>
+                                        <option value="Nginx">Nginx</option>
+                                        <!-- Add more web server options as needed -->
+                                    </select>
+                                    <small class="form-text text-muted">Choose the web server software you want to use for hosting your application.</small>
+                                    <!-- <p class="text-muted">Choose the web server software you want to use for hosting your application.</p> -->
+                                </div>
+                                
+                                <!-- Add more input fields as needed -->
+                            </div>
+                        </div>
+                        <div class="row justify-content-center">
+                            <!-- "Deploy" button -->
+                            <button type="submit" class="btn btn-primary">Deploy</button>
+                            <!-- "Cancel" button -->
+                            <button type="cancel" class="btn btn-primary ml-auto">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>    
+        </div>
+    </section>
+</main>
+
+<footer>
+    <!-- Footer content -->
+</footer>
+<script src="monolith-deployment.js"></script>
+<script src="../static/client.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

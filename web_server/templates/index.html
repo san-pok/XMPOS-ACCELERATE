@@ -3,116 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XMOPS</title>
+    <title>XMOPS ACCELERATE</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
     <link rel="stylesheet" href="../static/styles.css">
+    
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="#">XMOPS</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Services</a>
-                    </li>
-                </ul>
-                <div class="user-profile">
-                    Username: [User123] | Role: [Admin] | <a href="#">Logout</a>
+<header>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="logo">
+                    <!-- <img src="logo.png" alt="XMOPS ACCELERATE Logo"> -->
                 </div>
             </div>
-        </div>
-    </nav>
-
-    <div class="container">
-        <div class="row mt-5">
-            <div class="col-12">
-                <h1 class="text-center">Web Interface</h1>
+            <div class="col-md-6">
+                <nav class="text-md-right">
+                    <ul class="list-inline">
+                        <li class="list-inline-item"><a href="#deployment-options" class="text-white">Deployment Options</a></li>
+                        <li class="list-inline-item"><a href="#deployment-history" class="text-white">Deployment History</a></li>
+                        <li class="list-inline-item"><a href="#configuration-settings" class="text-white">Configuration Settings</a></li>
+                    </ul>
+                </nav>
             </div>
         </div>
-        <div class="row mt-5">
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title text-center">Install Wordpress</h5>
-                        <ul class="list-group" >
-                            <li class="list-group-item">
-                                <button id="wordpressEc2Btn" class="btn btn-primary btn-block" >Wordpress on EC2</button>
-                            </li>
-                            <li class="list-group-item">
-                                <button id="destroyEc2Btn" class="btn btn-danger btn-block mt-2">Destroy EC2</button>
-                            </li>
-                            <li class="list-group-item">
-                                <button id="wordpressLightsailBtn" class="btn btn-success btn-block" class="small-font">Wordpress on Lightsail</button>
-                            </li>
-                            <li class="list-group-item">
-                                <button id="destroyLightsailBtn" class="btn btn-danger btn-block mt-2">Destroy Lightsail</button>
-                            </li>
-                            <!-- Add more buttons for other instances as needed -->
-                        </ul>
+    </div>
+</header>
+
+<main>
+    <section id="deployment-options">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-3">
+                    <div class="card p-3 bg-info text-white">
+                        <h4 class="mb-2">Deployment Options</h4>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <button id="wordpressEc2Btn" href="monolith-deployment.html" type="button" class="btn btn-primary btn-block mb-3">Monolith</button>
+                                <!-- <button href="monolith-deployment.html" type="button" class="btn btn-primary btn-block mb-3">Monolith</button> -->
+                                <!-- <button id="destroyEc2Btn" class="btn btn-danger btn-block mt-2 mb-3">Destroy EC2</button> -->
+                            </div>
+                            <div class="col-sm-12">
+                                <button id="wordpressLightsailBtn" href="lightsail-deployment.html" type="button" class="btn btn-primary btn-block mb-3">Lightsail</button>
+                                <!-- <button id="" href="lightsail-deployment.html" type="button" class="btn btn-primary btn-block mb-3">Lightsail</button> -->
+                                <button id="destroyLightsailBtn" class="btn btn-danger btn-block mt-2 mb-3">Destroy Lightsail</button>
+                            </div>
+                            <div class="col-sm-12">
+                                <button type="button" class="btn btn-primary btn-block mb-3">Highly Available</button>
+                                <button type="button" class="btn btn-danger btn-block mb-3">Destroy</button>
+                            </div>
+                        </div>
+                        <!-- Include deployment form here -->
                     </div>
                 </div>
-            </div>
-            <div class="col-md-9">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title text-center">Instance Status</h5>
-                        <p id="statusMessage" class="text-center"></p>
-                        <div class="table-responsive"> <!-- Add this wrapper for responsive tables -->
-                            <table id="instanceStatusTable" class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th class="small-font col-md-1">Instance ID</th>
-                                        <th class="small-font col-md-1">Instance Type</th>
-                                        <th class="small-font col-md-1">AMI-ID</th>
-                                        <th class="small-font col-md-1">Availabilty zone</th>
-                                        <th class="small-font col-md-1">Region</th>
-                                        <th class="small-font col-md-1">State</th>
-                                        <!-- <th class="small-font">Instance Type</th> -->
-                                        <th class="small-font col-md-1">Key-Name</th>
-                                        <th class="small-font col-md-1">Private-IP</th>
-                                        <th class="small-font col-md-1">Destroy</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="instanceStatusBody">
-                                    <!-- Table rows will be dynamically populated here -->
-                                    {% for instance in instance_data %}
-                                    <tr>
-                                        <td class="small col-md-1">{{ instance.instance_id }}</td>
-                                        <td class="small col-md-1">{{ instance.instance_type }}</td>
-                                        <td class="small col-md-1">{{ instance.ami_id }}</td>
-                                        <td class="small col-md-1">{{ instance.availability_zone }}</td>
-                                        <td class="small col-md-1">{{ instance.instance_region }}</td>
-                                        <td class="small col-md-1">{{ instance.instance_state }}</td>
-                                        <td class="small col-md-1">{{ instance.key_name }}</td>
-                                        <td class="small col-md-1">{{ instance.public_ip }}</td>
-                                        <td class="small col-md-1"><button class="btn btn-danger btn-sm">Destroy</button></td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                <div class="col-md-9">
+                    <div class="column">
+                        <div class="col-md-12 ">
+                            <div class="card bg-light" >
+                                <div class="card-body">
+                                    <h5 class="card-title text-center">Running Instances</h5>
+                                    <div class="row">
+                                        <!-- Lightsail Instances -->
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card bg-info text-white">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Lightsail Instances</h5>
+                                                    <!-- Example: Show running Lightsail instances -->
+                                                    <p class="card-text">Total Running: 1</p>
+                                                    <!-- Add more details here as needed -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Monolith Instances -->
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card bg-primary text-white">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Monolith Instances</h5>
+                                                    <!-- Example: Show running Monolith instances -->
+                                                    <p class="card-text">Total Running: 1</p>
+                                                    <!-- Add more details here as needed -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- High available Instances -->
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card bg-info text-white">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">High Available</h5>
+                                                    <!-- Example: Show running Monolith instances -->
+                                                    <p class="card-text">Total Running: 1</p>
+                                                    <!-- Add more details here as needed -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center">Instance Status</h5>
+                                    <p id="statusMessage" class="text-center"></p>
+                                    <div class="table-responsive"> <!-- Add this wrapper for responsive tables -->
+                                        <table id="instanceStatusTable" class="table table-bordered">
+                                            <thead>
+                                            <tr>
+                                                <!-- <th class="small-font ">Primary_key</th> -->
+                                                <th class="small-font ">Instance ID</th>
+                                                <th class="small-font ">Instance Type</th>
+                                                <!-- <th class="small-font ">AMI-ID</th> -->
+                                                <th class="small-font ">Availabilty zone</th>
+                                                <th class="small-font ">Region</th>
+                                                <th class="small-font ">State</th>
+                                                <!-- <th class="small-font">Instance Type</th> -->
+                                                <!-- <th class="small-font ">Key-Name</th> -->
+                                                <th class="small-font ">Public-IP</th>
+                                                <th class="small-font ">Destroy</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="instanceStatusBody">
+                                            <!-- Table rows will be dynamically populated here -->
+                                            {% for instance in instance_data %}
+                                            <tr>
+                                                <!-- <td class="small ">{{ instance.id }}</td> -->
+                                                <td class="small " style="width: 100px;">{{ instance.instance_id }}</td>
+                                                <td class="small ">{{ instance.instance_type }}</td>
+                                                <!-- <td class="small ">{{ instance.ami_id }}</td> -->
+                                                <td class="small ">{{ instance.availability_zone }}</td>
+                                                <td class="small ">{{ instance.instance_region }}</td>
+                                                <td class="small ">{{ instance.instance_state }}</td>
+                                                <!-- <td class="small ">{{ instance.key_name }}</td> -->
+                                                <td class="small ">{{ instance.public_ip }}</td>
+                                                <td class="small "><button id="destroyEc2Btn" class="btn btn-danger btn-sm">Destroy</button></td>
+                                            </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center">Deployment History</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped" id="historyTable">
+                                            <thead>
+                                            <tr>
+                                                <th>Timestamp</th>
+                                                <th>Type</th>
+                                                <th>Status</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="historyTableBody" >
+                                                {% for entry in deployment_history %}
+                                                <tr>
+                                                    <td>{{ entry.timestamp }}</td>
+                                                    <td>{{ entry.type }}</td>
+                                                    <td>{{ entry.status }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            <!-- More deployment entries can be added dynamically -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
+
+<!--    <section id="configuration-settings">-->
+<!--        <div class="container">-->
+<!--            <div class="row justify-content-center">-->
+<!--                <div class="col-md-8">-->
+<!--                    <div class="card p-5 bg-danger text-white">-->
+<!--                        <h1 class="mb-4">Configuration Settings</h1>-->
+<!--                        &lt;!&ndash; Include configuration settings here &ndash;&gt;-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </section>-->
+<!--</main>-->
+
+<footer>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <ul class="list-inline footer-links">
+                    <li class="list-inline-item"><a href="#about">About Us</a></li>
+                    <li class="list-inline-item"><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <p class="text-center">&copy; 2024 XMOPS ACCELERATE. All rights reserved.</p>
     </div>
+</footer>
 
-    
-    
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        const message = params.get('message');
+        if (message) {
+            // Display the message in the statusMessage element
+            const statusMessageElement = document.getElementById('statusMessage');
+            if (statusMessageElement) {
+                statusMessageElement.textContent = message;
+            } else {
+                console.error("Status message element not found in index.html");
+            }
+        }
+    });
+</script> -->
 
-    <script src="../static/client.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="../static/monolith-deployment.js"></script>
+<script src="../static/client.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

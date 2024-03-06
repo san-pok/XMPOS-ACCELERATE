@@ -12,7 +12,7 @@ resource "aws_instance" "EC2-create-from-button" {
   vpc_security_group_ids = [aws_security_group.wordpress_sg.id]  # Associate the security group
 
   tags = {
-    Name = "EC2-FROM-WEBSITE TAP"
+    Name = "bimba.ec2instance"
   }
   user_data = <<-EOF
               #!/bin/bash

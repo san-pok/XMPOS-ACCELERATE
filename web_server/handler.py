@@ -1,8 +1,13 @@
 from cmath import e
+from datetime import datetime
+import os
+import sqlite3
 import subprocess
 import json
 import uuid
 import boto3
+from flask import Flask, jsonify
+
 
 def capture_ec2_and_lightsail_instance_output():
     output = subprocess.check_output(['terraform', 'output', '-json']).decode('utf-8')
@@ -22,7 +27,6 @@ def capture_ec2_and_lightsail_instance_output():
 
     # formatted_received_data = json.dumps(received_data, indent=4)
     return (received_data)
-
 
 
 def save_instance_data_to_s3(new_data, bucket_name, key):
@@ -52,9 +56,60 @@ def save_instance_data_to_s3(new_data, bucket_name, key):
         
     except Exception as e:
         print(f"Error saving data to S3: {e}")
+
+# Function to update and save deployment history to S3
+# def update_deployment_history(new_entry,  bucket_name, key_prefix_history):
+#     try:
+#         # Fetch existing deployment history from S3
+#         s3_client = boto3.client('s3')
+#         response = s3_client.get_object(Bucket=bucket_name, Key=key_prefix_history)
+#         deployment_history = json.loads(response['Body'].read())
+
+#         # Append the new entry to the deployment history
+#         deployment_history.append(new_entry)
+
+#         # Save the updated deployment history back to S3
+#         s3_client.put_object(
+#             Bucket=bucket_name,
+#             Key=key_prefix_history,
+#             Body=json.dumps(deployment_history),
+#             ContentType='application/json'
+#         )
+
+#     except Exception as e:
+#         print('Error updating deployment history:', e)
+        
+def update_deployment_history():
+    # Define the new deployment history entry
+    new_entry = {
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'type': 'EC2',
+        'status': 'Destroyed'
+    }
+    deployment_history = [
+        {
+            'timestamp': '2024-02-28 10:00:00',
+            'type': 'Lightsail',
+            'status': 'Completed'
+        },
+        {
+            'timestamp': '2024-02-28 11:00:00',
+            'type': 'EC2',
+            'status': 'Destroyed'
+        },
+    # More deployment entries can be added here
+    ]
+    # Load existing deployment history from a file or database
+    # Update the deployment history with the new entry
+    # Save the updated deployment history back to the file or database
+    # For demonstration purposes, let's assume deployment history is stored in a list
+    deployment_history.append(new_entry)
+
+    # Optionally, you can save the updated deployment history to S3 bucket
+
+    # Return the updated deployment history
+    return deployment_history
     
-
-
 
 def get_instance_data_from_s3(bucket_name, key):
     # Initialize an S3 client
@@ -64,9 +119,171 @@ def get_instance_data_from_s3(bucket_name, key):
         # Retrieve the Json data from S3
         response = s3.get_object(Bucket=bucket_name, Key=key)
         instance_data = json.loads(response['Body'].read().decode('utf-8'))
-        print("instance data from s3 bucket: \n",instance_data)
+        # print("instance data from s3 bucket: \n",instance_data)
         return instance_data
         
     except:
         print(f"Error retriving instance json datta from S3: {e} ")
         return[]
+    
+def get_instance_data_from_s3_hist(bucket_name, key_prefix_history):
+    # Initialize an S3 client
+    s3 = boto3.client('s3')
+    try:
+        print("In the get instance data from s3 function IN TRY: \n")
+        # Retrieve the Json data from S3
+        response = s3.get_object(Bucket=bucket_name, Key=key_prefix_history)
+        instance_data = json.loads(response['Body'].read().decode('utf-8'))
+        # print("instance data from s3 bucket: \n",instance_data)
+        return instance_data
+        
+    except:
+        print(f"Error retriving instance json datta from S3: {e} ")
+        return[]
+    
+    
+
+def create_sqlite_database(database_name):
+    try:
+        # Connect to SQLite database
+        conn = sqlite3.connect(database_name)
+        cursor = conn.cursor()
+        print("Database name::::: from handler.py ", database_name)
+        # Create table for instances
+        cursor.execute('''CREATE TABLE IF NOT EXISTS instances (
+                            id INTEGER PRIMARY KEY,
+                            ami_id TEXT,
+                            availability_zone TEXT,
+                            instance_id TEXT,
+                            instance_region TEXT,
+                            instance_state TEXT,
+                            instance_type TEXT,
+                            key_name TEXT,
+                            public_ip TEXT
+                        )''')
+
+        # Commit changes and close connection
+        conn.commit()
+        conn.close()
+        print("Database and table created successfully.")
+        list_tables(database_name)
+    except sqlite3.Error as e:
+        print("Error creating database and table:", e)
+
+   
+
+def display_database_data(database_name):
+    conn = sqlite3.connect(database_name)
+    cursor = conn.cursor()
+
+    try: 
+        # Execute a SELECT query to fetch all rows from the instances table
+        cursor.execute("SELECT * FROM instances")
+        rows = cursor.fetchall()
+        # Construct a list of dictionaries representing each row
+        data = []
+        for row in rows:
+            record = {
+                "id": row[0],
+                "ami_id": row[1],
+                "availability_zone": row[2],
+                "instance_id": row[3],
+                "instance_region": row[4],
+                "instance_state": row[5],
+                "instance_type": row[6],
+                "key_name": row[7],
+                "public_ip": row[8]
+            }
+            data.append(record)
+            
+        json_data = json.dumps(data)
+        print("Json data",data)
+        return (json_data)
+        # Close the connection
+    except sqlite3.Error as e:
+        print ("Error Fetching data from display data", e)
+        return None
+    finally:
+        conn.close()
+
+    
+def insert_instance_data_to_sqlite(database_name, data):
+    # Connect to SQLite database
+    conn = sqlite3.connect(database_name)
+    cursor = conn.cursor()
+
+    # Check if the table 'instances' exists
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='instances'")
+    table_exists = cursor.fetchone()
+    print("exisiting table: ", table_exists )
+    print("In the insert_instance_data_to_sqlite, the data is :\n", data)
+
+    if not table_exists:
+            # Table does not exist, create it
+            print ("Instance table is not existed:\n")
+            create_sqlite_database(database_name)
+
+    print(data['instance_id'], data['instance_type'], data['ami_id'],
+                    data['availability_zone'], data['instance_region'],
+                    data['instance_state'], data['key_name'], data['public_ip'])
+    # Insert data into the instances table
+    try:
+        # Insert data into the instances table
+        cursor.execute("INSERT INTO instances (ami_id, availability_zone, instance_id, instance_region, instance_state, instance_type, key_name, public_ip) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (data['ami_id'], data['availability_zone'], data['instance_id'],
+                        data['instance_region'], data['instance_state'],
+                        data['instance_type'], data['key_name'], data['public_ip']))
+        
+      
+        print("try dotor baina")   
+        conn.commit()
+        return jsonify({})
+    except Exception as e:
+        print(f"Error inserting data: {e}")
+        # return False
+    finally:
+        conn.close()
+
+def list_tables(database_name):
+    conn = sqlite3.connect(database_name)
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cursor.fetchall()
+    print("Tables in the database:")
+    for table in tables:
+        print(table[0])
+    conn.close() 
+
+
+
+def empty_instance_table(database_name):
+    try:
+        # Connect to SQLite database
+        conn = sqlite3.connect(database_name)
+        cursor = conn.cursor()
+
+        # Execute a DELETE statement to remove all records from the instances table
+        cursor.execute("DELETE FROM instances")
+
+        # Commit the transaction and close the connection
+        conn.commit()
+        conn.close()
+
+        print("Table 'instances' emptied successfully.")
+
+    except sqlite3.Error as e:
+        print("Error emptying table:", e)
+
+
+
+
+
+# app = Flask(__name__)
+
+# @app.route('/empty-instances-table')
+# def empty_table():
+#     empty_instance_table('inputs.db')
+#     return 'Instances table emptied successfully.'
+
+# if __name__ == '__main__':
+#     app.run(debug=True)
