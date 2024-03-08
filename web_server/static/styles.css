@@ -108,8 +108,12 @@ footer {
     width: 100%; /* Make the select element full width */
 }
 
-
 .table-smaller th,
 .table-smaller td {
     padding: 0.25rem; /* Adjust the padding as needed */
+}
+
+.destroying {
+    background-color: #f8d7da; /* Red color */
+    /* Add more styling as needed */
 }

@@ -42,7 +42,7 @@
                             <div class="col-sm-12">
                                 <button id="wordpressEc2Btn" href="monolith-deployment.html" type="button" class="btn btn-primary btn-block mb-3">Monolith</button>
                                 <!-- <button href="monolith-deployment.html" type="button" class="btn btn-primary btn-block mb-3">Monolith</button> -->
-                                <!-- <button id="destroyEc2Btn" class="btn btn-danger btn-block mt-2 mb-3">Destroy EC2</button> -->
+                                <button id="destroyEc2Btn" class="btn btn-danger btn-block mt-2 mb-3">Destroy EC2</button>
                             </div>
                             <div class="col-sm-12">
                                 <button id="wordpressLightsailBtn" href="lightsail-deployment.html" type="button" class="btn btn-primary btn-block mb-3">Lightsail</button>
@@ -140,7 +140,10 @@
                                                 <td class="small ">{{ instance.instance_state }}</td>
                                                 <!-- <td class="small ">{{ instance.key_name }}</td> -->
                                                 <td class="small ">{{ instance.public_ip }}</td>
-                                                <td class="small "><button id="destroyEc2Btn" class="btn btn-danger btn-sm">Destroy</button></td>
+                                                <td>
+                                                    <button class="btn btn-danger btn-sm destroyBtn" data-instanceid="{{instance.instance_id}}">Destroy</button>
+                                                </td>
+                                                <!-- <td class="small "><button id="destroyEc2Btn" class="btn btn-danger btn-sm">Destroy</button></td> -->
                                                 <!-- <td class="small "><button id="destroyLightsailBtn" class="btn btn-danger btn-sm">Destroy</button></td> -->
                                             </tr>
                                             {% endfor %}

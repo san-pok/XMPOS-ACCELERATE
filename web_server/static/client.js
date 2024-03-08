@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 //     }
 // }
 
-// Add event listener for the destroy EC2 button
+// // Add event listener for the destroy EC2 button
 document.getElementById('destroyEc2Btn').addEventListener('click', async function() {
     try {
         // Displaying status message
@@ -103,6 +103,46 @@ document.getElementById('destroyEc2Btn').addEventListener('click', async functio
     }
 });
 
+document.querySelectorAll('.destroyBtn').forEach(button => {
+    button.addEventListener('click', async function() {
+        try {
+            const instanceId = this.dataset.instanceid;
+            // console.log('Instance ID:', instanceId); // Check if instanceId is correctly extracted
+            alert(instanceId);
+            // const row = this.closest('tr'); //Get closest table row
+            // Displaying status message
+            document.getElementById('statusMessage').textContent = "Destroying EC2 instance ..."
+
+            // Apply visual indication to the table row
+            const tableRow = this.closest('tr');
+            tableRow.classList.add('destroying');
+
+            //Sending request to server to trigger destroy-ec2 route
+            const response = await fetch(`/destroy-ec2?instance_id=${instanceId}`);
+            if(!response.ok) {
+                throw new Error('Failed to destroy EC2 Instance.');
+            }
+            const data = await response.text();
+            alert(data);
+            // console.log("Logging data from fetching destroy request on server ", data);
+            // Update status message upon succesful destruction
+            document.getElementById('statusMessage').textContent = 'EC2 instance is destroyed succesfully.';
+            await updateDeploymentHistory();
+            // Reload the page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000); // Refresh after 2 seconds (adjust as needed)
+        }
+        catch (error) {
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+            console.error('Error in destroying Ec2 instance progess.', error);
+            // Update status message upon failure
+            document.getElementById('statusMessage').textContent = 'Failed to destroy EC2 instance.';
+        }
+    });
+});
 
 // Add event listener for the destroy Lightsail button
 document.getElementById('destroyLightsailBtn').addEventListener('click', async function() {

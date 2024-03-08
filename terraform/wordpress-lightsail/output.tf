@@ -25,9 +25,9 @@ output "availability_zone" {
   value = aws_lightsail_instance.lightsail_instance.availability_zone
 }
 
-output "instance_id" {
-  value = aws_lightsail_instance.lightsail_instance.id
-}
+# output "instance_id" {
+#   value = aws_lightsail_instance.lightsail_instance.id
+# }
 
 # output "instance_region" {
 #   value = data.aws_region.current.name
@@ -48,3 +48,9 @@ output "key_name" {
 output "public_ip" {
   value = aws_lightsail_static_ip.static_ip.ip_address
 }
+
+output "instance_id" {
+  description = "Lightsail Instance ID"
+  value       = "id=${aws_lightsail_instance.lightsail_instance.id}"
+}
+

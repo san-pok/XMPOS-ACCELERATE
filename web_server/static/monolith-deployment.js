@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             // alert(JSON.stringify(data));
             const message = 'EC2 instance is being created.....'
             alert(message);
-            updateStatusMessage(message);
+            // updateStatusMessage(message);
             // Redirect to index.html with message as query parameter
             // window.location.href = '/index.html?message=' + encodeURIComponent(message);
 
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 },
                 body: JSON.stringify(data)
             })
+            
             // Reload the page after a short delay
             setTimeout(() => {
                 window.location.reload();

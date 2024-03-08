@@ -277,3 +277,5 @@ def empty_instance_table(database_name):
 
     except sqlite3.Error as e:
         print("Error emptying table:", e)
+
+

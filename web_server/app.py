@@ -1,5 +1,5 @@
 from datetime import datetime
-import json
+import boto3
 import logging
 import os
 import time
@@ -113,10 +113,20 @@ def submit_form_monolith():
 @app.route('/destroy-ec2')
 def destroy_ec2():
     os.chdir('./terraform/wordpress-ec2')
+    instance_id = request.args.get('instance_id')
+    # print('instance ID ====== ', instance_id)
 
     # Run Terraform Command to destroy EC2 instance
     try:
         subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
+        instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+        print("Instance data retrieved from S3 when instance is destroyed:", instance_data)
+
+        # Find and remove data from S3
+        for instance_info in instance_data:
+            if instance_info['instance_id'] == instance_id:
+                instance_data.remove(instance_info)
+                break
 
         # Generate current timestamp
         current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -132,6 +142,9 @@ def destroy_ec2():
         # # Update deployment history in S3
         # update_deployment_history(new_entry, bucket_name, key_prefix_history )
 
+        #delete instance details from S3
+        delete_instance_details_from_s3(instance_id)
+        return instance_data
         return 'EC2 instance destroyed successfully'
     except subprocess.CalledProcessError as e:
         return f'Error destroying EC2 instance : {e}'
@@ -233,6 +246,16 @@ def refresh_page():
     time.sleep(1)
     return jsonify({'message': 'Page refreshed'})
 
+def delete_instance_details_from_s3(instance_id):
+    s3_client = boto3.client('s3')
+    object_key = f'{key_prefix}/{instance_id}.json'
+    print (object_key)
+    try:
+        response = s3_client.delete_object(Bucket=bucket_name, Key=object_key)
+        print ('Delete Object Response:', response)
+        print ('Object deleted successfully from S3.')
+    except Exception as e:
+        print('Error deleting object from S3: ', e)
     
 if __name__ == '__main__':
 
