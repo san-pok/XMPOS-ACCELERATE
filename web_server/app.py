@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import boto3
 import logging
 import os
@@ -122,11 +123,11 @@ def destroy_ec2():
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         print("Instance data retrieved from S3 when instance is destroyed:", instance_data)
 
-        # Find and remove data from S3
-        for instance_info in instance_data:
-            if instance_info['instance_id'] == instance_id:
-                instance_data.remove(instance_info)
-                break
+        # # Find and remove data from S3
+        # for instance_info in instance_data:
+        #     if instance_info['instance_id'] == instance_id:
+        #         instance_data.remove(instance_info)
+        #         break
 
         # Generate current timestamp
         current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -144,7 +145,7 @@ def destroy_ec2():
 
         #delete instance details from S3
         delete_instance_details_from_s3(instance_id)
-        return instance_data
+        # return instance_data
         return 'EC2 instance destroyed successfully'
     except subprocess.CalledProcessError as e:
         return f'Error destroying EC2 instance : {e}'
@@ -248,14 +249,27 @@ def refresh_page():
 
 def delete_instance_details_from_s3(instance_id):
     s3_client = boto3.client('s3')
-    object_key = f'{key_prefix}/{instance_id}.json'
-    print (object_key)
     try:
-        response = s3_client.delete_object(Bucket=bucket_name, Key=object_key)
-        print ('Delete Object Response:', response)
-        print ('Object deleted successfully from S3.')
+        response = s3_client.get_object(Bucket=bucket_name, Key=key_prefix)
+        instance_data = json.loads(response['Body'].read().decode('utf-8'))
     except Exception as e:
-        print('Error deleting object from S3: ', e)
+        print(f"Error retrieving instance data from s3: {e}")
+        return
+    
+    #find and remove the instance with the provided instance ID
+    for instance in instance_data:
+        if instance['instance_id'] == instance_id:
+            instance_data.remove(instance)
+    # Update the instance_data.json file in S3 with the modified list
+    try: 
+        s3_client.put_object(
+            Bucket=bucket_name,
+            Key=key_prefix,
+            Body=json.dumps(instance_data).encode('utf-8')
+        )
+        print(f"Instance with Instance ID '{instance_id}' deleted from S3.")
+    except Exception as e:
+        print(f"Error updating instance data in S3: {e}")
     
 if __name__ == '__main__':
 

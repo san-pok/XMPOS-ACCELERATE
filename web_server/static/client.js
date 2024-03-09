@@ -71,37 +71,37 @@ document.addEventListener('DOMContentLoaded', async function() {
 // }
 
 // // Add event listener for the destroy EC2 button
-document.getElementById('destroyEc2Btn').addEventListener('click', async function() {
-    try {
-        // Displaying status message
-        document.getElementById('statusMessage').textContent = 'Destroying EC2 instance...';
+// document.getElementById('destroyEc2Btn').addEventListener('click', async function() {
+//     try {
+//         // Displaying status message
+//         document.getElementById('statusMessage').textContent = 'Destroying EC2 instance...';
 
-        // Sending request to server to trigger destroy-ec2 route
-        const response = await fetch('/destroy-ec2');
-        if (!response.ok) {
-            throw new Error('Failed to destroy EC2 instance');
-        }
-        const data = await response.text();
-        console.log(data); // Log the response from the server
-        // Update status message upon successful destruction
-        document.getElementById('statusMessage').textContent = 'EC2 instance destroyed successfully';
-        await updateDeploymentHistory();
-        // Reload the page after a short delay
-        setTimeout(() => {
-            window.location.reload();
-        }, 2000); // Refresh after 1 seconds (adjust as needed)
+//         // Sending request to server to trigger destroy-ec2 route
+//         const response = await fetch('/destroy-ec2');
+//         if (!response.ok) {
+//             throw new Error('Failed to destroy EC2 instance');
+//         }
+//         const data = await response.text();
+//         console.log(data); // Log the response from the server
+//         // Update status message upon successful destruction
+//         document.getElementById('statusMessage').textContent = 'EC2 instance destroyed successfully';
+//         await updateDeploymentHistory();
+//         // Reload the page after a short delay
+//         setTimeout(() => {
+//             window.location.reload();
+//         }, 2000); // Refresh after 1 seconds (adjust as needed)
 
-        // Call the function to update deployment history after destroying EC2
-        // await updateDeploymentHistory();
-    } catch (error) {
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000); // Refresh after 1 seconds (adjust as needed)
-        console.error('Error:', error);
-        // Update status message upon failure
-        document.getElementById('statusMessage').textContent = 'Failed to destroy EC2 instance';
-    }
-});
+//         // Call the function to update deployment history after destroying EC2
+//         // await updateDeploymentHistory();
+//     } catch (error) {
+//         setTimeout(() => {
+//             window.location.reload();
+//         }, 1000); // Refresh after 1 seconds (adjust as needed)
+//         console.error('Error:', error);
+//         // Update status message upon failure
+//         document.getElementById('statusMessage').textContent = 'Failed to destroy EC2 instance';
+//     }
+// });
 
 document.querySelectorAll('.destroyBtn').forEach(button => {
     button.addEventListener('click', async function() {
@@ -145,34 +145,34 @@ document.querySelectorAll('.destroyBtn').forEach(button => {
 });
 
 // Add event listener for the destroy Lightsail button
-document.getElementById('destroyLightsailBtn').addEventListener('click', async function() {
-    try {
-        // Displaying status message
-        document.getElementById('statusMessage').textContent = 'Destroying Lightsail instance...';
+// document.getElementById('destroyLightsailBtn').addEventListener('click', async function() {
+//     try {
+//         // Displaying status message
+//         document.getElementById('statusMessage').textContent = 'Destroying Lightsail instance...';
 
-        // Sending request to server to trigger destroy-ec2 route
-        const response = await fetch('/destroy-lightsail');
-        if (!response.ok) {
-            throw new Error('Failed to destroy Lightsail instance');
-        }
-        const data = await response.text();
-        console.log(data); // Log the response from the server
-        // Update status message upon successful destruction
-        document.getElementById('statusMessage').textContent = 'Lightsail instance destroyed successfully';
-        await updateDeploymentHistory();
-        // Reload the page after a short delay
-        setTimeout(() => {
-            window.location.reload();
-        }, 2000); // Refresh after 1 seconds (adjust as needed)
+//         // Sending request to server to trigger destroy-ec2 route
+//         const response = await fetch('/destroy-lightsail');
+//         if (!response.ok) {
+//             throw new Error('Failed to destroy Lightsail instance');
+//         }
+//         const data = await response.text();
+//         console.log(data); // Log the response from the server
+//         // Update status message upon successful destruction
+//         document.getElementById('statusMessage').textContent = 'Lightsail instance destroyed successfully';
+//         await updateDeploymentHistory();
+//         // Reload the page after a short delay
+//         setTimeout(() => {
+//             window.location.reload();
+//         }, 2000); // Refresh after 1 seconds (adjust as needed)
 
-        // Call the function to update deployment history after destroying EC2
-        // await updateDeploymentHistory();
-    } catch (error) {
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000); // Refresh after 1 seconds (adjust as needed)
-        console.error('Error:', error);
-        // Update status message upon failure
-        document.getElementById('statusMessage').textContent = 'Failed to destroy Lightsail instance';
-    }
-});
+//         // Call the function to update deployment history after destroying EC2
+//         // await updateDeploymentHistory();
+//     } catch (error) {
+//         setTimeout(() => {
+//             window.location.reload();
+//         }, 1000); // Refresh after 1 seconds (adjust as needed)
+//         console.error('Error:', error);
+//         // Update status message upon failure
+//         document.getElementById('statusMessage').textContent = 'Failed to destroy Lightsail instance';
+//     }
+// });
