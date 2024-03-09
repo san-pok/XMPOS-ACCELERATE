@@ -10,6 +10,9 @@
 
 <div class="container">
     <h2>Highly Available Form</h2>
+
+    <h3>EC2 Configuration</h3>
+
     <form id="myForm">
         <div class="form-group">
             <label for="aws_region">AWS Region</label>
@@ -40,8 +43,37 @@
         </div>
 
         <div class="form-group">
-            <label for="key_pair_name">Key Pair</label>
-            <input type="text" id="key_pair_name" name="key_pair_name">
+            <label for="key_pair_selection">Key Pair Selection</label>
+            <div id="key_pair_selection">
+                <label class="radio-container">
+                    <input type="radio" id="existing_key_pair_radio" name="key_pair_selection" value="existing" checked>
+                    <span class="radio-checkmark"></span>
+                    Use Existing Key Pair
+                </label>
+
+                <label class="radio-container">
+                    <input type="radio" id="new_key_pair_radio" name="key_pair_selection" value="new">
+                    <span class="radio-checkmark"></span>
+                    Create New Key Pair
+                </label>
+            </div>
+        </div>
+
+
+        <div id="existing_key_pair" style="display: block;">
+            <div class="form-group">
+                <label for="existing_key_pair_name">Existing Key Pair</label>
+                <select id="existing_key_pair_name" name="existing_key_pair_name">
+                    <!-- Existing key pairs will be dynamically populated here -->
+                </select>
+            </div>
+        </div>
+
+        <div id="new_key_pair" style="display: none;">
+            <div class="form-group">
+                <label for="new_key_pair_name">New Key Pair Name</label>
+                <input type="text" id="new_key_pair_name" name="new_key_pair_name">
+            </div>
         </div>
 
 
@@ -58,8 +90,57 @@
             </select>
         </div>
 
-        <div id="errorMessage" class="error-message"></div>
-        <!-- Example success message placeholder -->
+        <!-- RDS Configuration -->
+
+<!--
+                <h3>RDS Configuration</h3>
+                <div class="form-group">
+                    <label for="db_engine">DB Engine Type</label>
+                    <select id="db_engine" name="db_engine">
+                        <option value="mysql">MySQL</option>
+                        <option value="postgres">PostgreSQL</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="engine_version">Engine Version</label>
+                    <input type="text" id="engine_version" name="engine_version">
+                </div>
+
+                <div class="form-group">
+                    <label for="environment">Environment</label>
+                    <select id="environment" name="environment">
+                        <option value="production">Production</option>
+                        <option value="development">Development</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="vcpus">Number of vCPUs</label>
+                    <input type="number" id="vcpus" name="vcpus">
+                </div>
+
+                <div class="form-group">
+                    <label for="memory_capacity">Memory Capacity (GB)</label>
+                    <input type="number" id="memory_capacity" name="memory_capacity">
+                </div>
+
+                <div class="form-group">
+                    <label for="storage_capacity">Storage Capacity (GB)</label>
+                    <input type="number" id="storage_capacity" name="storage_capacity">
+                </div>
+
+                <div class="form-group">
+                    <label for="multi_az">Availability</label>
+                    <select id="multi_az" name="multi_az">
+                        <option value="true">Multi-AZ</option>
+                        <option value="false">No Replicas</option>
+                    </select>
+                </div>
+
+-->
+                <div id="errorMessage" class="error-message"></div>
+                <!-- Example success message placeholder -->
         <div id="successMessage" class="success-message"></div>
         <div class="form-group">
             <button type="submit" class="btn">Submit</button>

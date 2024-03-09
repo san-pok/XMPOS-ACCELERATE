@@ -2,9 +2,11 @@ from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 import subprocess
 import os
+import boto3
 
 app = Flask(__name__)
 CORS(app, origins='*')
+
 
 @app.route('/deploy', methods=['POST'])
 def deploy_infrastructure():
@@ -26,9 +28,9 @@ def deploy_infrastructure():
         error_message = f'Unknown error: {str(e)}'
         return jsonify({'error': error_message}), 500
 
+
 @app.route('/destroy', methods=['POST'])
 def destroy_infrastructure():
-
     try:
         # Check if the destroy.sh script exists
         script_path = './destroy.sh'
@@ -67,6 +69,20 @@ def validate_form():
         if errors:
             return jsonify({'error': 'Form validation failed', 'errors': errors}), 400
         else:
+
+            # Check if the user chose to create a new key pair
+            if 'new_key_pair_name' in data:
+
+                create_key_pair(data)
+
+                data['key_pair_name'] = data['new_key_pair_name']
+                data.pop('new_key_pair_name')
+
+            else:
+
+                data['key_pair_name'] = data['existing_key_pair_name']
+                data.pop('existing_key_pair_name')
+
             # Read existing terraform.auto.tfvars content
             with open('terraform.auto.tfvars', 'r') as f:
                 existing_content = f.readlines()
@@ -92,16 +108,54 @@ def validate_form():
             with open('terraform.auto.tfvars', 'w') as f:
                 f.writelines(existing_content)
 
-            # Trigger infrastructure deployment
-            response = deploy_infrastructure()
+                # Trigger infrastructure deployment
+                # response = deploy_infrastructure()
 
-            if response[1] == 200:  # Check the status code
+                # if response[1] == 200:  # Check the status code
                 return jsonify({'message': 'Form validation successful and infrastructure deployment triggered'}), 200
-            else:
-                return jsonify({'error': 'Failed to trigger infrastructure deployment after form validation'}), 500
+            # else:
+            #   return jsonify({'error': 'Failed to trigger infrastructure deployment after form validation'}), 500
 
     except Exception as e:
         error_message = f'Error validating form data: {str(e)}'
         return jsonify({'error': error_message}), 500
+
+
+@app.route('/existing_key_pairs', methods=['GET'])
+def get_key_pairs():
+    try:
+        region = 'ap-southeast-2'  # Sydney region
+        ec2 = boto3.client('ec2', region_name=region)
+
+        # Retrieve the list of existing key pairs
+        response = ec2.describe_key_pairs()
+        key_pairs = [key_pair['KeyName'] for key_pair in response['KeyPairs']]
+
+        return jsonify({'existing_key_pairs': key_pairs})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/create_key_pair', methods=['POST'])
+def create_key_pair(data):
+    try:
+
+        region = data['region']  # Default to Sydney region if not provided
+        ec2 = boto3.client('ec2', region_name=region)
+
+        data['key_pair'] = "new_key_pair_name"
+
+        # Generate a new key pair
+        response = ec2.create_key_pair(KeyName=data['new_key_pair_name'])
+
+        # Save the private key to a file
+        with open(f"{data['new_key_pair_name']}.pem", 'w') as key_file:
+            key_file.write(response['KeyMaterial'])
+
+        return jsonify({'message': 'Key pair created successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True)
