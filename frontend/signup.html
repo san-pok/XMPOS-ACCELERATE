@@ -1,28 +1,36 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Signup</title>
-    <link rel="stylesheet" href="css/style.css">
+   
+    
 </head>
 <body>
     <h2>Signup</h2>
     <form id="signupForm">
         <input type="email" id="email" placeholder="Email" required>
+        <div id="emailError" class="error"></div> 
+        
         <input type="password" id="password" placeholder="Password" required>
-        <button type="submit">Signup</button> <button><a href="login.html">Login</a></button>
+        <div id="passwordError" class="error"></div> 
+        
+        <button type="submit">Signup</button>
     </form>
-
-
-     <div id="verificationSection" style="display:none;">
-    <h2>Enter Verification Code</h2>
-    <form id="verificationForm">
-        <input type="text" id="verificationCode" placeholder="Verification Code" required>
-        <button type="submit">Verify</button> <button>
-    </form>
+    
+    
+    <div id="verificationSection" style="display:none;">
+        <h2>Enter Verification Code</h2>
+        <form id="verificationForm">
+            <input type="text" id="verificationCode" placeholder="Verification Code" required>
+            <div id="verificationCodeError" class="error"></div> 
+            <button type="submit">Verify</button>
+        </form>
     </div>
+    
 
     <script src="js/signup.js" defer></script>
+   
 </body>
-</html>
+</html> 

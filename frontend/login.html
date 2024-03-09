@@ -4,15 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
     <h2>Login</h2>
     <form id="loginForm">
         <input type="email" id="email" placeholder="Email" required>
+        <div id="emailError" class="error"></div> <!-- Error message for email -->
+        
         <input type="password" id="password" placeholder="Password" required>
-        <button type="submit">Login</button> <button><a href="signup.html">Signup</a></button>
+        <div id="passwordError" class="error"></div> <!-- Error message for password -->
+        
+        <button type="submit">Login</button>
     </form>
+    <a href="signup.html">Signup</a>
+    
     <script src="js/login.js" defer></script>
+    <script src="js/signup.js"></script>
 </body>
 </html>

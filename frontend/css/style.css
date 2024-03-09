@@ -47,3 +47,8 @@ ul#menuList li a {
 ul#menuList li a:hover {
     background-color: #ddd;
 }
+.error {
+    color: red;
+    font-size: 0.8em;
+}
+
