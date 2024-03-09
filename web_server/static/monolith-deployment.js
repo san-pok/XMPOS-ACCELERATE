@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
              // Prevent the default form submission behavior
             event.preventDefault();
+            
             // Gather the form data
             const formData = new FormData(form);
             // Convert FormData to JSON object

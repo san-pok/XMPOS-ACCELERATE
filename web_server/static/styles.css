@@ -113,24 +113,20 @@ footer {
     padding: 0.25rem; /* Adjust the padding as needed */
 }
 
-.destroying123 {
-    background-color: #f8d7da; /* Red color */
-    /* Add more styling as needed */
+.destroying {
+    background-color: #f8d7da; /* Initial background color (red) */
+    transition: background-color 0.5s ease, transform 0.5s ease; /* Transition background color and size */
+    transform: scale(1); /* Initial size */
 }
 
-.instance {
-    transition: background-color 0.5s ease-in-out; /* Smooth transition effect */
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
 }
 
-.instance.destroying {
-    background-color: #f8d7da; /* Red color */
-    animation: shake 0.5s ease-in-out; /* Shake animation */
-}
-
-@keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-5px); }
-    100% { transform: translateX(0); }
+.destroying.active {
+    animation: blink 1s infinite; /* Apply the blink animation */
+    background-color: #ffffff; /* New background color (white) */
+    /* transform: scale(1.2); Increase size by 20% */
 }

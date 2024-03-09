@@ -85,16 +85,33 @@ def submit_form_monolith():
 
         #Trigger Terraform deployment
         subprocess.run(['terraform', 'init'], check=True)
-        subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)  
+        terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True, text=True)  
+        terraform_output = terraform_process.stdout
 
-        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
-        print('incoming data from creation ec2 \n', output_data_of_ec2)
+        # Check if Terraform detected no changes
+        if "No changes" in terraform_output:
+            print("EC2 instance is already deployed. Skipping saving instance data to S3.")
+        else: 
+        # After deployment, retrieve the instance_id
+        # instance_id = get_instance_id()  # You need to implement this function
+        # print('Instance Id ::: ', instance_id)
+        #Read existing instance data from s3
+        # instance_data = get_instance_data_from_s3(Bucket=bucket_name, Key=key_prefix)
+        # print('instance data, after get_instance_data_from_s3(): ', instance_data)
+        # Check if the instance is already running 
+        # instance_exists = any(instance['instance_id'] == instance_id for instance in instance_data)
 
-        # Add deployment type to instance data
-        output_data_of_ec2['deployment_type'] = 'Monolith'
+        # if instance_exists:
+            # return 'EC2 instance is already deployed', instance_data  # Return message indicating instance is already deployed 
 
-        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
-        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
+            output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
+            print('incoming data from creation ec2 \n', output_data_of_ec2)
+
+            # Add deployment type to instance data
+            output_data_of_ec2['deployment_type'] = 'Monolith'
+
+            save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
+            save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
 
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         print("Instance data retrieved from S3:", instance_data)
@@ -110,24 +127,37 @@ def submit_form_monolith():
     finally:
         os.chdir(original_dir)
 
+def get_instance_id():
+    try:
+        # Run the Terraform apply command and capture the output
+        terraform_output = subprocess.run(['terraform', 'apply', '-auto-approve'], capture_output=True, text=True, check=True).stdout
+        
+        # Split the output by newlines to iterate over each line
+        for line in terraform_output.split('\n'):
+            # Check if the line contains the instance ID
+            if 'instance_id' in line:
+                # Extract the instance ID
+                instance_id = line.split(':')[-1].strip()
+                print('instance ID in get_instance_id(): ', instance_id)
+                return instance_id
+        
+        # If the instance ID is not found, return None
+        return None
+    except subprocess.CalledProcessError as e:
+        # Handle any errors that occur during the Terraform command
+        print("Error running Terraform command:", e)
+        return None
     
 @app.route('/destroy-ec2')
 def destroy_ec2():
     os.chdir('./terraform/wordpress-ec2')
     instance_id = request.args.get('instance_id')
-    # print('instance ID ====== ', instance_id)
 
     # Run Terraform Command to destroy EC2 instance
     try:
         subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         print("Instance data retrieved from S3 when instance is destroyed:", instance_data)
-
-        # # Find and remove data from S3
-        # for instance_info in instance_data:
-        #     if instance_info['instance_id'] == instance_id:
-        #         instance_data.remove(instance_info)
-        #         break
 
         # Generate current timestamp
         current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

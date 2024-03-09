@@ -19,10 +19,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error("Button with ID 'wordpressEc2Btn' not found.");
     }
 
-  
-
- 
-
     // document.addEventListener('DOMContentLoaded', async function() {
     //     try {
     //         // Fetch deployment history data from S3 bucket
