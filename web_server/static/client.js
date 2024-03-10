@@ -19,6 +19,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error("Button with ID 'wordpressEc2Btn' not found.");
     }
 
+    document.addEventListener('DOMContentLoaded', function() {
+        const terraformOutput = document.getElementById('terraform-output').textContent;
+        console.log(terraformOutput); // Output the Terraform output to the console
+        // Additional JavaScript code to handle the Terraform output as needed
+    });
+    
+
     // document.addEventListener('DOMContentLoaded', async function() {
     //     try {
     //         // Fetch deployment history data from S3 bucket

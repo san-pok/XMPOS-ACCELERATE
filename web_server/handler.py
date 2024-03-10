@@ -41,6 +41,7 @@ def save_instance_data_to_s3(new_data, bucket_name, key):
         # Retrieve existing data from S3 or initialize as empty list if not found
         try:
             response = s3.get_object(Bucket=bucket_name, Key=key)
+            print("Response data : \n", response)
             existing_data = response['Body'].read().decode('utf-8')
             print("Existing data: \n", existing_data)
             existing_data_list = json.loads(existing_data)
@@ -55,34 +56,16 @@ def save_instance_data_to_s3(new_data, bucket_name, key):
         # Upload the updated JSON data to the specified S3 bucket and key
         updated_data = json.dumps(existing_data_list, indent=4)
         s3.put_object(Bucket=bucket_name, Key=key, Body=updated_data.encode('utf-8'))
-        print("Data saved to S3 successfully. Updated data:", updated_data)
+        # print("Data saved to S3 successfully. Updated data:", updated_data)
         print("Key for the new JSON file:", key)
         
     except Exception as e:
         print(f"Error saving data to S3: {e}")
 
-# Function to update and save deployment history to S3
-# def update_deployment_history(new_entry,  bucket_name, key_prefix_history):
-#     try:
-#         # Fetch existing deployment history from S3
-#         s3_client = boto3.client('s3')
-#         response = s3_client.get_object(Bucket=bucket_name, Key=key_prefix_history)
-#         deployment_history = json.loads(response['Body'].read())
+def generate_timestamp():
+    """Generate and return the current timestamp."""
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-#         # Append the new entry to the deployment history
-#         deployment_history.append(new_entry)
-
-#         # Save the updated deployment history back to S3
-#         s3_client.put_object(
-#             Bucket=bucket_name,
-#             Key=key_prefix_history,
-#             Body=json.dumps(deployment_history),
-#             ContentType='application/json'
-#         )
-
-#     except Exception as e:
-#         print('Error updating deployment history:', e)
-        
 def update_deployment_history():
     # Define the new deployment history entry
     new_entry = {
@@ -119,11 +102,11 @@ def get_instance_data_from_s3(bucket_name, key):
     # Initialize an S3 client
     s3 = boto3.client('s3')
     try:
-        print("In the get instance data from s3 function IN TRY: \n")
+        # print("In the get instance data from s3 function IN TRY: \n")
         # Retrieve the Json data from S3
         response = s3.get_object(Bucket=bucket_name, Key=key)
         instance_data = json.loads(response['Body'].read().decode('utf-8'))
-        # print("instance data from s3 bucket: \n",instance_data)
+        print("instance data from s3 bucket get_instance_data_from_s3 Function: \n",instance_data)
         return instance_data
         
     except:
@@ -138,7 +121,7 @@ def get_instance_data_from_s3_hist(bucket_name, key_prefix_history):
         # Retrieve the Json data from S3
         response = s3.get_object(Bucket=bucket_name, Key=key_prefix_history)
         instance_data = json.loads(response['Body'].read().decode('utf-8'))
-        # print("instance data from s3 bucket: \n",instance_data)
+        print("instance data from s3 bucket it is in get_instance_data_from_s3:\n",instance_data)
         return instance_data
         
     except:

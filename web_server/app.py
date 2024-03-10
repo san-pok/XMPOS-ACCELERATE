@@ -7,26 +7,32 @@ import time
 from flask import jsonify, request
 import subprocess
 from flask import Flask, render_template
-from handler import capture_ec2_and_lightsail_instance_output, get_instance_data_from_s3, get_instance_data_from_s3_hist, save_instance_data_to_s3, create_sqlite_database,insert_instance_data_to_sqlite, display_database_data, update_deployment_history
+from handler import capture_ec2_and_lightsail_instance_output, generate_timestamp, get_instance_data_from_s3, get_instance_data_from_s3_hist, save_instance_data_to_s3, create_sqlite_database,insert_instance_data_to_sqlite, display_database_data, update_deployment_history
 
 
 app = Flask(__name__, template_folder='templates')
 # Configure logging
 logging.basicConfig(filename='app.log', level=logging.DEBUG)
 # Initialize an empty list to store deployment history
-deployment_history = []
+# deployment_history = []
 # # Save the original directory
 # original_dir = os.getcwd()
+
+# Initialize a global variable to store the total running instances
+total_running_instances = 0
 
 @app.route('/')
 def index():
     
     instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
-    # # instance_data = json.dumps(instance_data, indent=4)
-    print("Instance data retrieved from S3:", instance_data)
+    print("Instance data retrieved from S3 instance_data.json:\n", instance_data)
+    deployment_history_data = get_instance_data_from_s3(bucket_name, key_prefix_history )
+    # deployment_history_data = json.dumps(instance_data, indent=4)
+    # print("Instance data retrieved from S3:", deployment_history_data)
+    print("Instance data retrieved from S3 instance_data_history.json:\n", deployment_history_data)
     
     # # Render template with instance data
-    return render_template('index.html', instance_data=instance_data, deployment_history=deployment_history)
+    return render_template('index.html', instance_data=instance_data, deployment_history=deployment_history_data)
     #from database
     # instance_data =  display_database_data(database_name)
     # instance_data = json.dumps(instance_data, indent=4)
@@ -86,32 +92,29 @@ def submit_form_monolith():
         #Trigger Terraform deployment
         subprocess.run(['terraform', 'init'], check=True)
         terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True, text=True)  
+        # terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True)  
         terraform_output = terraform_process.stdout
 
         # Check if Terraform detected no changes
         if "No changes" in terraform_output:
             print("EC2 instance is already deployed. Skipping saving instance data to S3.")
         else: 
-        # After deployment, retrieve the instance_id
-        # instance_id = get_instance_id()  # You need to implement this function
-        # print('Instance Id ::: ', instance_id)
-        #Read existing instance data from s3
-        # instance_data = get_instance_data_from_s3(Bucket=bucket_name, Key=key_prefix)
-        # print('instance data, after get_instance_data_from_s3(): ', instance_data)
-        # Check if the instance is already running 
-        # instance_exists = any(instance['instance_id'] == instance_id for instance in instance_data)
-
-        # if instance_exists:
-            # return 'EC2 instance is already deployed', instance_data  # Return message indicating instance is already deployed 
-
             output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
             print('incoming data from creation ec2 \n', output_data_of_ec2)
-
+            # Generate current timestamp
+            current_timestamp = generate_timestamp()
             # Add deployment type to instance data
             output_data_of_ec2['deployment_type'] = 'Monolith'
+            # Add timestamp to instance data
+            output_data_of_ec2['creation_time'] = current_timestamp
+            output_data_of_ec2['deletion_time'] = ''
 
+            # Update the total running instances counter
+            # total_running_instances += 1
             save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
-            save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
+            # save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
+            # Update the total running instances counter
+            # total_running_instances += 1
 
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         print("Instance data retrieved from S3:", instance_data)
@@ -120,6 +123,8 @@ def submit_form_monolith():
         # refresh_page()
         return jsonify(instance_data) 
 
+        # Return instance data and total running instances count
+        # return jsonify({'instance_data': instance_data, 'total_running_instances': total_running_instances})
     except Exception as e:
         error_message = str(e)
         logging.error(f'Error occurred: {error_message}')  # Log the error
@@ -157,22 +162,24 @@ def destroy_ec2():
     try:
         subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
-        print("Instance data retrieved from S3 when instance is destroyed:", instance_data)
+        print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
 
-        # Generate current timestamp
-        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        # After destroying EC2, update the deployment history
-        # update_deployment_history()
-        # Define the new entry for deployment history
-        new_entry = {
-            'timestamp': current_timestamp,
-            'type': 'Monolith',
-            'status': 'Destroyed'
-        }
-        deployment_history.append(new_entry)
-        # # Update deployment history in S3
-        # update_deployment_history(new_entry, bucket_name, key_prefix_history )
+        # Get instance data from S3 instance_data.json
+        for instance in instance_data:
+            if instance['instance_id'] == instance_id:
+                # Generate current timestamp
+                current_timestamp = generate_timestamp()
+                # Update deletion_time for destroying time
+                instance['deletion_time'] = current_timestamp
+                instance['instance_state'] = 'Destroyed'
 
+                # Save the updated instance data back to S3
+                print("Instance data retrieved from S3 when instance is being destroyed to be saved:", instance_data)
+                unwrapped_list = {}
+                for dictionary in instance_data:
+                    unwrapped_list.update(dictionary)
+                save_instance_data_to_s3(unwrapped_list, bucket_name, key_prefix_history)
+        
         #delete instance details from S3
         delete_instance_details_from_s3(instance_id)
         # return instance_data
@@ -182,10 +189,10 @@ def destroy_ec2():
     finally:
         os.chdir(original_dir)
 
-@app.route('/get-deployment-history')
-def get_deployment_history():
-    # Return the deployment history as JSON
-    return jsonify(deployment_history)
+# @app.route('/get-deployment-history')
+# def get_deployment_history():
+#     # Return the deployment history as JSON
+#     return jsonify(deployment_history)
     
 
 @app.route('/submit-form-lightsail', methods=['POST'])
@@ -226,9 +233,16 @@ def submit_form_lightsail():
 
         # Add deployment type to instance data
         output_data_of_ec2['deployment_type'] = 'Lightsail'
+         # Generate current timestamp
+        current_timestamp = generate_timestamp()
+        # # Add deployment type to instance data
+        # # output_data_of_ec2['deployment_type'] = 'Monolith'
+        # # Add timestamp to instance data
+        output_data_of_ec2['creation_time'] = current_timestamp
+        output_data_of_ec2['deletion_time'] = ''
 
         save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
-        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
+        # save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
 
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         print("Instance data retrieved from S3:", instance_data)
@@ -244,33 +258,33 @@ def submit_form_lightsail():
     finally:
         os.chdir(original_dir)
 
-@app.route('/destroy-lightsail')
-def destroy_lightsail():
-    os.chdir('./terraform/wordpress-lightsail')
+# @app.route('/destroy-lightsail')
+# def destroy_lightsail():
+#     os.chdir('./terraform/wordpress-lightsail')
 
-    # Run Terraform Command to destroy EC2 instance
-    try:
-        subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
+#     # Run Terraform Command to destroy EC2 instance
+#     try:
+#         subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
 
-        # Generate current timestamp
-        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        # After destroying EC2, update the deployment history
-        # update_deployment_history()
-        # Define the new entry for deployment history
-        new_entry = {
-            'timestamp': current_timestamp,
-            'type': 'Lightsail',
-            'status': 'Destroyed'
-        }
-        deployment_history.append(new_entry)
-        # # Update deployment history in S3
-        # update_deployment_history(new_entry, bucket_name, key_prefix_history )
+#         # Generate current timestamp
+#         current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+#         # After destroying EC2, update the deployment history
+#         # update_deployment_history()
+#         # Define the new entry for deployment history
+#         new_entry = {
+#             'timestamp': current_timestamp,
+#             'type': 'Lightsail',
+#             'status': 'Destroyed'
+#         }
+#         deployment_history.append(new_entry)
+#         # # Update deployment history in S3
+#         # update_deployment_history(new_entry, bucket_name, key_prefix_history )
 
-        return 'Lightsail instance destroyed successfully'
-    except subprocess.CalledProcessError as e:
-        return f'Error destroying Lightsail instance : {e}'
-    finally:
-        os.chdir(original_dir)
+#         return 'Lightsail instance destroyed successfully'
+#     except subprocess.CalledProcessError as e:
+#         return f'Error destroying Lightsail instance : {e}'
+#     finally:
+#         os.chdir(original_dir)
 
 
 def refresh_page():
@@ -307,6 +321,8 @@ if __name__ == '__main__':
     original_dir = os.getcwd()
     database_name = 'team2.db'
 
+    
+
     bucket_name = 'xmops-data-bucket-team2'
     key_prefix = 'instance_record/instance_data.json' 
     key_prefix_history = 'instance_record/instance_data_history.json' 
@@ -316,7 +332,7 @@ if __name__ == '__main__':
     create_sqlite_database(database_name)
     # display_database_data(database_name)
     get_instance_data_from_s3(bucket_name, key_prefix)
-    get_instance_data_from_s3_hist(bucket_name, key_prefix_history)
+    # get_instance_data_from_s3_hist(bucket_name, key_prefix_history)
 
     app.run(debug=True, port=4000)
     # refresh_page()

@@ -81,7 +81,7 @@
                                                 <div class="card-body">
                                                     <h5 class="card-title">Monolith Instances</h5>
                                                     <!-- Example: Show running Monolith instances -->
-                                                    <p class="card-text">Total Running: 1</p>
+                                                    <p class="card-text" id="total-running-instances">Total Running: 0</p>
                                                     <!-- Add more details here as needed -->
                                                 </div>
                                             </div>
@@ -103,6 +103,7 @@
                         </div>
                         <br>
                         <br>
+                        <!-- <p id="terraform-output">{{ terraform_output }}</p> -->
                         <div class="col-md-12">
                             <div class="card">
                                 <div class="card-body">
@@ -112,7 +113,7 @@
                                         <table id="instanceStatusTable" class="table table-bordered table-sm table-smaller">
                                             <thead>
                                             <tr>
-                                                <!-- <th class="small-font ">Primary_key</th> -->
+                                                <th class="small-font ">Created Time</th>
                                                 <th class="small-font">Deployment Type</th>
                                                 <th class="small-font ">Instance ID</th>
                                                 <th class="small-font ">Instance Type</th>
@@ -130,6 +131,7 @@
                                             <!-- Table rows will be dynamically populated here -->
                                             {% for instance in instance_data %}
                                             <tr>
+                                                <td class="small">{{ instance.creation_time }}</td>
                                                 <td class="small">{{ instance.deployment_type }}</td>
                                                 <!-- <td class="small ">{{ instance.id }}</td> -->
                                                 <td class="small " style="width: 100px;">{{ instance.instance_id }}</td>
@@ -163,17 +165,22 @@
                                         <table class="table table-striped" id="historyTable">
                                             <thead>
                                             <tr>
-                                                <th>Timestamp</th>
-                                                <th>Type</th>
-                                                <th>Status</th>
+                                                <th class="small">Deployment type</th>
+                                                <th class="small">Created Time</th>
+                                                <th class="small">Deleted Time</th>
+                                                <th class="small">Availabilty Zone</th>
+                                                <th class="small">Status</th>
                                             </tr>
                                             </thead>
                                             <tbody id="historyTableBody" >
-                                                {% for entry in deployment_history %}
+                                                
+                                                {% for entry in deployment_history|reverse %}
                                                 <tr>
-                                                    <td>{{ entry.timestamp }}</td>
-                                                    <td>{{ entry.type }}</td>
-                                                    <td>{{ entry.status }}</td>
+                                                    <td class="small">{{ entry.deployment_type }}</td>
+                                                    <td class="small">{{ entry.creation_time }}</td>
+                                                    <td class="small">{{ entry.deletion_time }}</td>
+                                                    <td class="small">{{ entry.availability_zone }}</td>
+                                                    <td class="small">{{ entry.instance_state }}</td>
                                                 </tr>
                                                 {% endfor %}
                                             <!-- More deployment entries can be added dynamically -->
