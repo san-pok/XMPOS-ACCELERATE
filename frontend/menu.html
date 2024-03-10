@@ -20,11 +20,11 @@
                 </div>
             </div>
             <div class="sidebar">
-                <a href="">
+                <a href="" class="active">
                     <i class="fa-solid fa-grip"></i>
                     <h3>Dashboard</h3>
                 </a>
-                <a href=""class="active">
+                <a href="">
                     <i class="fa-solid fa-bolt"></i>
                     <h3>Deploy Monolith</h3>
                 </a>
@@ -48,9 +48,9 @@
                     <i class="fa-solid fa-gear"></i>
                     <h3>Settings</h3>
                 </a>
-                <a href="">
+                <a href="./index.html" id="signOut" >
                     <i class="fa-solid fa-right-from-bracket"></i>
-                    <h3>Logout</h3>
+                    Logout
                 </a>
 
             </div>
@@ -58,8 +58,104 @@
 
 
         <main>
-            
+            <h1>Dashboard</h1>
+            <div class="date">
+                <input type="date" name="" id="">
+            </div>
+            <div class="insights">
+                <div class="monolith">
+                    <i class="fa-solid fa-bolt"></i>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Monolithic</h3>
+                        </div>
+                    </div>
+                    <small class="text-muted">Monolithic Arch</small>
+                </div>
+                <!-- monolith ends  -->
+
+                <div class="highly">
+                    <i class="fa-solid fa-bolt"></i>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Highly Available</h3>
+                        </div>
+                    </div>
+                    <small class="text-muted">Hihly Available Arch</small>
+                </div>
+                <!-- highly available ends here  -->
+                <div class="lightsail">
+                    <i class="fa-solid fa-bolt"></i>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Lightsail</h3>
+                        </div>
+                    </div>
+                    <small class="text-muted">Lightsail Arch</small>
+                </div>
+
+            </div>
+            <!-- end of insights  -->
+
+            <div class="recent-deployment">
+                <h2>Recent Deployment</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sno.</th>
+                            <th>Type of Architecture</th>
+                            <th>Timestamp</th>
+                            <th>Status</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>01</td>
+                            <td>Monolithic</td>
+                            <td>2024-03-10</td>
+                            <td class="danger">Failed</td>
+                        </tr>
+                        <tr>
+                            <td>01</td>
+                            <td>Monolithic</td>
+                            <td>2024-03-10</td>
+                            <td class="danger">Failed</td>
+                        </tr>
+                        <tr>
+                            <td>01</td>
+                            <td>Monolithic</td>
+                            <td>2024-03-10</td>
+                            <td class="warning">Failed</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <a href="#">Show All</a>
+            </div>
         </main>
+        <!-- end of main  -->
+        <div class="right">
+            <div class="top">
+                <button id="menu-btn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="theme-toggler">
+                   
+                    <i class="active fa-solid fa-sun "></i>
+                    <i class="fa-solid fa-moon"></i>
+                
+                </div>
+                <div class="profile">
+                    <div class="info">
+                        <p>Hi, <b> San</b></p>
+                        <small class="text-muted">Admin</small>
+                    </div>
+                    <div class="profile-photo">
+                        <img src="#" alt="profile photo">
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 
@@ -79,7 +175,7 @@
 
     </ul>
     <script src="js/menu.js" defer></script>
-    <script src="js/login.js" defer></script>
-    <script src="js/signup.js" defer></script>
+    <!-- <script src="js/login.js" defer></script>
+    <script src="js/signup.js" defer></script> -->
 </body>
 </html>
