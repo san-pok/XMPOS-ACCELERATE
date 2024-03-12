@@ -34,10 +34,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             })
             
             // Reload the page after a short delay
+            // window.location.href = '/';
             setTimeout(() => {
                 window.location.reload();
             }, 1000); // Refresh after 1 seconds (adjust as needed)
-        // // Redirect to the main page
+        // Redirect to the main page
         // window.location.href = '/';    
 
         } catch (error){

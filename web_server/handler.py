@@ -41,9 +41,9 @@ def save_instance_data_to_s3(new_data, bucket_name, key):
         # Retrieve existing data from S3 or initialize as empty list if not found
         try:
             response = s3.get_object(Bucket=bucket_name, Key=key)
-            print("Response data : \n", response)
+            # print("Response data : \n", response)
             existing_data = response['Body'].read().decode('utf-8')
-            print("Existing data: \n", existing_data)
+            # print("Existing data: \n", existing_data)
             existing_data_list = json.loads(existing_data)
         except s3.exceptions.NoSuchKey:
             # Key doesn't exist yet, initialize as empty list
@@ -106,7 +106,7 @@ def get_instance_data_from_s3(bucket_name, key):
         # Retrieve the Json data from S3
         response = s3.get_object(Bucket=bucket_name, Key=key)
         instance_data = json.loads(response['Body'].read().decode('utf-8'))
-        print("instance data from s3 bucket get_instance_data_from_s3 Function: \n",instance_data)
+        # print("instance data from s3 bucket get_instance_data_from_s3 Function: \n",instance_data)
         return instance_data
         
     except:

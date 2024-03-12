@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             // Redirect to the main page
             window.location.href = '/';
-          
+            // Reload the page after a short delay
+           
             // Send the form data to the server
             
             const response = await fetch('/submit-form-lightsail', {
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(data)
+                
             })
             // Reload the page after a short delay
             setTimeout(() => {
