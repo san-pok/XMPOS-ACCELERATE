@@ -14,7 +14,7 @@ app = Flask(__name__, template_folder='templates')
 
 lightsail = boto3.client('lightsail')
 # Configure logging
-logging.basicConfig(filename='app.log', level=logging.DEBUG)
+# logging.basicConfig(filename='app.log', level=logging.DEBUG)
 # Initialize an empty list to store deployment history
 # deployment_history = []
 # # Save the original directory
@@ -341,8 +341,12 @@ def get_lightsail_blueprints():
 @app.route('/lightsail-instance-plans')
 def get_lightsail_bundles():
     platform = request.args.get('platform')
+    region = request.args.get('region') 
     print('selected Platform in bundle', platform)
+    print('selected Region in bundle', region)
     try:
+        # Create a Lightsail client for the specified region
+        lightsail = boto3.client('lightsail', region_name=region)
         response = lightsail.get_bundles()
         # response = lightsail.get_instance_metric_data()
         # print(json.dumps(response, indent=4))
@@ -367,8 +371,6 @@ def get_lightsail_bundles():
         print ('Error fetching Lightsail bundles: ', e)
         return jsonify({'error': 'Internal server error '}), 500
     
-
-
     
 if __name__ == '__main__':
 

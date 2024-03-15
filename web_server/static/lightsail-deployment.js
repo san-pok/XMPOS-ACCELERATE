@@ -37,12 +37,14 @@ document.addEventListener('DOMContentLoaded', async function() {
      // Attach event listener to blueprint dropdown for change events
      blueprintDropdown.addEventListener('change', async function(){
         // const selectedBlueprint = blueprintDropdown.value;
+        // Fetch blueprints for the selected region
+        const selectedRegion = regionDropdown.value;
         const selectedPlatform = getSelectedPlatform();
         if(selectedPlatform){
             // Enable bundle dropdown
             bundleDropdown.disabled = false;
             // Fetch instance plans for the selected blueprint 
-            const instancePlans = await fetchInstancePlans(selectedPlatform);
+            const instancePlans = await fetchInstancePlans(selectedPlatform, selectedRegion);
             populateDropdownBundles(bundleDropdown, instancePlans);
         }
     });
@@ -86,9 +88,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Function to fetch instance plan (bundle_id) for a blueprint
-    async function fetchInstancePlans(selectedPlatform){
+    async function fetchInstancePlans(selectedPlatform, selectedRegion){
         try{
-            const response = await fetch(`/lightsail-instance-plans?platform=${selectedPlatform}`);
+            const response = await fetch(`/lightsail-instance-plans?platform=${selectedPlatform}&region=${selectedRegion}`);
             const data = await response.json();
             return data.bundles;
         } catch (error){
