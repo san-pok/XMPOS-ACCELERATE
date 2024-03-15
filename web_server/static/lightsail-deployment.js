@@ -13,12 +13,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 data[key] = value;
             });
             alert(JSON.stringify(data));
-            // const message = 'EC2 instance is being created.....'
-            // alert(message);
-            // updateStatusMessage(message);
-            // Redirect to index.html with message as query parameter
-            // window.location.href = '/index.html?message=' + encodeURIComponent(message);
-
+            
             // Redirect to the main page
             window.location.href = '/';
             // Reload the page after a short delay
@@ -60,4 +55,3 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 });
- 
