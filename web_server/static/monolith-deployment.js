@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async function() {
           
             // Send the form data to the server
             
-            const response = await fetch('/submit-form-monolith', {
+            const response = await fetch('/deploy-monolith', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

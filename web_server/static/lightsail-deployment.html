@@ -26,34 +26,41 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="region">AWS Region</label>
+                        <label for="lightsail-region">AWS Region</label>
                         <div class="dropdown">
-                            <select id="region" name="region" class="col-md-12 mt-2">
-                                <option value="ap-southeast-2">Asia Pasific (Sydney) ap-southeast-2</option>
+                            <select id="lightsail-region" name="region" class="col-md-12 mt-2">
+                                <option value=""  selected>Select a region</option>
+                                <!-- <option value="ap-southeast-2">Asia Pasific (Sydney) ap-southeast-2</option>
                                 <option value="us-east-1">US East (N. Virginia) us-east-1</option>
-                                <option value="us-west-2">US West (Oregon) us-west-2</option>
+                                <option value="us-west-2">US West (Oregon) us-west-2</option> -->
                                 <!-- Add more options as needed -->
                             </select>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label for="availability-zone">Availability Zone</label>
                         <select id="availability-zone" name="availability-zone" class="col-md-12 mt-2">
-                            <!-- Options will be dynamically populated here based on the selected region -->
                         </select>
-                    </div>
+                    </div> -->
                     <div class="form-group">
-                        <label for="platform">Select Platform</label>
-                        <select class="form-control" id="platform" name="platform">
+                        <label for="lightsail-platform">Select Platform</label>
+                        <div id="platform-options">
+                            <input type="radio" name="platform" id="platform-lunix" value="LINUX_UNIX" required checked>
+                            <label for="platform-lunix">LINUX_UNIX</label>
+                            <input type="radio" name="platform" id="platform-windows" value="WINDOWS">
+                            <label for="platform-windows">WINDOWS</label><br>
+                        </div>
+                        <!-- <select class="form-control" id="platform" name="platform">
                             <option value="Linux">Linux</option>
                             <option value="Windows">Windows</option>
-                        </select>
+                        </select> -->
                     </div>
                     <div class="form-group">
-                        <label for="blueprint">Select a Blueprint</label>
-                        <select class="form-control" id="blueprint" name="blueprint">
-                            <option value="wordpress_4_9_8">WordPress</option>
+                        <label for="lightsail-blueprint">Select a Blueprint</label>
+                        <select class="form-control" id="lightsail-blueprint" name="lightsail-blueprint">
+                            <!-- <option value="wordpress_4_9_8">WordPress</option> -->
                             <!-- Add more blueprints as needed -->
+                            <option value="" selected>Select a blueprint</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -61,8 +68,18 @@
                         <input type="text" class="form-control" id="ssh-key" name="ssh-key">
                         <small class="form-text text-muted">Choose "new" for new key pair or "existing" for existing key pair</small>
                     </div>
-                    
+
                     <div class="form-group">
+                        <label for="lightsail-bundle">Choose your instance plan</label>
+                        <div class="dropdown">
+                            <select name="lightsail-bundle" id="lightsail-bundle" disabled>
+                                <option value="" selected>Select a size</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    
+                    <!-- <div class="form-group">
                         <label for="instance-plan">Choose your Instance Plan (Instance Size)</label>
                         <div class="row">
                             <div class="col-md-6 mt-3">
@@ -146,7 +163,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                     
                     
                     <div class="row justify-content-center mt-4">

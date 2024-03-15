@@ -11,6 +11,8 @@ from handler import capture_ec2_and_lightsail_instance_output, generate_timestam
 
 
 app = Flask(__name__, template_folder='templates')
+
+lightsail = boto3.client('lightsail')
 # Configure logging
 logging.basicConfig(filename='app.log', level=logging.DEBUG)
 # Initialize an empty list to store deployment history
@@ -27,22 +29,9 @@ def index():
     instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
     # print("Instance data retrieved from S3 instance_data.json:\n", instance_data)
     deployment_history_data = get_instance_data_from_s3(bucket_name, key_prefix_history )
-    # deployment_history_data = json.dumps(instance_data, indent=4)
-    # print("Instance data retrieved from S3:", deployment_history_data)
-    # print("Instance data retrieved from S3 instance_data_history.json:\n", deployment_history_data)
     
     # # Render template with instance data
     return render_template('index.html', instance_data=instance_data, deployment_history=deployment_history_data, message=message)
-    #from database
-    # instance_data =  display_database_data(database_name)
-    # instance_data = json.dumps(instance_data, indent=4)
-    # return render_template('index.html', instance_data=instance_data)
-    # if instance_data:
-    #     return render_template('index.html', instance_data=instance_data)
-    # else:
-    #     return "Error fetching data from database"
-    # # return render_template('index.html',)
-    # return render_template('index.html')
 
 # Create S3bucket for storing information of instances
 def create_s3_bucket():
@@ -63,7 +52,7 @@ def create_s3_bucket():
         os.chdir(original_dir)
 
 # User Data is coming from submission button clicked 
-@app.route('/submit-form-monolith', methods=['POST'])
+@app.route('/deploy-monolith', methods=['POST'])
 def submit_form_monolith():
     os.chdir('./terraform/wordpress-ec2')
     try: 
@@ -192,18 +181,20 @@ def destroy_ec2():
     finally:
         os.chdir(original_dir)
 
-@app.route('/submit-form-lightsail', methods=['POST'])
+@app.route('/deploy-lightsail', methods=['POST'])
 def submit_form_lightsail():
     os.chdir('./terraform/wordpress-lightsail')
     try: 
         project_name = request.json.get('project-name')
         aws_region = request.json.get('region')
-        bundle_id = request.json.get('instance-plan')
-        blueprint = request.json.get('blueprint')
+        platform = request.json.get('platform')
+        blueprint = request.json.get('lightsail-blueprint')
+        bundle_id = request.json.get('lightsail-bundle')
 
         # Print the received data
         print("Received data:")
         print("AWS Region:", aws_region)
+        print("AWS Platform:", platform)
         print("BluePrint:", blueprint)
         print("Bundle_id or Instance plan:", bundle_id)
 
@@ -312,6 +303,72 @@ def delete_instance_details_from_s3(instance_id):
         print(f"Instance with Instance ID '{instance_id}' deleted from S3.")
     except Exception as e:
         print(f"Error updating instance data in S3: {e}")
+
+# Route to fetch Lightsail regions
+@app.route('/lightsail-regions')
+def get_lightsail_regions():
+    try:
+        # Call the AWS API to describe Lightsail regions
+        response = lightsail.get_regions()
+        # print(json.dumps(response, indent=4))
+        # regions = [region['name'] for region in response['regions']]
+        regions = [{'name': region['name'], 'displayName': region['displayName']} for region in response['regions']]
+        print('Regions: ', regions)
+        return jsonify({'regions':regions})
+    except Exception as e:
+        print('Error fetching Lightsail regions:', e)
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/lightsail-blueprints')
+def get_lightsail_blueprints():
+    region = request.args.get('region')
+    platform = request.args.get('platform')
+    try:
+        response = lightsail.get_blueprints()
+        filtered_blueprints = []
+        # blueprints = [{'id': blueprint['blueprintId'], 'displayName': blueprint['name']} for blueprint in response['blueprints']]
+        for blueprint in response['blueprints']:
+            if blueprint['platform'] == platform:
+                # Extract WordPress version from the blueprintId
+                # wordpress_version = blueprint['blueprintId'].split('_')[2] if 'wordpress' in blueprint['blueprintId'] else None
+                filtered_blueprints.append({'id': blueprint['blueprintId'], 'displayName': blueprint['name'], 'type': blueprint['type']})
+        # print('filtered blueprints:\n', filtered_blueprints)
+        return jsonify({'blueprints': filtered_blueprints})
+    except Exception as e:
+        print ('Error fetching Lightsail blueprints: ', e)
+        return jsonify({'error': 'Internal server error '}), 500
+    
+@app.route('/lightsail-instance-plans')
+def get_lightsail_bundles():
+    platform = request.args.get('platform')
+    print('selected Platform in bundle', platform)
+    try:
+        response = lightsail.get_bundles()
+        # response = lightsail.get_instance_metric_data()
+        # print(json.dumps(response, indent=4))
+        filtered_bundles = []
+        # # blueprints = [{'id': blueprint['blueprintId'], 'displayName': blueprint['name']} for blueprint in response['blueprints']]
+        for bundle in response['bundles']:
+            # if bundle['supportedPlatforms'] == platform:
+            #     filtered_bundles.append({'id': bundle['bundleId'], 'displayPrice': bundle['price']})
+             if platform in bundle['supportedPlatforms']:
+                 filtered_bundles.append({
+                    'id': bundle['bundleId'],
+                    'displayPrice': bundle['price'],
+                    'cpuCount': bundle['cpuCount'],
+                    'diskSizeInGb': bundle['diskSizeInGb'],
+                    'ramSizeInGb': bundle['ramSizeInGb'],
+                    'transferPerMonthInGb': bundle['transferPerMonthInGb']
+                })
+        # print('filtered bundles:\n', json.dumps(filtered_bundles, indent=4))
+        return jsonify({'bundles': filtered_bundles})
+        
+    except Exception as e:
+        print ('Error fetching Lightsail bundles: ', e)
+        return jsonify({'error': 'Internal server error '}), 500
+    
+
+
     
 if __name__ == '__main__':
 

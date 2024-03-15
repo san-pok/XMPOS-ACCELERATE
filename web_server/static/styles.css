@@ -99,7 +99,7 @@ footer {
 }
 
 /* Custom CSS for select element */
-#region, #availability-zone, #image, #instance-type, #storage, #db-type, #php-version, #web-server {
+#lightsail-region, #availability-zone, #image, #instance-type, #storage, #db-type, #php-version, #web-server, #lightsail-bundle {
     padding: 10px; /* Adjust padding as needed */
     border-radius: 5px; /* Add border-radius for rounded corners */
     border: 1px solid #ced4da; /* Add border for frame */
