@@ -70,7 +70,19 @@
                                                 <div class="card-body">
                                                     <h5 class="card-title">Lightsail Instances</h5>
                                                     <!-- Example: Show running Lightsail instances -->
-                                                    <p class="card-text">Total Running: 1</p>
+                                                    <!-- HTML for the loading spinner -->
+                                                    <p class="card-text" >Total Running: 
+                                                        <!-- <span id="instanceCount">
+                                                            <div id="loadingSpinner" class="spinner-border spinner-border-sm text-primary" role="status" style="display: none; display: inline-block; vertical-align: baseline;">
+                                                                <span class="sr-only">Loading...</span>
+                                                            </div>
+                                                        </span> -->
+                                                        <span id="instanceCount">
+                                                            <span id="loadingSpinner" class="spinner-border spinner-border-sm text-primary" role="status" style="display: none; margin-left: 5px;">
+                                                                <span class="sr-only">Loading...</span>
+                                                            </span>
+                                                        </span>
+                                                    </p>
                                                     <!-- Add more details here as needed -->
                                                 </div>
                                             </div>

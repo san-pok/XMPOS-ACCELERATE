@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import boto3
+import botocore
 import logging
 import os
 import time
@@ -13,12 +14,6 @@ from handler import capture_ec2_and_lightsail_instance_output, generate_timestam
 app = Flask(__name__, template_folder='templates')
 
 lightsail = boto3.client('lightsail')
-# Configure logging
-# logging.basicConfig(filename='app.log', level=logging.DEBUG)
-# Initialize an empty list to store deployment history
-# deployment_history = []
-# # Save the original directory
-# original_dir = os.getcwd()
 
 # Initialize a global variable to store the total running instances
 total_running_instances = 0
@@ -274,6 +269,47 @@ def destroy_lightsail():
         return f'Error destroying Lightsail instance : {e}'
     finally:
         os.chdir(original_dir)
+
+@app.route('/count-instances')
+def count_instances():
+
+    # Create a Lightsail client
+    lightsail_client = boto3.client('lightsail')
+
+    # Get all Lightsail regions
+    regions_response = lightsail_client.get_regions()
+
+    # Initialize count for all instances
+    total_instance_count = 0
+    access_denied_count = 0
+    # Iterate over each region
+    for region in regions_response['regions']:
+        region_name = region['name']
+        
+        # Create a Lightsail client for the specific region
+        lightsail_client = boto3.client('lightsail', region_name=region_name)
+
+        try: 
+
+            # Get all Lightsail instances in the current region
+            instances_response = lightsail_client.get_instances()
+
+            # Count the number of instances in the current region
+            instance_count_in_region = len(instances_response['instances'])
+            total_instance_count += instance_count_in_region
+
+            print(f"Region: {region_name}, Instance Count: {instance_count_in_region}")
+        except botocore.exceptions.ClientError as e: 
+            if e.response['Error']['Code'] == 'AccessDeniedException':
+                print(f"Access Denied in region {region_name}")
+                access_denied_count += 1
+            else :
+                raise e
+
+    print(f"Total number of Lightsail instances across all regions: {total_instance_count}")
+    print(f"Total number of Access Denied errors: {access_denied_count}")
+    return jsonify({'running_instances': total_instance_count})
+
 
 
 def refresh_page():
