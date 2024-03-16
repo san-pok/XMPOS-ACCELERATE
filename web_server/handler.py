@@ -22,7 +22,14 @@ def capture_ec2_and_lightsail_instance_output():
         'instance_state': output_json.get('instance_state', {}).get('value', 'N/A'),
         'instance_type': output_json.get('instance_type', {}).get('value', 'N/A'),
         'key_name': output_json.get('key_name', {}).get('value', 'N/A'),
-        'public_ip': output_json.get('public_ip', {}).get('value', 'N/A')
+        'public_ip': output_json.get('public_ip', {}).get('value', 'N/A'),
+        # 'bundle_id': output_json.get('lightsail_instance_attributes.bundle_id', {}).get('value', 'N/A'),
+        # 'bundle_blueprint_id': output_json.get('lightsail_instance_attributes.bundle_blueprint_id', {}).get('value', 'N/A'),
+        # 'cpu_count': output_json.get('lightsail_instance_attributes.cpu_count', {}).get('value', 'N/A')
+        'project_id': output_json.get('project_id', {}).get('value', 'N/A'),
+        'bundle_id': output_json.get('bundle_id', {}).get('value', 'N/A'),
+        'blueprint_id': output_json.get('blueprint_id', {}).get('value', 'N/A'),
+        'cpu_count': output_json.get('cpu_count', {}).get('value', 'N/A')
     }
 
     # # Determine the deployment tyope based on the instance type

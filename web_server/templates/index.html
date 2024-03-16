@@ -117,12 +117,13 @@
                                             <tr>
                                                 <th class="small-font ">Created Time</th>
                                                 <th class="small-font">Deployment Type</th>
-                                                <th class="small-font ">Instance ID</th>
-                                                <th class="small-font ">Instance Type</th>
+                                                <th class="small-font ">Instance ID / Project Name</th>
+                                                <th class="small-font ">Running application</th>
+                                                <th class="small-font ">Instance Type / Bundle ID</th>
                                                 <!-- <th class="small-font ">AMI-ID</th> -->
                                                 <!-- <th class="small-font ">Availabilty zone</th> -->
-                                                <th class="small-font ">Region</th>
-                                                <th class="small-font ">State</th>
+                                                <th class="small-font ">Region / Availabilty zone</th>
+                                                <th class="small-font ">State</th>   
                                                 <!-- <th class="small-font">Instance Type</th> -->
                                                 <!-- <th class="small-font ">Key-Name</th> -->
                                                 <th class="small-font ">Public-IP</th>
@@ -136,12 +137,18 @@
                                                 <td class="small">{{ instance.creation_time }}</td>
                                                 <td class="small">{{ instance.deployment_type }}</td>
                                                 <!-- <td class="small ">{{ instance.id }}</td> -->
-                                                <td class="small ">{{ instance.instance_id }}</td>
-                                                <td class="small ">{{ instance.instance_type }}</td>
+                                                <td class="small ">{{ instance.project_id if instance.instance_id == "N/A" else instance.instance_id }}</td>
+                                                <td class="small ">{{ "Wordpress" if instance.blueprint_id == "N/A" else instance.blueprint_id }}</td>
+                                                <!-- <td class="small ">{{ instance.instance_type }}</td> -->
+                                                <!-- <td class="small ">{{ instance.instance_type if instance.instance_type == "N/A" else instance.bundle_id }}</td> -->
+                                                <td class="small ">{{ instance.bundle_id if instance.instance_type == "N/A" else instance.instance_type }}</td>
                                                 <!-- <td class="small ">{{ instance.ami_id }}</td> -->
                                                 <!-- <td class="small ">{{ instance.availability_zone }}</td> -->
-                                                <td class="small ">{{ instance.instance_region }}</td>
-                                                <td class="small ">{{ instance.instance_state }}</td>
+                                                <!-- <td class="small ">{{ instance.instance_region if instance.instance_region == "N/A" else instance.availability_zone}}</td> -->
+                                                <td class="small ">{{ instance.availability_zone if instance.instance_region == "N/A" else instance.instance_region}}</td>
+                                                <!-- <td class="small ">{{ instance.instance_state }}</td> -->
+                                                <!-- <td class="small ">{{ instance.instance_state if instance.instance_state == "N/A" else "running"}}</td> -->
+                                                <td class="small ">{{ "running" if instance.instance_state == "N/A" else instance.instance_state}}</td>
                                                 <!-- <td class="small ">{{ instance.key_name }}</td> -->
                                                 <td class="small ">{{ instance.public_ip }}</td>
                                                 <td>
