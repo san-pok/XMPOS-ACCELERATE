@@ -3,6 +3,7 @@ from flask_cors import CORS
 import subprocess
 import os
 import boto3
+import json
 
 app = Flask(__name__)
 CORS(app, origins='*')
@@ -140,7 +141,7 @@ def get_key_pairs():
 def create_key_pair(data):
     try:
 
-        region = data['region']  # Default to Sydney region if not provided
+        region = data['aws_region']
         ec2 = boto3.client('ec2', region_name=region)
 
         data['key_pair'] = "new_key_pair_name"
@@ -155,6 +156,195 @@ def create_key_pair(data):
         return jsonify({'message': 'Key pair created successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/get_regions', methods=['GET'])
+def get_all_regions():
+    # Create an EC2 client
+    ec2_client = boto3.client('ec2')
+
+    try:
+        # Describe all regions
+        response = ec2_client.describe_regions()
+
+        # Extract region names from the response
+        all_regions = [region['RegionName'] for region in response['Regions']]
+        return all_regions
+    except Exception as e:
+        print(f"Error retrieving regions: {e}")
+        return []
+
+
+@app.route('/instance-types2')
+def get_instance_types2():
+    try:
+        # Initialize AWS EC2 client
+        ec2_client = boto3.client('ec2', region_name='ap-southeast-2')
+
+        # Get all instance types using the Pricing API
+        paginator = ec2_client.get_paginator('describe_instance_type_offerings')
+        page_iterator = paginator.paginate(
+            LocationType='region',
+            Filters=[
+                {'Name': 'location', 'Values': ['ap-southeast-2']}
+            ]
+        )
+
+        instance_types = []
+        for page in page_iterator:
+            for instance_type in page['InstanceTypeOfferings']:
+                instance_types.append(instance_type['InstanceType'])
+
+        return jsonify({"instance_types": instance_types})
+    except Exception as e:
+        error_message = f"Error: {e}"
+        return jsonify({"error": error_message})
+
+
+@app.route('/get_instance_type')
+def get_instance_types():
+    try:
+        region = 'ap-southeast-2'  # Specify the region here
+
+        # Initialize AWS EC2 client
+        ec2_client = boto3.client('ec2', region_name=region)
+
+        # Get all instance types available in the region
+        response = ec2_client.describe_instance_type_offerings(
+            LocationType='region',
+            Filters=[
+                {'Name': 'location', 'Values': [region]}
+            ]
+        )
+
+        instance_types = [instance['InstanceType'] for instance in response['InstanceTypeOfferings']]
+
+        return jsonify(instance_types)
+
+    except Exception as e:
+        error_message = f"Error: {e}"
+        return jsonify({"error": error_message})
+
+
+@app.route('/db_engine_types')
+def list_db_engine_types():
+    rds_client = boto3.client('rds',
+                              region_name='ap-southeast-2')
+    response = rds_client.describe_db_engine_versions()
+
+    engine_types = set()  # Using a set to store unique engine types
+
+    for engine in response['DBEngineVersions']:
+        engine_types.add(engine['Engine'])
+
+    return jsonify(list(engine_types))
+
+
+@app.route('/db_engine_versions')
+def list_db_engine_versions():
+
+    engine = 'aurora-postgresql'
+
+    rds_client = boto3.client('rds', region_name='ap-southeast-2')  # Replace 'your-region-name' with your actual AWS region
+    response = rds_client.describe_db_engine_versions(Engine=engine)
+
+    mysql_versions = [version['EngineVersion'] for version in response['DBEngineVersions']]
+
+    return jsonify(mysql_versions)
+
+
+@app.route('/amis', methods=['GET'])
+def get_amis():
+    try:
+        ec2 = boto3.client('ec2', region_name='ap-southeast-2')
+
+        # Retrieve AMIs for Linux
+        linux_images = ec2.describe_images(Filters=[
+            {'Name': 'name', 'Values': ['amzn2-ami-hvm-*']},
+            {'Name': 'architecture', 'Values': ['x86_64']},
+            {'Name': 'root-device-type', 'Values': ['ebs']},
+            {'Name': 'virtualization-type', 'Values': ['hvm']},
+        ])
+
+        # Retrieve AMIs for Windows
+        windows_images = ec2.describe_images(Filters=[
+            {'Name': 'platform', 'Values': ['windows']},
+            {'Name': 'architecture', 'Values': ['x86_64']},
+            {'Name': 'root-device-type', 'Values': ['ebs']},
+            {'Name': 'virtualization-type', 'Values': ['hvm']},
+        ])
+
+        # Retrieve AMIs for Ubuntu
+        ubuntu_images = ec2.describe_images(Filters=[
+            {'Name': 'name', 'Values': ['ubuntu/images/*']},
+            {'Name': 'architecture', 'Values': ['x86_64']},
+            {'Name': 'root-device-type', 'Values': ['ebs']},
+            {'Name': 'virtualization-type', 'Values': ['hvm']},
+        ])
+
+        # Extract desired attributes for Linux AMIs
+        linux_amis = extract_info(linux_images['Images'])
+
+        # Extract desired attributes for Windows AMIs
+        windows_amis = extract_info(windows_images['Images'])
+
+        # Extract desired attributes for Ubuntu AMIs
+        ubuntu_amis = extract_info(ubuntu_images['Images'])
+
+        return {
+            'linux_amis': linux_amis,
+            'windows_amis': windows_amis,
+            'ubuntu_amis': ubuntu_amis
+        }
+    except Exception as e:
+        return {'error': str(e)}
+
+
+def extract_info(images):
+    return images
+    for image in images:
+        extracted_image = {
+            'Architecture': image['Architecture'],
+            'ImageId': image['ImageId'],
+            'PlatformDetails': image['PlatformDetails'],
+            'RootDeviceType': image['RootDeviceType'],
+            'VirtualizationType': image['VirtualizationType']
+        }
+        # Check if the Description attribute exists
+        if 'Description' in image:
+            extracted_image['Description'] = image['Description']
+        extracted_images.append(extracted_image)
+    return extracted_images
+
+
+@app.route('/lamis', methods=['GET'])
+def list_linux_amis():
+    # Create a Boto3 EC2 client
+    region = 'ap-southeast-2'  # Sydney region
+    ec2_client = boto3.client('ec2', region_name=region)
+
+    # Retrieve AMIs for Linux
+    response = ec2_client.describe_images(Filters=[
+        {'Name': 'name', 'Values': ['amzn2-ami-hvm-*']},
+        {'Name': 'architecture', 'Values': ['x86_64']},
+        {'Name': 'root-device-type', 'Values': ['ebs']},
+        {'Name': 'virtualization-type', 'Values': ['hvm']},
+    ])
+
+    return jsonify(response)
+
+    # Extract relevant information from the response
+    ami_list = []
+    for image in response['Images']:
+        ami_list.append({
+            'ImageId': image['ImageId'],
+            'Name': image['Name'],
+            'Description': image['Description'],
+            'CreationDate': image['CreationDate']
+        })
+
+    # Return the AMI list as JSON response
+    return jsonify(ami_list)
 
 
 if __name__ == '__main__':
