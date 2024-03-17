@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy Lightsail Instance</title>
+    <style>
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .popup {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+</head>
+<body>
+    <h1>Deploy AWS Lightsail Instance</h1>
+    <form id="deployForm">
+        <label for="continent">Select a Continent:</label>
+        <select id="continent" name="continent">
+            <option value="Asia">Asia</option>
+            <option value="US">US</option>
+            <option value="Europe">Europe</option>
+        </select>
+
+        <label for="region">Select a Region:</label>
+        <select id="region" name="region">
+            <!-- Regions will be populated based on continent selection -->
+        </select>
+
+        <label for="blueprint">Select a blueprint:</label>
+        <select id="blueprint" name="blueprint">
+            <option value="wordpress">WordPress</option>
+            <!-- Add more blueprints as needed -->
+        </select>
+
+        <label for="sshKey">Customer Public SSH Key/Default SSH Key:</label>
+        <input type="text" id="sshKey" name="sshKey">
+
+        <label for="instanceSize">Choose your instance plan (Instance Size):</label>
+        <select id="instanceSize" name="instanceSize">
+            <option value="nano_3_2">Nano</option>
+            <option value="micro_3_2">Micro</option>
+            <option value="small_3_2">Small</option>
+            <option value="medium_3_2">Medium</option>
+            <option value="large_3_2">Large</option>
+            <option value="xlarge_3_2">Xlarge</option>
+            <option value="2xlarge_3_2">2Xlarge</option>
+            <!-- Ensure these options match the bundle IDs available in your AWS region -->
+        </select>
+        
+        <p id="errorMessage" style="color: red;"></p>
+        <button type="submit">Deploy</button>
+    </form>
+
+    <!-- Deployment Progress Popup -->
+<div id="deploymentProgressPopup" class="popup-overlay" style="display: none;">
+    <div class="popup">
+        <h2>Deployment in Progress</h2>
+        <div class="loader"></div> <!-- This is where you can add an animation -->
+    </div>
+</div>
+
+<!-- Deployment Success Popup -->
+<div id="deploymentSuccessPopup" class="popup-overlay" style="display: none;">
+    <div class="popup">
+        <h2>Deployment Successful!</h2>
+        <p id="successMessage"></p>
+        <button onclick="closeSuccessPopup()">Close</button>
+    </div>
+</div>
+
+
+    <script src="js/main.js"></script>
+</body>
+</html>
