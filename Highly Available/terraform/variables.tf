@@ -57,3 +57,36 @@ variable "storage_type" {
   default     = "gp3"
 }
 #GP3 volumes offer higher performance, more flexibility in provisioning throughput, and potentially lower costs compared to GP2 volumes.
+
+variable "db_engine" {
+  description = "The engine type for RDS (MYSQL or PostgreSQL) ."
+  default     = "mysql"
+}
+
+variable "engine_version" {
+  description = "The version of the database engine"
+  default     = "8.0"
+}
+
+variable "instance_class" {
+  description = "The instance type for the RDS instance"
+  default     = "db.t2.micro"
+}
+
+variable "environment" {
+  description = "The environment for RDS"
+  default     = "Development"
+  #Production or Development
+}
+
+variable "identifier" {
+  default     = "amirrdsinstance1"
+}
+
+variable "db_username" {
+  default     = "admin"
+}
+
+variable "db_password" {
+  default     = "password"
+}

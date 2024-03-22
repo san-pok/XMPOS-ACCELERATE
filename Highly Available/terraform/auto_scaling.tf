@@ -4,51 +4,47 @@ resource "aws_launch_configuration" "xmop_launch_configuration" {
   instance_type               = var.instance_type
   key_name                    = var.key_pair_name
   security_groups             = [aws_security_group.xmop_wordpress_sg.id]
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
   root_block_device {
     volume_size               = var.storage_size
     volume_type               = var.storage_type
   }
 
-  user_data                   = <<-EOF
-                                  #!/bin/bash
-                                  # Update package lists
-                                  sudo apt-get update
+  user_data = <<-EOF
+    #!/bin/bash
+    # Update package lists
+    sudo apt-get update
 
-                                  # Install Apache2, MySQL, PHP, and other necessary packages
-                                  sudo apt-get install -y apache2 mysql-server php libapache2-mod-php php-mysql
+    # Install Apache2, PHP, MySQL extension, and other necessary packages
+    sudo apt-get install -y apache2 php libapache2-mod-php php-mysql
 
-                                  # Enable Apache2 and MySQL services
-                                  sudo systemctl enable apache2
-                                  sudo systemctl enable mysql
+    # Enable Apache2 service
+    sudo systemctl enable apache2
 
-                                  # Start Apache2 and MySQL services
-                                  sudo systemctl start apache2
-                                  sudo systemctl start mysql
+    # Install WordPress
+    cd /var/www/html
+    sudo wget https://wordpress.org/latest.tar.gz
+    sudo tar -xzf latest.tar.gz --strip-components=1
+    sudo rm -f latest.tar.gz
+    sudo chown -R www-data:www-data /var/www/html
+    sudo cp wp-config-sample.php wp-config.php
 
-                                  # Set up MySQL database and user for WordPress
-                                  sudo mysql -u root -e "CREATE DATABASE wordpress;"
-                                  sudo mysql -u root -e "CREATE USER 'wpadmin'@'localhost' IDENTIFIED BY 'wpadminpass';"
-                                  sudo mysql -u root -e "GRANT ALL PRIVILEGES ON wordpress.* TO 'wpadmin'@'localhost';"
-                                  sudo mysql -u root -e "FLUSH PRIVILEGES;"
+    # Update WordPress configuration to use RDS
+    sudo sed -i "s/database_name_here/${aws_db_instance.example_rds.db_name}/" wp-config.php
+    sudo sed -i "s/username_here/${aws_db_instance.example_rds.username}/" wp-config.php
+    sudo sed -i "s/password_here/${aws_db_instance.example_rds.password}/" wp-config.php
+    sudo sed -i "s/localhost/${aws_db_instance.example_rds.endpoint}/" wp-config.php
+    # Remove the index.html file if present
+    sudo rm /var/www/html/index.html
 
-                                  # Install WordPress
-                                  cd /var/www/html
-                                  sudo wget https://wordpress.org/latest.tar.gz
-                                  sudo tar -xzf latest.tar.gz --strip-components=1
-                                  sudo rm -f latest.tar.gz
-                                  sudo chown -R www-data:www-data /var/www/html
-                                  sudo cp wp-config-sample.php wp-config.php
-                                  sudo sed -i "s/database_name_here/wordpress/" wp-config.php
-                                  sudo sed -i "s/username_here/wpadmin/" wp-config.php
-                                  sudo sed -i "s/password_here/wpadminpass/" wp-config.php
-                                  sudo rm /var/www/html/index.html
-                                  sudo systemctl restart apache2
-                                  echo "Wordpress installation script has completed. "
-                                EOF
+    # Restart Apache2
+    sudo systemctl restart apache2
 
-
+    echo "WordPress installation script has completed."
+  EOF
 }
+
 
 resource "aws_autoscaling_group" "xmop_autoscaling_group" {
   name                        = "xmop-autoscaling-group"
