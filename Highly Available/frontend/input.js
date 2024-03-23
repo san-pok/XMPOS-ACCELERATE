@@ -64,7 +64,6 @@ document.getElementById("myForm").addEventListener("submit", function(event) {
         jsonObject[key] = value;
     });
 
-    console.log(jsonObject);
       // If the user chose to create a new key pair, include the new key pair name in the JSON object
       if (document.getElementById("new_key_pair_radio").checked) {
         delete jsonObject['existing_key_pair_name']; // Remove the existing key pair field
