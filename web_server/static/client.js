@@ -4,13 +4,30 @@ document.addEventListener('DOMContentLoaded', async function() {
     // document.getElementById('instanceCount').innerText = 'Calculating...'
 
     // Function to fetch instance count and update the UI
-    function fetchInstanceCount() {
+    function fetchLightsailInstanceCount() {
         // Show the loading spinner
         document.getElementById('loadingSpinner').style.display = 'inline-block';
         fetch('/count-instances')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('instanceCount').innerText = data.running_instances;
+                document.getElementById('lightsailInstanceCount').innerText = data.running_instances;
+            })
+            .catch(error => console.error('Error fetching instance count:', error))
+            
+            .finally(() => {
+                // Hide the loading spinner regardless of the outcome
+                document.getElementById('loadingSpinner').style.display = 'none';
+            });
+    }
+
+    // Function to fetch instance count and update the UI
+    function fetchMonolithInstanceCount() {
+        // Show the loading spinner
+        document.getElementById('loadingSpinnerMono').style.display = 'inline-block';
+        fetch('/count-ec2-instances')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('MonolithInstanceCount').innerText = data.running_instances;
             })
             .catch(error => console.error('Error fetching instance count:', error))
             
@@ -21,7 +38,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Call the function when the page is loaded
-    fetchInstanceCount();
+    fetchLightsailInstanceCount();
+    fetchMonolithInstanceCount();
     if (wordpressEc2Btn) {
         wordpressEc2Btn.addEventListener('click', () => {
             window.location.href = './static/monolith-deployment.html';

@@ -1,4 +1,4 @@
-aws_region = "ap-southeast-1"
+aws_region = "ap-southeast-2"
 project_name = "Enerelen"
-bundle_id = "nano_3_0"
-lightsail_blueprints = {"wordpress": "debian_12"}
+bundle_id = "nano_3_2"
+lightsail_blueprints = {"wordpress": "ubuntu_18_04"}

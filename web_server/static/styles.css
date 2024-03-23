@@ -131,7 +131,7 @@ footer {
     /* transform: scale(1.2); Increase size by 20% */
 }
 
-#instanceCount {
+#lightsailInstanceCount, #MonolithInstanceCount {
     font-size: 24px; /* Larger font size */
     font-weight: bold; /* Bold text */
     color: #e8c963; /* Nice blue color */

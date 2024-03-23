@@ -25,23 +25,37 @@
                                     <label for="aws-region">AWS Region</label>
                                     <!-- <input type="text" class="form-control" id="aws-region" name="aws-region"> -->
                                     <div class="dropdown">
-                                        <select id="region" name="region" class="col-md-12 mt-2">
-                                            <option value="ap-southeast-2">Asia Pasific (Sydney) ap-southeast-2</option>
+                                        <select id="aws-region" name="aws-region" class="col-md-12 mt-2">
+                                            <!-- <option value="ap-southeast-2">Asia Pasific (Sydney) ap-southeast-2</option>
                                             <option value="us-east-1">US East (N. Virginia) us-east-1</option>
-                                            <option value="us-west-2">US West (Oregon) us-west-2</option>
+                                            <option value="us-west-2">US West (Oregon) us-west-2</option> -->
                                             <!-- Add more options as needed -->
                                         </select>
+                                        
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="image">Image (OS)</label>
-                                    <select id="image" name="image" class="col-md-12 mt-2">
+                                    <label for="aws-os">Operation System (OS)</label>
+                                    <!-- <select id="image" name="image" class="col-md-12 mt-2">
                                         <option value="ami-04f5097681773b989">Ubuntu (Free tier)</option>
                                         <option value="">macOS (Free tier)</option>
-                                        <option value="">Amazon Linux (Free tier)</option>
+                                        <option value="">Amazon Linux (Free tier)</option> -->
                                         <!-- Add more options as needed -->
+                                    <!-- </select> -->
+                                    <select id="aws-os" name="aws-os" class="col-md-12 mt-2">
+                                        <option value="">Select Operation System</option>
+                                        <option value="ubuntu">Ubuntu</option>
+                                        <option value="amazon-linux">Amazon Linux</option>
+                                        <option value="windows">Windows</option>
+                                        <!-- Add more OS options as needed -->
                                     </select>
                                 </div>
+
+                                <div class="form-group">
+                                    <label for="aws-ami">AMI:</label>
+                                    <select id="aws-ami" name="aws-ami" class="col-md-12 mt-2"></select>
+                                </div>
+
                                 <div class="form-group">
                                     <label for="instance-type">Instance Type</label>
                                     <select  id="instance-type" name="instance-type" class="col-md-12 mt-2">
@@ -67,8 +81,8 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="storage">Storage in GiB for EBS (Elastic Block Store) Volume </label>
-                                    <input type="number" id="storage" name="storage" class="form-control col-md-12 mt-2" placeholder="Enter storage capacity (between 8 and 30 GiB)" min="8" max="30" required>
+                                    <label for="ebs-storage">Storage in GiB for EBS (Elastic Block Store) Volume </label>
+                                    <input type="number" id="ebs-storage" name="ebs-storage" class="form-control col-md-12 mt-2" placeholder="Enter storage capacity (between 8 and 30 GiB)" min="8" max="30" required>
                                     <small class="form-text text-muted">Please enter the storage capacity in GiB. The value should be between 8 and 30 GiB to comply with the free tier usage limits.</small>
                                 </div>
                                 <div class="form-group">

@@ -51,8 +51,8 @@ def create_s3_bucket():
 def submit_form_monolith():
     os.chdir('./terraform/wordpress-ec2')
     try: 
-        aws_region = request.json.get('region')
-        ami_id = request.json.get('image')
+        aws_region = request.json.get('aws-region')
+        ami_id = request.json.get('aws-ami')
         instance_type = request.json.get('instance-type')
 
         # Print the received data
@@ -75,6 +75,7 @@ def submit_form_monolith():
 
         #Trigger Terraform deployment
         subprocess.run(['terraform', 'init'], check=True)
+        # subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)  
         terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True, text=True)  
         # terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True)  
         terraform_output = terraform_process.stdout
@@ -298,16 +299,16 @@ def count_instances():
             instance_count_in_region = len(instances_response['instances'])
             total_instance_count += instance_count_in_region
 
-            print(f"Region: {region_name}, Instance Count: {instance_count_in_region}")
+            print(f"Region: {region_name}, Lightsail Instance Count: {instance_count_in_region}")
         except botocore.exceptions.ClientError as e: 
             if e.response['Error']['Code'] == 'AccessDeniedException':
-                print(f"Access Denied in region {region_name}")
+                print(f"Lightsail Instance Access Denied in region {region_name}")
                 access_denied_count += 1
             else :
                 raise e
 
     print(f"Total number of Lightsail instances across all regions: {total_instance_count}")
-    print(f"Total number of Access Denied errors: {access_denied_count}")
+    print(f"Total number of Lightsail instances Access Denied errors: {access_denied_count}")
     return jsonify({'running_instances': total_instance_count})
 
 
@@ -406,6 +407,189 @@ def get_lightsail_bundles():
     except Exception as e:
         print ('Error fetching Lightsail bundles: ', e)
         return jsonify({'error': 'Internal server error '}), 500
+    
+#route to fetch aws regions 
+@app.route('/get-regions', methods=['GET'])
+def get_all_regions():
+    # Create an EC2 client
+    ec2_client = boto3.client('ec2')
+
+    try:
+        # Describe all regions
+        response = ec2_client.describe_regions()
+
+        # Extract region names from the response
+        # all_regions = [region['RegionName'] for region in response['Regions']]
+        all_regions = [{'DisplayName': region['RegionName'], 'Endpoint': region['Endpoint'], 'RegionName': region['RegionName']} for region in response['Regions']]
+        print('Regions: ', all_regions)
+
+        return jsonify({'regions': all_regions})
+    except Exception as e:
+        print(f"Error retrieving regions: {e}")
+        return []
+    
+@app.route('/amis', methods=['GET'])
+def get_amis():
+    try:
+        region = request.args.get('region')
+        os_type = request.args.get('os_type')
+
+        ec2 = boto3.client('ec2', region_name=region)
+
+        # Define filters based on the OS type
+        if os_type == 'ubuntu':
+            filters = [
+                {'Name': 'name', 'Values': ['ubuntu/images/*']},
+                # {'Name': 'description', 'Values': ['*Ubuntu*']},
+                {'Name': 'architecture', 'Values': ['x86_64']},
+                {'Name': 'root-device-type', 'Values': ['ebs']},
+                {'Name': 'virtualization-type', 'Values': ['hvm']},
+                {'Name': 'state', 'Values': ['available']},
+                {'Name': 'is-public', 'Values': ['true']},
+                {'Name': 'owner-id', 'Values': ['099720109477']}  # AWS-owned AMIs
+                
+            ]
+        elif os_type == 'windows':
+            filters = [
+                {'Name': 'platform', 'Values': ['windows']},
+                {'Name': 'architecture', 'Values': ['x86_64']},
+                {'Name': 'root-device-type', 'Values': ['ebs']},
+                {'Name': 'virtualization-type', 'Values': ['hvm']},
+                {'Name': 'state', 'Values': ['available']},
+                {'Name': 'is-public', 'Values': ['true']},
+                {'Name': 'owner-id', 'Values': ['099720109477']},  # AWS-owned AMIs
+            ]
+        else:  # Assume Linux AMIs
+            filters = [
+                {'Name': 'name', 'Values': ['amzn2-ami-hvm-*']},
+                {'Name': 'architecture', 'Values': ['x86_64']},
+                {'Name': 'root-device-type', 'Values': ['ebs']},
+                {'Name': 'virtualization-type', 'Values': ['hvm']},
+                {'Name': 'state', 'Values': ['available']},
+                {'Name': 'is-public', 'Values': ['true']},
+                {'Name': 'owner-id', 'Values': ['099720109477']},  # AWS-owned AMIs
+            ]
+        print ('Selected os: ', filters)
+        # Retrieve AMIs based on the filters
+        images = ec2.describe_images(Filters=filters)['Images']
+        
+        # Extract desired attributes for the fetched AMIs
+        amis = extract_info(images)
+        amisJson =json.dumps(amis, indent = 4 )
+        # print ('Selected AMIs: ', amisJson)
+        # return jsonify({os_type: amis})
+        return amisJson
+    except Exception as e:
+        return {'error': str(e)}
+
+def extract_info(images):
+    extracted_images = []
+    for image in images:
+        # Exclude Marketplace AMIs
+        extracted_image = {
+            'Architecture': image['Architecture'],
+            'ImageId': image['ImageId'],
+            'PlatformDetails': image['PlatformDetails'],
+            'RootDeviceType': image['RootDeviceType'],
+            'VirtualizationType': image['VirtualizationType'],
+            'Description': image['Description'],
+            'ImageType': image['ImageType'],
+            'Public': image['Public']
+        }
+        extracted_images.append(extracted_image)
+    return extracted_images
+
+@app.route('/instance-types', methods=['GET'])
+def get_instance_types():
+    try:
+        region = request.args.get('region')
+        # region = 'ap-southeast-2'
+        ec2 = boto3.client('ec2', region_name=region)
+        # ec2 = boto3.client('ec2')
+        # Retrieve instance types for the specified region
+        # instance_types = ec2.describe_instance_types()
+        instance_types = ec2.describe_instance_type_offerings()
+        # Retrieve instance types for the specified region
+        # instance_types = ec2.describe_instance_types()['InstanceTypes']
+
+        # Extract instance type names from the response
+        instance_type_names = [instance['InstanceType'] for instance in instance_types['InstanceTypeOfferings']]
+
+        # instance_details = []
+        # for instance_type in instance_types:
+        #     details = {
+        #         'InstanceType': instance_type['InstanceType'],
+        #         'VCpus': instance_type['VCpuInfo']['DefaultVCpus'],
+        #         'MemoryInfo': instance_type['MemoryInfo']['SizeInMiB'],
+        #         'GpuInfo': instance_type.get('GpuInfo', {}),
+        #         'StorageInfo': instance_type['InstanceStorageSupported']
+        #     }
+        #     instance_details.append(details)
+
+        # Sort instance types in ascending order
+        sorted_instance_types = sorted(instance_type_names)
+
+        # Filter instance types based on FreeTierEligible attribute
+        # free_tier_instance_types = [instance_type for instance_type in instance_types if instance_type.get('FreeTierEligible', True)]
+
+        # return jsonify({'instance_types': instance_type_names, 'Free_instance_types': free_tier_instance_types} )
+        return jsonify({'instance_types': sorted_instance_types})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+    
+@app.route('/count-ec2-instances')
+def count_ec2_instances():
+    try:
+        # Create an EC2 client
+        ec2_client = boto3.client('ec2')
+
+        # Get all EC2 regions
+        regions_response = ec2_client.describe_regions()
+
+        # Check each region for permissions to run instances
+        authorized_regions = []
+
+        # Initialize count for all instances and access denied regions
+        total_instance_count = 0
+        access_denied_count = 0
+        authorized_regions_count = 0
+        # Iterate over each region
+        for region in regions_response['Regions']:
+            region_name = region['RegionName']
+            
+            # Create an EC2 client for the specific region
+            ec2_client = boto3.client('ec2', region_name=region_name)
+
+            try:
+                # Get all EC2 instances in the current region
+                instances_response = ec2_client.describe_instances()
+
+                # Count the number of instances in the current region
+                instance_count_in_region = sum(len(reservation['Instances']) for reservation in instances_response['Reservations'])
+                total_instance_count += instance_count_in_region
+
+                print(f"Region: {region_name}, EC2 Instance Count: {instance_count_in_region}")
+                authorized_regions_count += 1
+                authorized_regions.append(region_name)
+
+            except botocore.exceptions.ClientError as e:
+                # print(f"Error occurred in region {region_name}: {e}")
+                if e.response['Error']['Code'] == 'UnauthorizedOperation':
+                    print(f"EC2 Instance UnauthorizedOperation in region {region_name}")
+                    access_denied_count += 1
+                else:
+                    print(f"EC2 Instance No UnauthorizedOperation in region {region_name}, Error: {e}")
+                    
+
+        print(f"Total number of EC2 instances across all regions: {total_instance_count}")
+        print(f"Total number of EC2 Instance UnauthorizedOperation errors: {access_denied_count}")
+        print("EC2 Instance Authorized regions:", authorized_regions, "Number of EC2 Instance Authorized regions: ", authorized_regions_count)
+        return jsonify({'running_instances': total_instance_count,
+                        'Authorized regions': authorized_regions,
+                        'Number of Authorized regions': authorized_regions_count })
+
+    except Exception as e:
+        return jsonify({'error': str(e)})
     
     
 if __name__ == '__main__':
