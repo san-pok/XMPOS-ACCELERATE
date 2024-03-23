@@ -75,34 +75,28 @@ def submit_form_monolith():
 
         #Trigger Terraform deployment
         subprocess.run(['terraform', 'init'], check=True)
-        # subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)  
-        terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True, text=True)  
-        # terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True)  
-        terraform_output = terraform_process.stdout
+        subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)  
+        # terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True, text=True)  
+        # # terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True)  
+        # terraform_output = terraform_process.stdout
 
-        # Check if Terraform detected no changes
-        if "No changes" in terraform_output:
-            print("EC2 instance is already deployed. Skipping saving instance data to S3.")
-            # return jsonify({'message': 'EC2 instance is already deployed'}), 200
-            return render_template('index.html', message='EC2 instance is already deployed')
-        else: 
-            output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
-            print('incoming data from creation ec2 \n', output_data_of_ec2)
-            # Generate current timestamp
-            current_timestamp = generate_timestamp()
-            # Add deployment type to instance data
-            output_data_of_ec2['deployment_type'] = 'Monolith'
-            # Add timestamp to instance data
-            output_data_of_ec2['creation_time'] = current_timestamp
-            output_data_of_ec2['deletion_time'] = ''
+        # # Check if Terraform detected no changes
+        # if "No changes" in terraform_output:
+        #     print("EC2 instance is already deployed. Skipping saving instance data to S3.")
+        #     # return jsonify({'message': 'EC2 instance is already deployed'}), 200
+        #     return render_template('index.html', message='EC2 instance is already deployed')
+        # else: 
+        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
+        print('incoming data from creation ec2 \n', output_data_of_ec2)
+        # Generate current timestamp
+        current_timestamp = generate_timestamp()
+        # Add deployment type to instance data
+        output_data_of_ec2['deployment_type'] = 'Monolith'
+        # Add timestamp to instance data
+        output_data_of_ec2['creation_time'] = current_timestamp
+        output_data_of_ec2['deletion_time'] = ''
 
-            # Update the total running instances counter
-            # total_running_instances += 1
-            save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
-            # save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
-            # Update the total running instances counter
-            # total_running_instances += 1
-            
+        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
 
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         # print("Instance data retrieved from S3:", instance_data)
@@ -113,6 +107,29 @@ def submit_form_monolith():
 
         # Return instance data and total running instances count
         # return jsonify({'instance_data': instance_data, 'total_running_instances': total_running_instances})
+    
+        # Run Terraform apply command with subprocess.Popen
+        # terraform_process = subprocess.Popen(['terraform', 'apply', '-auto-approve'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+
+        # # Print output of the command in real-time
+        # for line in iter(terraform_process.stdout.readline, b''):
+        #     print(line, end='')
+
+        # # Wait for the command to finish and get the return code
+        # return_code = terraform_process.wait()
+
+        # # Check if Terraform detected no changes
+        # if return_code == 0:
+        #     print("Terraform apply succeeded!")
+
+        #     # Retrieve instance data from S3
+        #     instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+        #     print("Instance data retrieved from S3:", instance_data)
+            
+        #     return render_template('index.html', message='Wordpress on EC2 is deployed successfully.')
+        # else:
+        #     print("Terraform apply failed!")
+        #     return render_template('index.html', message='Terraform apply failed!')
     except Exception as e:
         error_message = str(e)
         logging.error(f'Error occurred: {error_message}')  # Log the error
@@ -302,7 +319,7 @@ def count_instances():
             print(f"Region: {region_name}, Lightsail Instance Count: {instance_count_in_region}")
         except botocore.exceptions.ClientError as e: 
             if e.response['Error']['Code'] == 'AccessDeniedException':
-                print(f"Lightsail Instance Access Denied in region {region_name}")
+                # print(f"Lightsail Instance Access Denied in region {region_name}")
                 access_denied_count += 1
             else :
                 raise e
@@ -414,19 +431,52 @@ def get_all_regions():
     # Create an EC2 client
     ec2_client = boto3.client('ec2')
 
+    # try:
+    #     # Describe all regions
+    #     response = ec2_client.describe_regions()
+
+    #     # Extract region names from the response
+    #     # all_regions = [region['RegionName'] for region in response['Regions']]
+    #     all_regions = [{'DisplayName': region['RegionName'], 'Endpoint': region['Endpoint'], 'RegionName': region['RegionName']} for region in response['Regions']]
+    #     print('Regions: ', all_regions)
+
+    #     return jsonify({'regions': all_regions})
+    # except Exception as e:
+    #     print(f"Error retrieving regions: {e}")
+    #     return []
     try:
         # Describe all regions
         response = ec2_client.describe_regions()
 
         # Extract region names from the response
-        # all_regions = [region['RegionName'] for region in response['Regions']]
         all_regions = [{'DisplayName': region['RegionName'], 'Endpoint': region['Endpoint'], 'RegionName': region['RegionName']} for region in response['Regions']]
-        print('Regions: ', all_regions)
+
+        # Check each region for permissions to run instances
+        authorized_regions = []
+
+        # Iterate over each region
+        for region in all_regions:
+            region_name = region['RegionName']
+            
+            # Create an EC2 client for the specific region
+            ec2_client = boto3.client('ec2', region_name=region_name)
+
+            try:
+                # Get all EC2 instances in the current region
+                instances_response = ec2_client.describe_instances()
+                region['DisplayName'] += ' (******* Access *******)'
+                authorized_regions.append(region)
+                
+            except botocore.exceptions.ClientError as e:
+                if e.response['Error']['Code'] == 'UnauthorizedOperation':
+                    # Append "No Access" to regions with UnauthorizedOperation errors
+                    region['DisplayName'] += ' (No Access)'
 
         return jsonify({'regions': all_regions})
     except Exception as e:
         print(f"Error retrieving regions: {e}")
         return []
+
     
 @app.route('/amis', methods=['GET'])
 def get_amis():
@@ -564,6 +614,19 @@ def count_ec2_instances():
                 # Get all EC2 instances in the current region
                 instances_response = ec2_client.describe_instances()
 
+                # Filter running instances
+                running_instances = []
+
+                # Iterate each reservation in the list of reservations
+                for reservation in instances_response['Reservations'] :
+                    # Retrieve a list of instances within the current reservation
+                    instance_in_reservation = reservation['Instances']
+                    #Iterate over each instance in the list of instances 
+                    for  instance in instance_in_reservation:
+                        #check if current instance is running 
+                        if instance ['State']['Name'] == 'running':
+                            running_instances.append(instance)
+
                 # Count the number of instances in the current region
                 instance_count_in_region = sum(len(reservation['Instances']) for reservation in instances_response['Reservations'])
                 total_instance_count += instance_count_in_region
@@ -575,10 +638,11 @@ def count_ec2_instances():
             except botocore.exceptions.ClientError as e:
                 # print(f"Error occurred in region {region_name}: {e}")
                 if e.response['Error']['Code'] == 'UnauthorizedOperation':
-                    print(f"EC2 Instance UnauthorizedOperation in region {region_name}")
+                    # print(f"EC2 Instance UnauthorizedOperation in region {region_name}")
                     access_denied_count += 1
                 else:
-                    print(f"EC2 Instance No UnauthorizedOperation in region {region_name}, Error: {e}")
+                    # print(f"EC2 Instance No UnauthorizedOperation in region {region_name}, Error: {e}")
+                    pass
                     
 
         print(f"Total number of EC2 instances across all regions: {total_instance_count}")
@@ -596,9 +660,7 @@ if __name__ == '__main__':
 
     # Save the original directory
     original_dir = os.getcwd()
-    database_name = 'team2.db'
-
-    
+    # database_name = 'team2.db'
 
     bucket_name = 'xmops-data-bucket-team2'
     key_prefix = 'instance_record/instance_data.json' 
@@ -606,7 +668,7 @@ if __name__ == '__main__':
 
     # Creating S3 Bucket when
     create_s3_bucket()
-    create_sqlite_database(database_name)
+    # create_sqlite_database(database_name)
     # display_database_data(database_name)
     get_instance_data_from_s3(bucket_name, key_prefix)
     # get_instance_data_from_s3_hist(bucket_name, key_prefix_history)

@@ -105,13 +105,53 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     });
 
+    // // Function to fetch AWS regions
+    // async function fetchAWSRegions() {
+
+    //     try {
+    //         const response = await fetch('/get-regions');
+    //         const data = await response.json();
+    //         console.log(`Consoling data, ${data}`);
+    //         return data.regions;
+    //     } catch (error) {
+    //         console.error('Error fetching AWS regions: ', error);
+    //         return [];
+    //     }
+    // }
+
     // Function to fetch AWS regions
     async function fetchAWSRegions() {
-
+        let elapsedTime;
+        let timerInterval; // Variable to store the timer interval ID
         try {
+
+            // Show generating message
+            const messageElement = document.getElementById('region-generation-message');
+            messageElement.textContent = `Generating potential operating systems for region ...`;
+
+            // Apply green color
+            messageElement.style.color = '#008000'; // This is the hexadecimal value for green color
+            messageElement.style.fontSize = '14px'; // Font size 14px
+
+            // Start time
+            const startTime = Date.now();
+
+            // Update message with elapsed time every second
+            timerInterval = setInterval(() => {
+                const elapsedTime = Math.floor((Date.now() - startTime) / 1000); // Calculate elapsed time in seconds
+                messageElement.textContent = `Generating potential operating systems for region ... (Elapsed time: ${elapsedTime} seconds)`;
+            }, 1000); // Update every second
+
             const response = await fetch('/get-regions');
             const data = await response.json();
             console.log(`Consoling data, ${data}`);
+
+            // Clear generating message and stop the timer
+            clearInterval(timerInterval);
+            const endTime = Date.now();
+            elapsedTime = Math.floor((endTime-startTime)/1000);
+            messageElement.textContent = `(Elapsed time: ${elapsedTime} seconds to fetch all OS)`;
+
             return data.regions;
         } catch (error) {
             console.error('Error fetching AWS regions: ', error);
@@ -158,7 +198,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const optionElement = document.createElement('option');
             optionElement.value = option.RegionName;
             // alert(optionElement.value);
-            optionElement.textContent = `${option.RegionName}: ${option.Endpoint}`;
+            optionElement.textContent = `${option.RegionName}: ${option.DisplayName}`;
             dropdown.appendChild(optionElement);
         });
     }
