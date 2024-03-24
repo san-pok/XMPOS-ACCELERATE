@@ -19,7 +19,7 @@ CORS(app, origins='*')
 def deploy_infrastructure():
     try:
         # Check if the deploy.sh script exists
-        script_path = './deploy.sh'
+        script_path = '../terraform/deploy.sh'
         if not os.path.exists(script_path):
             error_message = 'Error: deploy.sh script not found'
             return jsonify({'error': error_message}), 500
@@ -62,7 +62,7 @@ def deploy_infrastructure():
 def destroy_infrastructure():
     try:
         # Check if the destroy.sh script exists
-        script_path = './destroy.sh'
+        script_path = '../terraform/destroy.sh'
         if not os.path.exists(script_path):
             error_message = 'Error: destroy.sh script not found'
             return jsonify({'error': error_message}), 500
