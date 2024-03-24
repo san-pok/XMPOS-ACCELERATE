@@ -54,12 +54,14 @@ def submit_form_monolith():
         aws_region = request.json.get('aws-region')
         ami_id = request.json.get('aws-ami')
         instance_type = request.json.get('instance-type')
+        key_pair = request.json.get('key_pair')
 
         # Print the received data
         print("Received data:")
         print("AWS Region:", aws_region)
         print("AMI ID:", ami_id)
         print("Instance Type:", instance_type)
+        print("Key Pair:", key_pair)
 
         # Get the absolute path to terraform.auto.tfvars for debugging
         tfvars_file = os.path.abspath('terraform.auto.tfvars')
@@ -72,6 +74,7 @@ def submit_form_monolith():
             f.write(f'aws_region = "{aws_region}"\n')
             f.write(f'ami_id = "{ami_id}"\n')
             f.write(f'instance_type = "{instance_type}"\n')
+            f.write(f'key_name = "{key_pair}"\n')
 
         #Trigger Terraform deployment
         subprocess.run(['terraform', 'init'], check=True)
@@ -108,7 +111,7 @@ def submit_form_monolith():
         # Return instance data and total running instances count
         # return jsonify({'instance_data': instance_data, 'total_running_instances': total_running_instances})
     
-        # Run Terraform apply command with subprocess.Popen
+        # # Run Terraform apply command with subprocess.Popen
         # terraform_process = subprocess.Popen(['terraform', 'apply', '-auto-approve'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
         # # Print output of the command in real-time
@@ -587,8 +590,8 @@ def get_instance_types():
     except Exception as e:
         return jsonify({'error': str(e)})
     
-@app.route('/count-ec2-instances')
-def count_ec2_instances():
+@app.route('/count-running-ec2-instances')
+def count_running_ec2_instances():
     try:
         # Create an EC2 client
         ec2_client = boto3.client('ec2')
@@ -599,14 +602,15 @@ def count_ec2_instances():
         # Check each region for permissions to run instances
         authorized_regions = []
 
-        # Initialize count for all instances and access denied regions
-        total_instance_count = 0
+        # Initialize count for running instances and access denied regions
+        total_running_instance_count = 0
         access_denied_count = 0
         authorized_regions_count = 0
+
         # Iterate over each region
         for region in regions_response['Regions']:
             region_name = region['RegionName']
-            
+
             # Create an EC2 client for the specific region
             ec2_client = boto3.client('ec2', region_name=region_name)
 
@@ -618,42 +622,78 @@ def count_ec2_instances():
                 running_instances = []
 
                 # Iterate each reservation in the list of reservations
-                for reservation in instances_response['Reservations'] :
+                for reservation in instances_response['Reservations']:
                     # Retrieve a list of instances within the current reservation
                     instance_in_reservation = reservation['Instances']
-                    #Iterate over each instance in the list of instances 
-                    for  instance in instance_in_reservation:
-                        #check if current instance is running 
-                        if instance ['State']['Name'] == 'running':
+                    # Iterate over each instance in the list of instances
+                    for instance in instance_in_reservation:
+                        # Check if current instance is running
+                        if instance['State']['Name'] == 'running':
                             running_instances.append(instance)
 
-                # Count the number of instances in the current region
-                instance_count_in_region = sum(len(reservation['Instances']) for reservation in instances_response['Reservations'])
-                total_instance_count += instance_count_in_region
+                # Count the number of running instances in the current region
+                running_instance_count_in_region = len(running_instances)
+                total_running_instance_count += running_instance_count_in_region
 
-                print(f"Region: {region_name}, EC2 Instance Count: {instance_count_in_region}")
+                print(f"Region: {region_name}, Running EC2 Instance Count: {running_instance_count_in_region}")
                 authorized_regions_count += 1
                 authorized_regions.append(region_name)
 
             except botocore.exceptions.ClientError as e:
-                # print(f"Error occurred in region {region_name}: {e}")
                 if e.response['Error']['Code'] == 'UnauthorizedOperation':
-                    # print(f"EC2 Instance UnauthorizedOperation in region {region_name}")
                     access_denied_count += 1
-                else:
-                    # print(f"EC2 Instance No UnauthorizedOperation in region {region_name}, Error: {e}")
-                    pass
-                    
 
-        print(f"Total number of EC2 instances across all regions: {total_instance_count}")
+        print(f"Total number of running EC2 instances across all regions: {total_running_instance_count}")
         print(f"Total number of EC2 Instance UnauthorizedOperation errors: {access_denied_count}")
         print("EC2 Instance Authorized regions:", authorized_regions, "Number of EC2 Instance Authorized regions: ", authorized_regions_count)
-        return jsonify({'running_instances': total_instance_count,
+        
+        return jsonify({'running_instances': total_running_instance_count,
                         'Authorized regions': authorized_regions,
                         'Number of Authorized regions': authorized_regions_count })
 
     except Exception as e:
         return jsonify({'error': str(e)})
+    
+@app.route('/existing_key_pairs', methods=['GET'])
+def get_existing_key_pairs():
+    region = request.args.get('region')
+
+    try:
+        ec2 = boto3.client('ec2', region_name=region)
+
+        # Retrieve the list of existing key pairs
+        response = ec2.describe_key_pairs()
+        key_pairs = [key_pair['KeyName'] for key_pair in response['KeyPairs']]
+        print(f"Existing Key Pairs in {region}:", key_pairs)
+
+        return jsonify({'existing_key_pairs': key_pairs})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/generate_key_pair', methods=['POST'])
+def generate_new_key_pair():
+    data = request.get_json()
+    region = data.get('region')
+    new_key_pair_name = data.get('new_key_pair_name')
+    print('Region:', region)
+    print('New Key Pair Name:', new_key_pair_name)
+
+    try:
+        ec2 = boto3.client('ec2', region_name=region)
+
+        # Generate a new key pair
+        response = ec2.create_key_pair(KeyName=new_key_pair_name)
+
+        # Save the private key to a file
+        key_material = response['KeyMaterial']
+        key_file_path = f"{new_key_pair_name}.pem"
+        with open(key_file_path, 'w') as key_file:
+            key_file.write(key_material)
+
+        return jsonify({'message': 'Key pair created successfully', 'key_file_path': key_file_path}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
     
     
 if __name__ == '__main__':

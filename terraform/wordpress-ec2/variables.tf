@@ -13,6 +13,13 @@ variable "instance_type" {
   description = "Instance type of the EC2 instance"
 }
 
+variable "key_name" {
+  description = "The name of the SSH key to use for the instance"
+  type        = string
+  default     = "wordpress_server"  # Default value
+}
+
+
 output "public_ip" {
   value       = aws_instance.EC2-create-from-button.public_ip
   description = "Public IP Address of EC2 instance"

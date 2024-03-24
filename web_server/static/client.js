@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     function fetchMonolithInstanceCount() {
         // Show the loading spinner
         document.getElementById('loadingSpinnerMono').style.display = 'inline-block';
-        fetch('/count-ec2-instances')
+        fetch('/count-running-ec2-instances')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('MonolithInstanceCount').innerText = data.running_instances;

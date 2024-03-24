@@ -8,12 +8,18 @@ resource "aws_instance" "EC2-create-from-button" {
   ami           = var.ami_id
   instance_type = var.instance_type
 
-  key_name      = "wordpress_server"
+  # key_name      = "wordpress_server"
+  key_name      = var.key_name  # Use the variable here
   vpc_security_group_ids = [aws_security_group.wordpress_sg.id]  # Associate the security group
 
   tags = {
     Name = "bimba.ec2instance"
   }
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
+  
+
   user_data = <<-EOF
               #!/bin/bash
               # Update package lists

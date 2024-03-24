@@ -14,3 +14,5 @@ terraform/wordpress-lightsail/terraform.tfstate
 terraform/wordpress-lightsail/terraform.tfstate.backup
 web_server/.DS_Store
 web_server/__pycache__/
+Bimba35.pem
+Bimba_Singa.pem

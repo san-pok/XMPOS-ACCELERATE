@@ -7,15 +7,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     const amiDropdown = document.getElementById('aws-ami');
     const instanceTypeDropdown = document.getElementById('instance-type');
     const keyPairInput = document.getElementById('key-pair');
+    // const existingKeyPair = document.getElementById('use-existing');
+    const existingKeyPairRadio = document.getElementById('use-existing-radio');
+    const existingKeyPairDropdownSelected = document.getElementById('existing-key-pair');
+    const newKeyPairRadio = document.getElementById('generate-new');
+    const existingKeyPairDropdown = document.getElementById('existing-key-pair-section');
+    const newKeyPairInput = document.getElementById('new-key-pair-section');
+    const generateKeyPairBtn = document.getElementById('generate-keypair-btn');
+    const newKeyPairName = document.getElementById('new-key-pair-name');
     const allowSSHCheckbox = document.getElementById('allow-ssh');
     const allowHTTPCheckbox = document.getElementById('allow-http');
     const storageInput = document.getElementById('ebs-storage');
     const dbTypeDropdown = document.getElementById('db-type');
     const phpVersionDropdown = document.getElementById('php-version');
     const webServerDropdown = document.getElementById('web-server');
+    // Define a variable to store the selected key pair value
+    let selectedKeyPairValue;
 
     // Disable all input fields except the AWS Region dropdown initially
-    disableInputsExceptRegion();
+    // disableInputsExceptRegion();
 
     // Fetch region
     const awsRegion = await fetchAWSRegions();
@@ -54,7 +64,65 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Enable the Images OS dropdown
             instanceTypeDropdown.disabled = false;
             storageInput.disabled = false;
+
+            existingKeyPairRadio.disabled = false;
+            newKeyPairRadio.disabled = false;
+
+            // Add event listeners to the radio buttons
+            existingKeyPairRadio.addEventListener('change', async function() {
+                if (existingKeyPairRadio.checked) {
+                    existingKeyPairDropdown.style.display = 'block';
+                    const existingKeyPairs = await fetchExistingKeyPairs(selectedRegion);
+                    populateExistingKeyPairDropdown(existingKeyPairs);
+                    newKeyPairInput.style.display = 'none';
+                    generateKeyPairBtn.style.display = 'none'; // Hide the generate button when "Use Existing Key Pair" is selected
+                    
+                    // Set the value of existingKeyPairDropdown to the first option
+                    if (existingKeyPairs.length > 0) {
+                        existingKeyPairDropdown.value = existingKeyPairs[0];
+                    }
+                }
+            });
+
+            newKeyPairRadio.addEventListener('change', function() {
+                if (newKeyPairRadio.checked) {
+                    existingKeyPairDropdown.style.display = 'none';
+                    newKeyPairInput.style.display = 'block';
+                    generateKeyPairBtn.style.display = 'block'; // Show the generate button when "Generate New Key Pair" is selected
+                }
+            });
+
         });
+        generateKeyPairBtn.addEventListener('click', async function() {
+            try {
+                // Get the value of the new key pair name input
+                const newKeyPairNameTrimmed = newKeyPairName.value.trim();
+                if (!newKeyPairNameTrimmed) {
+                    // Handle case when the input is empty
+                    alert('Please enter a name for the new key pair.');
+                    return;
+                }
+
+                // Call your function to generate a new key pair here, passing the new key pair name and selected region
+                const generatedKeyPair = await generateKeyPair(newKeyPairNameTrimmed, selectedRegion);
+                
+                // Display the generated key pair in the existing key pair dropdown
+                existingKeyPairDropdown.style.display = 'block';
+                const existingKeyPairs = await fetchExistingKeyPairs(selectedRegion);
+                existingKeyPairs.push(generatedKeyPair); // Assuming newKeyPairName is the name of the generated key pair
+                populateExistingKeyPairDropdown(existingKeyPairs);
+                newKeyPairInput.style.display = 'none';
+            } catch (error) {
+                console.error('Error generating new key pair:', error);
+                // Handle error if key pair generation fails
+            }
+        });
+
+        existingKeyPairDropdown.addEventListener('change', function() {
+            selectedKeyPairValue = existingKeyPairDropdownSelected.value;
+            console.log('Selected key pair value:', selectedKeyPairValue); // Add this line for debugging
+        });
+        
      });
 
     // Add event listener for form submission
@@ -62,9 +130,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
              // Prevent the default form submission behavior
             event.preventDefault();
+
             
             // Gather the form data
             const formData = new FormData(form);
+            // Include the selected key pair value in the form data
+            formData.append('key_pair', selectedKeyPairValue);
+
             // Convert FormData to JSON object
             const data = {};
             formData.forEach((value, key) => {
@@ -73,7 +145,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             alert(JSON.stringify(data));
             const message = 'EC2 instance is being created.....'
-            // alert(data);
+            alert(data);
             // updateStatusMessage(message);
             // Redirect to index.html with message as query parameter
             // window.location.href = '/index.html?message=' + encodeURIComponent(message);
@@ -105,19 +177,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     });
 
-    // // Function to fetch AWS regions
-    // async function fetchAWSRegions() {
-
-    //     try {
-    //         const response = await fetch('/get-regions');
-    //         const data = await response.json();
-    //         console.log(`Consoling data, ${data}`);
-    //         return data.regions;
-    //     } catch (error) {
-    //         console.error('Error fetching AWS regions: ', error);
-    //         return [];
-    //     }
-    // }
 
     // Function to fetch AWS regions
     async function fetchAWSRegions() {
@@ -184,6 +243,41 @@ document.addEventListener('DOMContentLoaded', async function() {
             return [];
         }
     }
+
+    // Function to fetch existing key pairs based on selected region
+    async function fetchExistingKeyPairs(region) {
+        try {
+            const response = await fetch(`/existing_key_pairs?region=${region}`);
+            const data = await response.json();
+            alert(data);
+            return data.existing_key_pairs;
+        } catch (error) {
+            console.error('Error fetching existing key pairs: ', error);
+        }
+    }
+
+    // Function to Post new 
+    async function generateKeyPair(newKeyPairName, selectedRegion) {
+        try {
+            const response = await fetch('/generate_key_pair', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    region: selectedRegion,
+                    new_key_pair_name: newKeyPairName
+                })
+            });
+            const data = await response.json();
+            return data.generated_key_pair;
+        } catch (error) {
+            throw new Error('Error generating key pair');
+        }
+    }
+    
+
+
 
     //Function to populate drop down with options
     function populateRegionDropdown(dropdown, options, placeholder){
@@ -259,6 +353,36 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
+    // Function to populate existing key pair dropdown with options
+    function populateExistingKeyPairDropdown(existingKeyPairs) {
+        const dropdown = document.getElementById('existing-key-pair');
+        dropdown.innerHTML = '';
+        existingKeyPairs.forEach(keyPair => {
+            const optionElement = document.createElement('option');
+            optionElement.value = keyPair;
+            optionElement.textContent = keyPair;
+            dropdown.appendChild(optionElement);
+        });
+    }
+
+    // Function to generate a new key pair
+    async function generateNewKeyPair(keyPairName) {
+        try {
+            // Send a request to your Flask backend to generate a new key pair
+            const response = await fetch('/generate-key-pair', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ keyPairName })
+            });
+            const data = await response.json();
+            console.log('New key pair generated:', data);
+        } catch (error) {
+            console.error('Error generating new key pair:', error);
+        }
+    }
+
 
     // Function to update status message in index.html
     function updateStatusMessage(message) {
@@ -285,6 +409,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         instanceTypeDropdown.disabled = true;
         // osTypeCheckbox.disabled=true;
         keyPairInput.disabled = true;
+        existingKeyPairRadio.disabled = true;
+        newKeyPairRadio.disabled = true;
         allowSSHCheckbox.disabled = true;
         allowHTTPCheckbox.disabled = true;
         storageInput.disabled = true;
