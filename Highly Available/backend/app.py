@@ -11,11 +11,16 @@ region_name = 'ap-southeast-2'
 create_bucket_config = {
     'LocationConstraint': region_name
 }
+
+# Define the prefix
+high_prefix = '/highly'
+
+
 app = Flask(__name__)
 CORS(app, origins='*')
 
 
-@app.route('/deploy', methods=['POST'])
+@app.route(f'{high_prefix}/deploy', methods=['POST'])
 def deploy_infrastructure():
     try:
         # Check if the deploy.sh script exists
@@ -58,7 +63,7 @@ def deploy_infrastructure():
         return jsonify({'error': error_message}), 500
 
 
-@app.route('/destroy', methods=['POST'])
+@app.route(f'{high_prefix}/destroy', methods=['POST'])
 def destroy_infrastructure():
     try:
         # Check if the destroy.sh script exists
@@ -79,7 +84,7 @@ def destroy_infrastructure():
         return jsonify({'error': error_message}), 500
 
 
-@app.route('/validate_form', methods=['POST'])
+@app.route(f'{high_prefix}/validate_form', methods=['POST'])
 def validate_form():
     try:
         data = request.get_json()  # Get JSON data from request
@@ -150,7 +155,7 @@ def validate_form():
         return jsonify({'error': error_message}), 500
 
 
-@app.route('/existing_key_pairs', methods=['POST'])
+@app.route(f'{high_prefix}/existing_key_pairs', methods=['POST'])
 def get_key_pairs():
     region = request.form.get('region')
 
@@ -166,7 +171,7 @@ def get_key_pairs():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/create_key_pair', methods=['POST'])
+@app.route(f'{high_prefix}/create_key_pair', methods=['POST'])
 def create_key_pair():
     try:
 
@@ -187,7 +192,7 @@ def create_key_pair():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/get_regions', methods=['GET'])
+@app.route(f'{high_prefix}/get_regions', methods=['GET'])
 def get_all_regions():
     ec2_client = boto3.client('ec2')
 
@@ -202,7 +207,7 @@ def get_all_regions():
         return []
 
 
-@app.route('/amis', methods=['POST'])
+@app.route(f'{high_prefix}/amis', methods=['POST'])
 def get_amis_by_os():
     region = request.form.get('region')
     os_type = request.form.get('os_type')
@@ -247,7 +252,7 @@ def get_amis_by_os():
     return jsonify(ami_list)
 
 
-@app.route('/instance_types', methods=['POST'])
+@app.route(f'{high_prefix}/instance_types', methods=['POST'])
 def get_instance_types():
     try:
         region = request.form.get('region')
@@ -272,7 +277,7 @@ def get_instance_types():
         return jsonify({"error": error_message})
 
 
-@app.route('/db_engine_types', methods=['POST'])
+@app.route(f'{high_prefix}/db_engine_types', methods=['POST'])
 def list_db_engine_types():
     region = request.form.get('region')
 
@@ -288,7 +293,7 @@ def list_db_engine_types():
     return jsonify(list(engine_types))
 
 
-@app.route('/db_engine_versions', methods=['POST'])
+@app.route(f'{high_prefix}/db_engine_versions', methods=['POST'])
 def list_db_engine_versions():
     region = request.form.get('region')
     engine = request.form.get('engine')
@@ -303,7 +308,7 @@ def list_db_engine_versions():
     return jsonify(mysql_versions)
 
 
-@app.route('/deployment_info', methods=['GET'])
+@app.route(f'{high_prefix}/deployment_info', methods=['GET'])
 def deployment_info():
     try:
 
