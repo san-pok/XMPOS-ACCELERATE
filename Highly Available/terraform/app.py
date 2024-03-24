@@ -223,6 +223,10 @@ def get_amis_by_os():
         {'Name': 'architecture', 'Values': ['x86_64']},
         {'Name': 'root-device-type', 'Values': ['ebs']},
         {'Name': 'virtualization-type', 'Values': ['hvm']},
+        {'Name': 'state', 'Values': ['available']},
+
+
+
     ]
 
     # Retrieve AMIs based on the filters
@@ -238,7 +242,6 @@ def get_amis_by_os():
             'ImageId': image['ImageId'],
             'Name': image['Name'],
             'Description': image['Description'],
-            'CreationDate': image['CreationDate']
         })
 
     return jsonify(ami_list)
