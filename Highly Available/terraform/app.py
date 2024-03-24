@@ -4,7 +4,13 @@ import subprocess
 import os
 import boto3
 import json
+from datetime import datetime
 
+bucket_name = 'amirxmopbucket'
+region_name = 'ap-southeast-2'
+create_bucket_config = {
+    'LocationConstraint': region_name
+}
 app = Flask(__name__)
 CORS(app, origins='*')
 
@@ -20,6 +26,28 @@ def deploy_infrastructure():
 
         # Execute the deploy.sh script
         subprocess.run([script_path], check=True)
+
+        # Get the load balancer DNS name from Terraform output
+        terraform_output = subprocess.run(['terraform', 'output', 'alb_dns_name'], capture_output=True, text=True)
+        dns_name = terraform_output.stdout.strip()
+
+        # Create JSON data with DNS name and timestamp
+        data = {
+            'load_balancer_dns': dns_name,
+            'timestamp': datetime.now().isoformat()
+        }
+        json_data = json.dumps(data)
+
+        # Create S3 bucket if it doesn't exist
+        s3_client = boto3.client('s3', region_name=region_name)
+        try:
+            s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=create_bucket_config)
+        except s3_client.exceptions.BucketAlreadyOwnedByYou:
+            pass  # Bucket already exists and owned by you
+
+        # Upload JSON data to S3 bucket
+        object_key = 'deployment_info.json'
+        s3_client.put_object(Bucket=bucket_name, Key=object_key, Body=json_data)
 
         return jsonify({'message': 'Infrastructure deployment triggered successfully by py'}), 200
     except subprocess.CalledProcessError as e:
@@ -270,6 +298,33 @@ def list_db_engine_versions():
     mysql_versions = [version['EngineVersion'] for version in response['DBEngineVersions']]
 
     return jsonify(mysql_versions)
+
+
+@app.route('/deployment_info', methods=['GET'])
+def deployment_info():
+    try:
+
+        s3_client = boto3.client('s3', region_name=region_name)
+
+        # List objects in the specified bucket
+        response = s3_client.list_objects_v2(Bucket=bucket_name)
+
+        # Extract object keys from the response
+        object_keys = []
+        if 'Contents' in response:
+            object_keys = [obj['Key'] for obj in response['Contents']]
+
+        # Retrieve and extract content of each object
+        object_contents = []
+        for key in object_keys:
+            obj_response = s3_client.get_object(Bucket=bucket_name, Key=key)
+            obj_content = obj_response['Body'].read().decode('utf-8')
+            object_contents.append(json.loads(obj_content))
+
+        return jsonify({'objects': object_contents}), 200
+    except Exception as e:
+        error_message = f'Error listing S3 objects: {str(e)}'
+        return jsonify({'error': error_message}), 500
 
 
 if __name__ == '__main__':
