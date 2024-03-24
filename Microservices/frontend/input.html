@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microservices Form</title>
+  <link rel="stylesheet" type="text/css" href="input.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>Microservices Form</h2>
+  <form id="myForm">
+    <div class="form-group">
+      <label for="aws_region">AWS Region</label>
+      <select id="aws_region" name="aws_region">
+        <option value="ap-southeast-2">Sydney Region</option>
+        <option value="us-east-1">North Virginia Region</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="vpc_name">VPC Name</label>
+      <input type="text" id="vpc_name" name="vpc_name">
+    </div>
+    <div class="form-group">
+      <label for="vpc_cidr_block">VPC CIDR Block</label>
+      <input type="text" id="vpc_cidr_block" name="vpc_cidr_block">
+    </div>
+    <div class="form-group">
+      <label for="internet_gateway_name">Internet Gateway Name</label>
+      <input type="text" id="internet_gateway_name" name="internet_gateway_name">
+    </div>
+    <div class="form-group">
+      <label for="public_subnet_cidr_block_az1">Public Subnet CIDR Block AZ1</label>
+      <input type="text" id="public_subnet_cidr_block_az1" name="public_subnet_cidr_block_az1">
+    </div>
+    <div class="form-group">
+      <label for="availability_zone">Availability Zone</label>
+      <input type="text" id="availability_zone" name="availability_zone">
+    </div>
+    <div class="form-group">
+      <label for="public_subnet_name_az1">Public Subnet Name AZ1</label>
+      <input type="text" id="public_subnet_name_az1" name="public_subnet_name_az1">
+    </div>
+    <div class="form-group">
+      <label for="public_route_table_name">Public Route Table Name</label>
+      <input type="text" id="public_route_table_name" name="public_route_table_name">
+    </div>
+    <div class="form-group">
+      <label for="security_group_name">Security Group Name</label>
+      <input type="text" id="security_group_name" name="security_group_name">
+    </div>
+    <div class="form-group">
+      <label for="security_group_description">Security Group Description</label>
+      <input type="text" id="security_group_description" name="security_group_description">
+    </div>
+    <div class="form-group">
+      <label for="iam_role_name">IAM Role Name</label>
+      <input type="text" id="iam_role_name" name="iam_role_name">
+    </div>
+    <div class="form-group">
+      <label for="ecs_cluster_name">ECS Cluster Name</label>
+      <input type="text" id="ecs_cluster_name" name="ecs_cluster_name">
+    </div>
+    <div class="form-group">
+      <label for="ecs_task_family">ECS Task Family</label>
+      <input type="text" id="ecs_task_family" name="ecs_task_family">
+    </div>
+    <div class="form-group">
+      <label for="ecs_task_cpu">ECS Task CPU</label>
+      <input type="number" id="ecs_task_cpu" name="ecs_task_cpu">
+    </div>
+    <div class="form-group">
+      <label for="ecs_task_memory">ECS Task Memory</label>
+      <input type="number" id="ecs_task_memory" name="ecs_task_memory">
+    </div>
+    <div class="form-group">
+      <label for="ecs_service_name">ECS Service Name</label>
+      <input type="text" id="ecs_service_name" name="ecs_service_name">
+    </div>
+    <div id="errorMessage" class="error-message"></div>
+    <!-- Example success message placeholder -->
+    <div id="successMessage" class="success-message"></div>
+    <div class="form-group">
+      <button type="submit" class="btn">Submit</button>
+    </div>
+  </form>
+</div>
+
+<script src="input.js"></script>
+
+</body>
+</html>

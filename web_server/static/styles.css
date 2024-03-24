@@ -1,0 +1,21 @@
+.small-font {
+    font-size: 14px; /* Adjust the font size as needed */
+}
+
+/* Custom styles for the navigation bar */
+.navbar-custom {
+    background-color: #343a40; /* Dark background color */
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .navbar-nav .nav-link {
+    color: #ffffff; /* White text color */
+}
+
+.navbar-custom .navbar-toggler-icon {
+    background-color: #ffffff; /* White color for the toggler icon */
+}
+
+.user-profile {
+    color: #ffffff; /* White text color */
+}
