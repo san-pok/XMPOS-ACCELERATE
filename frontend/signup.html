@@ -52,27 +52,45 @@
 
 
 
+       <div class="container"  id="verificationSection" style="display:none;">
+        <span>
+        <form class="form signup" id="verificationForm">
+            <h2>Enter the Verification code</h2>
+    
+            <div class="inputBox">
+                <input type="text" id="verificationCode"  required>
+                
+                <i class="fa-regular fa-user"></i>
+                <span>Verification Code</span>
+                <div id="verificationCodeError" class="error"></div>
+            </div>
+           
+    
+            
+    
+            
+            <div class="inputBox">
+                <button type="submit">Verify</button>
+            </div>
+            
+        </form>
+    </span>
+       </div>
 
-    <!-- <h2>Signup</h2>
-    <form id="signupForm">
-        <input type="email" id="email" placeholder="Email" required>
-        <div id="emailError" class="error"></div> 
-        
-        <input type="password" id="password" placeholder="Password" required>
-        <div id="passwordError" class="error"></div> 
-        
-        <button type="submit">Signup</button>
-    </form> -->
+
+
+
+
+
     
-    
-    <div id="verificationSection" style="display:none;">
+    <!-- <div id="verificationSection" style="display:none;">
         <h2>Enter Verification Code</h2>
         <form id="verificationForm">
             <input type="text" id="verificationCode" placeholder="Verification Code" required>
             <div id="verificationCodeError" class="error"></div> 
             <button type="submit">Verify</button>
         </form>
-    </div>
+    </div> -->
     
 
     <script src="js/signup.js" defer></script>
