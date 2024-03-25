@@ -6,7 +6,7 @@ import boto3
 import json
 from datetime import datetime
 
-bucket_name = 'amirxmopbucket'
+highbucket_name = 'amirxmopbucket'
 region_name = 'ap-southeast-2'
 create_bucket_config = {
     'LocationConstraint': region_name
@@ -46,13 +46,13 @@ def deploy_infrastructure():
         # Create S3 bucket if it doesn't exist
         s3_client = boto3.client('s3', region_name=region_name)
         try:
-            s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=create_bucket_config)
+            s3_client.create_bucket(Bucket=highbucket_name, CreateBucketConfiguration=create_bucket_config)
         except s3_client.exceptions.BucketAlreadyOwnedByYou:
             pass  # Bucket already exists and owned by you
 
         # Upload JSON data to S3 bucket
         object_key = 'deployment_info.json'
-        s3_client.put_object(Bucket=bucket_name, Key=object_key, Body=json_data)
+        s3_client.put_object(Bucket=highbucket_name, Key=object_key, Body=json_data)
 
         return jsonify({'message': 'Infrastructure deployment triggered successfully by py'}), 200
     except subprocess.CalledProcessError as e:
@@ -315,7 +315,7 @@ def deployment_info():
         s3_client = boto3.client('s3', region_name=region_name)
 
         # List objects in the specified bucket
-        response = s3_client.list_objects_v2(Bucket=bucket_name)
+        response = s3_client.list_objects_v2(Bucket=highbucket_name)
 
         # Extract object keys from the response
         object_keys = []
@@ -325,7 +325,7 @@ def deployment_info():
         # Retrieve and extract content of each object
         object_contents = []
         for key in object_keys:
-            obj_response = s3_client.get_object(Bucket=bucket_name, Key=key)
+            obj_response = s3_client.get_object(Bucket=highbucket_name, Key=key)
             obj_content = obj_response['Body'].read().decode('utf-8')
             object_contents.append(json.loads(obj_content))
 
