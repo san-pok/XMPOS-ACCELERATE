@@ -20,6 +20,7 @@ create_bucket_config = {
 
 # Define the prefix
 high_prefix = '/highly'
+mono_prefix = '/mono'
 
 logging.basicConfig(level=logging.INFO)
 
@@ -476,6 +477,7 @@ def get_deployment_history():
         print(f"Error fetching deployment history: {e}")
         return jsonify({'error': 'Error fetching deployment history'}), 500
 
+#Add Monolitic Routes only
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, use_reloader=False)
