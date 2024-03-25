@@ -21,11 +21,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     const dbTypeDropdown = document.getElementById('db-type');
     const phpVersionDropdown = document.getElementById('php-version');
     const webServerDropdown = document.getElementById('web-server');
+    // const uniqueInstance = document.getElementById('unique-instance').innerHTML;
     // Define a variable to store the selected key pair value
     let selectedKeyPairValue;
+    
+    // console.log("ID is",uniqueInstance);
 
     // Disable all input fields except the AWS Region dropdown initially
-    // disableInputsExceptRegion();
+    disableInputsExceptRegion();
 
     // Fetch region
     const awsRegion = await fetchAWSRegions();
@@ -123,15 +126,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.log('Selected key pair value:', selectedKeyPairValue); // Add this line for debugging
         });
         
+
+        
      });
 
     // Add event listener for form submission
     form.addEventListener('submit', async function(event) {
+        // console.log("id here", uniqueInstance);
         try {
              // Prevent the default form submission behavior
             event.preventDefault();
 
-            
             // Gather the form data
             const formData = new FormData(form);
             // Include the selected key pair value in the form data

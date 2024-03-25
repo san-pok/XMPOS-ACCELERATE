@@ -65,4 +65,5 @@ output "key_name" {
 
 output "instance_region" {
   value = data.aws_region.current.name
+  
 }

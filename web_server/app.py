@@ -15,6 +15,8 @@ app = Flask(__name__, template_folder='templates')
 
 lightsail = boto3.client('lightsail')
 
+count = 1
+
 # Initialize a global variable to store the total running instances
 total_running_instances = 0
 message = ''
@@ -49,6 +51,9 @@ def create_s3_bucket():
 # User Data is coming from submission button clicked 
 @app.route('/deploy-monolith', methods=['POST'])
 def submit_form_monolith():
+    data = request.data
+    print("dummy dummy", data)
+    global count
     os.chdir('./terraform/wordpress-ec2')
     try: 
         aws_region = request.json.get('aws-region')
@@ -76,9 +81,14 @@ def submit_form_monolith():
             f.write(f'instance_type = "{instance_type}"\n')
             f.write(f'key_name = "{key_pair}"\n')
 
-        #Trigger Terraform deployment
-        subprocess.run(['terraform', 'init'], check=True)
+        # #Trigger Terraform deployment
+            
+        subprocess.run(['terraform', 'init',], check=True)
         subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)  
+        # subprocess.run(['terraform', 'plan',f'-state={count}.tfstate'], check=True)
+        # # subprocess.run(['terraform', 'init -state={count}.tfstate'], check=True)
+        # subprocess.run(['terraform', 'apply', f'-state={count}.tfstate', '-auto-approve'], check=True) 
+        # count += 1 
         # terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True, text=True)  
         # # terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True)  
         # terraform_output = terraform_process.stdout
@@ -107,6 +117,7 @@ def submit_form_monolith():
        
         # refresh_page()
         return jsonify(instance_data), 200, {'message': 'Wordpress on EC2 is deployed successfully.'}
+        # return render_template('index.html')
 
         # Return instance data and total running instances count
         # return jsonify({'instance_data': instance_data, 'total_running_instances': total_running_instances})

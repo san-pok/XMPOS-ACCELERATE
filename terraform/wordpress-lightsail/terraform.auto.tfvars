@@ -1,4 +1,4 @@
 aws_region = "ap-southeast-2"
-project_name = "Enerelen"
+project_name = "BGimba"
 bundle_id = "nano_3_2"
-lightsail_blueprints = {"wordpress": "ubuntu_18_04"}
+lightsail_blueprints = {"wordpress": "debian_11"}
