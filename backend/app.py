@@ -11,8 +11,6 @@ from botocore.exceptions import NoCredentialsError, ClientError
 import logging
 import datetime
 
-from datetime import datetime
-
 
 highbucket_name = 'amirxmopbucket'
 region_name = 'ap-southeast-2'
@@ -25,55 +23,37 @@ high_prefix = '/highly'
 
 logging.basicConfig(level=logging.INFO)
 
-
-
-
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8000"}})
 
 
-@app.route(f'{high_prefix}/deploys', methods=['POST'])
+@app.route(f'{high_prefix}/deploy', methods=['POST'])
 def deploy_infrastructure():
     try:
-        # Check if the deploy.sh script exists
-        script_path = '../terraform/highly/deploy.sh'
-        if not os.path.exists(script_path):
-            error_message = 'Error: deploy.sh script not found'
-            return jsonify({'error': error_message}), 500
 
-        # Execute the deploy.sh script
-        subprocess.run([script_path], check=True)
+        high_terraform_dir = "../terraform/highly"
 
-        # Get the load balancer DNS name from Terraform output
-        terraform_output = subprocess.run(['terraform', 'output', 'alb_dns_name'], capture_output=True, text=True)
-        dns_name = terraform_output.stdout.strip()
+        # Initialize Terraform
+        init_output = subprocess.run(["terraform", "init"], cwd=high_terraform_dir, capture_output=True, text=True)
+        print(init_output.stdout)
+        if init_output.returncode != 0:
+            print(init_output.stderr)
+            raise Exception('Error initializing Terraform')
 
-        # Create JSON data with DNS name and timestamp
-        data = {
-            'load_balancer_dns': dns_name,
-            'timestamp': datetime.now().isoformat()
-        }
-        json_data = json.dumps(data)
+        # Plan Terraform
+        plan_output = subprocess.run(["terraform", "plan"], cwd=high_terraform_dir, capture_output=True, text=True)
+        print(plan_output.stdout)
+        if plan_output.returncode != 0:
+            print(plan_output.stderr)
+            raise Exception('Error planning with Terraform')
 
-        # Create S3 bucket if it doesn't exist
-        s3_client = boto3.client('s3', region_name=region_name)
-        try:
-            s3_client.create_bucket(Bucket=highbucket_name, CreateBucketConfiguration=create_bucket_config)
-        except s3_client.exceptions.BucketAlreadyOwnedByYou:
-            pass  # Bucket already exists and owned by you
+        return jsonify({'message': 'High deployed successfully!'})
 
-        # Upload JSON data to S3 bucket
-        object_key = 'deployment_info.json'
-        s3_client.put_object(Bucket=highbucket_name, Key=object_key, Body=json_data)
-
-        return jsonify({'message': 'Infrastructure deployment triggered successfully by py'}), 200
-    except subprocess.CalledProcessError as e:
-        error_message = f'Error deploying infrastructure by py: {e.stderr.decode()}'
-        return jsonify({'error': error_message}), 500
     except Exception as e:
-        error_message = f'Unknown error: {str(e)}'
-        return jsonify({'error': error_message}), 500
+        # Log the error and save the 'failed' status if an exception is caught
+
+        return jsonify({'message': 'Error deploying High instance', 'error': str(e)}), 500
 
 
 @app.route(f'{high_prefix}/destroy', methods=['POST'])
@@ -244,8 +224,6 @@ def get_amis_by_os():
         {'Name': 'virtualization-type', 'Values': ['hvm']},
         {'Name': 'state', 'Values': ['available']},
 
-
-
     ]
 
     # Retrieve AMIs based on the filters
@@ -375,12 +353,13 @@ def deploy_instance():
     os.environ['TF_VAR_ssh_key'] = public_ssh_key
     os.environ['TF_VAR_instance_name'] = data.get('instanceName', 'XMOPSTeamTwo')
     os.environ['TF_VAR_bundle_id'] = data.get('instanceSize', 'nano_3_2')
-    os.environ['TF_VAR_key_pair_name'] = 'my_key_pair'
+    os.environ['TF_VAR_key_pair_name'] = 'integrateLightsail'
 
-    terraform_dir = "../terraform"
+    terraform_dir = "../terraform/lightsail"
     deployment_status = "failed"  # Assume failure by default
 
     try:
+
         # Initialize Terraform
         init_output = subprocess.run(["terraform", "init"], cwd=terraform_dir, capture_output=True, text=True)
         print(init_output.stdout)
@@ -427,27 +406,6 @@ def deploy_instance():
         return jsonify({'message': 'Error deploying Lightsail instance', 'error': str(e)}), 500
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # code for s3 starts
 
 # Your AWS S3 bucket name
@@ -455,6 +413,7 @@ BUCKET_NAME = 'xmops-team2-abs'
 
 # Initialize boto3 client
 s3_client = boto3.client('s3')
+
 
 def create_bucket_if_not_exists(bucket_name):
     """
@@ -478,6 +437,7 @@ def create_bucket_if_not_exists(bucket_name):
             logging.error("Failed to check bucket: %s", e)
             raise
 
+
 def save_deployment_to_s3(instance_name, timestamp, status):
     history_file_key = 'deployment_history.json'
     # Fetch the current deployment history if it exists
@@ -486,17 +446,15 @@ def save_deployment_to_s3(instance_name, timestamp, status):
         deployment_history = json.loads(current_history['Body'].read().decode('utf-8'))
     except s3_client.exceptions.NoSuchKey:
         deployment_history = []  # Initialize if the history file does not exist
-    
+
     # Append the new deployment record
     deployment_history.append({
         'timestamp': timestamp,
         'status': status
     })
-    
+
     # Update the S3 object with the new history
     s3_client.put_object(Body=json.dumps(deployment_history), Bucket=BUCKET_NAME, Key=history_file_key)
-
-
 
 
 @app.route('/fetch-deployment-history', methods=['GET'])
@@ -506,7 +464,7 @@ def get_deployment_history():
         # Attempt to fetch the deployment history JSON file from the S3 bucket
         obj = s3_client.get_object(Bucket=BUCKET_NAME, Key=history_file_key)
         deployment_history = json.loads(obj['Body'].read().decode('utf-8'))
-        
+
         # Return the content of the deployment history file as JSON
         return jsonify(deployment_history)
     except s3_client.exceptions.NoSuchKey:
@@ -517,14 +475,6 @@ def get_deployment_history():
         # Handle other exceptions
         print(f"Error fetching deployment history: {e}")
         return jsonify({'error': 'Error fetching deployment history'}), 500
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
