@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, redirect
+from flask import Flask, jsonify, request, redirect, send_file, send_from_directory
 from flask_cors import CORS
 import subprocess
 import json
@@ -20,13 +20,31 @@ create_bucket_config = {
 
 # Define the prefix
 high_prefix = '/highly'
-mono_prefix = '/mono'
+mono_prefix = '/monolith'
 
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8000"}})
+
+# Define a route to serve your HTML file
+@app.route('/')
+def dashboard():
+    # Get the absolute path to the HTML file
+    html_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'dashboard.html'))
+    
+    # Check if the file exists
+    if os.path.exists(html_file_path):
+        # Serve the HTML file
+        return send_file(html_file_path)
+    else:
+        return 'Dashboard file not found.'
+    
+# Serve CSS files
+@app.route('/css/<path:path>')
+def send_css(path):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'css'), path)
 
 
 @app.route(f'{high_prefix}/deploy', methods=['POST'])
@@ -479,5 +497,7 @@ def get_deployment_history():
 
 #Add Monolitic Routes only
 
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000, use_reloader=False)
+    app.run(debug=True, port=5005, use_reloader=False)
