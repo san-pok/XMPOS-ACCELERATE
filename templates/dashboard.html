@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" type="text/css" href="/static/css/dashboard.css">
+    <!-- <link rel="stylesheet" type="text/css" href="/css/dashboard.css"> -->
+</head>
+<body>
+
+    <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <h2>XMOPS</h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
+            <div class="sidebar">
+                <a href="#" class="active">
+                    <i class="fa-solid fa-grip"></i>
+                    <h3>Dashboard</h3>
+                </a>
+                <a href="../static/input-monolith.html" id="monolith-deployment">
+                    <i class="fa-solid fa-bolt" ></i>
+                    <h3>Deploy Monolith</h3>
+                </a>
+                <a href="">
+                    <i class="fa-solid fa-clock"></i>
+                    <h3>Deploy Highly Available</h3>
+                </a>
+                <a href="">
+                    <i class="fa-solid fa-microchip"></i>
+                    <h3>DEploy Lightsail</h3>
+                </a>
+                <a href="">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <h3>Deployment History</h3>
+                </a>
+                <a href="">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <h3>Reports</h3>
+                </a>
+                <a href="">
+                    <i class="fa-solid fa-gear"></i>
+                    <h3>Settings</h3>
+                </a>
+                <a href="./index.html" id="signOut" >
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
+
+            </div>
+        </aside>
+
+
+        <main>
+            <h1>Dashboard</h1>
+            <div class="date">
+                <input type="date" name="" id="">
+            </div>
+            <div class="insights">
+                <div class="monolith">
+                    <i class="fa-solid fa-bolt"></i>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Monolithic</h3>
+                        </div>
+                    </div>
+                    <small class="text-muted">Monolithic Arch</small>
+                    <p class="card-text" id="total-running-instances">Total Running: 
+                        <span id="MonolithInstanceCount">
+                            <span id="loadingSpinnerMono" class="spinner-border spinner-border-sm text-success" role="status" style="display: none; margin-left: 5px;">
+                                <span class="sr-only">Loading...</span>
+                            </span>
+                        </span>
+                    </p>
+                </div>
+                <!-- monolith ends  -->
+
+                <div class="highly">
+                    <i class="fa-solid fa-bolt"></i>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Highly Available</h3>
+                        </div>
+                    </div>
+                    <small class="text-muted">Hihly Available Arch</small>
+                </div>
+                <!-- highly available ends here  -->
+                <div class="lightsail">
+                    <i class="fa-solid fa-bolt"></i>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Lightsail</h3>
+                        </div>
+                    </div>
+                    <small class="text-muted">Lightsail Arch</small>
+                    <p class="card-text" >Total Running: 
+                        <span id="lightsailInstanceCount">
+                            <span id="loadingSpinner" class="spinner-border spinner-border-sm text-primary" role="status" style="display: none; margin-left: 5px;">
+                                <span class="sr-only">Loading...</span>
+                            </span>
+                        </span>
+                    </p>
+                </div>
+
+            </div>
+            <!-- end of insights  -->
+            <br>
+            <hr>
+            <br>
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Instance Status</h5>
+                        <p id="statusMessage" class="text-center">{{ message }}</p>
+                        <!-- <p>{{ message }}</p> -->
+
+                        <div class="table-responsive"> <!-- Add this wrapper for responsive tables -->
+                            <table id="instanceStatusTable" class="table table-bordered table-sm table-smaller">
+                                <thead>
+                                <tr>
+                                    <th class="small-font ">Created Time</th>
+                                    <th class="small-font">Deployment Type</th>
+                                    <th class="small-font ">Instance ID / Project Name</th>
+                                    <th class="small-font ">Running application</th>
+                                    <th class="small-font ">Instance Type / Bundle ID</th>
+                                    <!-- <th class="small-font ">AMI-ID</th> -->
+                                    <!-- <th class="small-font ">Availabilty zone</th> -->
+                                    <th class="small-font ">Region / Availabilty zone</th>
+                                    <th class="small-font ">State</th>   
+                                    <!-- <th class="small-font">Instance Type</th> -->
+                                    <!-- <th class="small-font ">Key-Name</th> -->
+                                    <th class="small-font ">Public-IP</th>
+                                    <th class="small-font ">Destroy</th>
+                                </tr>
+                                </thead>
+                                <tbody id="instanceStatusBody">
+                                <!-- Table rows will be dynamically populated here -->
+                                {% for instance in instance_data %}
+                                <tr>
+                                    <td class="small">{{ instance.creation_time }}</td>
+                                    <td class="small">{{ instance.deployment_type }}</td>
+                                    <!-- <td class="small ">{{ instance.id }}</td> -->
+                                    <td class="small ">{{ instance.project_id if instance.instance_id == "N/A" else instance.instance_id }}</td>
+                                    <td class="small ">{{ "Wordpress" if instance.blueprint_id == "N/A" else instance.blueprint_id }}</td>
+                                    <!-- <td class="small ">{{ instance.instance_type }}</td> -->
+                                    <!-- <td class="small ">{{ instance.instance_type if instance.instance_type == "N/A" else instance.bundle_id }}</td> -->
+                                    <td class="small ">{{ instance.bundle_id if instance.instance_type == "N/A" else instance.instance_type }}</td>
+                                    <!-- <td class="small ">{{ instance.ami_id }}</td> -->
+                                    <!-- <td class="small ">{{ instance.availability_zone }}</td> -->
+                                    <!-- <td class="small ">{{ instance.instance_region if instance.instance_region == "N/A" else instance.availability_zone}}</td> -->
+                                    <td class="small ">{{ instance.availability_zone if instance.instance_region == "N/A" else instance.instance_region}}</td>
+                                    <!-- <td class="small ">{{ instance.instance_state }}</td> -->
+                                    <!-- <td class="small ">{{ instance.instance_state if instance.instance_state == "N/A" else "running"}}</td> -->
+                                    <td class="small ">{{ "running" if instance.instance_state == "N/A" else instance.instance_state}}</td>
+                                    <!-- <td class="small ">{{ instance.key_name }}</td> -->
+                                    <td class="small ">{{ instance.public_ip }}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm destroyBtn" data-instanceid="{{instance.instance_id}}" data-deploymenttype="{{instance.deployment_type}}">Destroy</button>
+                                    </td>
+                                    <!-- <td class="small "><button id="destroyEc2Btn" class="btn btn-danger btn-sm">Destroy</button></td> -->
+                                    <!-- <td class="small "><button id="destroyLightsailBtn" class="btn btn-danger btn-sm">Destroy</button></td> -->
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          
+
+            <br>
+            <hr>
+            <br>
+
+            <div class="recent-deployment">
+                <h2>Recent Deployment</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sno.</th>
+                            <th>Type of Architecture</th>
+                            <th>Timestamp</th>
+                            <th>Status</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>01</td>
+                            <td>Monolithic</td>
+                            <td>2024-03-10</td>
+                            <td class="danger">Failed</td>
+                        </tr>
+                        <tr>
+                            <td>01</td>
+                            <td>Monolithic</td>
+                            <td>2024-03-10</td>
+                            <td class="danger">Failed</td>
+                        </tr>
+                        <tr>
+                            <td>01</td>
+                            <td>Monolithic</td>
+                            <td>2024-03-10</td>
+                            <td class="warning">Failed</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <a href="#">Show All</a>
+            </div>
+            <br>
+            <hr>
+            <br>
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Deployment History</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="historyTable">
+                                <thead>
+                                <tr>
+                                    <th class="small">Deployment type</th>
+                                    <th class="small">Created Time</th>
+                                    <th class="small">Deleted Time</th>
+                                    <th class="small">Availabilty Zone</th>
+                                    <th class="small">Status</th>
+                                </tr>
+                                </thead>
+                                <tbody id="historyTableBody" >
+                                    
+                                    {% for entry in deployment_history|reverse %}
+                                    <tr>
+                                        <td class="small">{{ entry.deployment_type }}</td>
+                                        <td class="small">{{ entry.creation_time }}</td>
+                                        <td class="small">{{ entry.deletion_time }}</td>
+                                        <td class="small">{{ entry.availability_zone }}</td>
+                                        <td class="small">{{ entry.instance_state }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                <!-- More deployment entries can be added dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- end of main  -->
+        <div class="right">
+            <div class="top">
+                <button id="menu-btn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="theme-toggler">
+                   
+                    <i class="active fa-solid fa-sun "></i>
+                    <i class="fa-solid fa-moon"></i>
+                
+                </div>
+                <div class="profile">
+                    <div class="info">
+                        <p>Hi, <b> San</b></p>
+                        <small class="text-muted">Admin</small>
+                    </div>
+                    <div class="profile-photo">
+                        <img src="#" alt="profile photo">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <!-- <h2>Menu</h2>
+    <ul id="menuList">
+        <li><a href="#" id="deployMonolith">Deploy Monolith</a></li>
+        <li><a href="#" id="deployHighlyAvailable">Deploy Highly Available</a></li>
+        <li><a href="#" id="deployLightsail">Deploy Lightsail</a></li>
+        <li><a href="#" id="deploymentHistory">Deployment History</a></li>
+        Add this inside the body, preferably at the bottom or where it fits your layout -->
+  
+  <!--
+        <button id="signOut">Sign Out</button> -->
+
+    </ul>
+    <!-- <script src="/static/js/menu.js" defer></script>
+    <script src="/static/js/dashboard.js" defer></script> -->
+    <!-- <script src="/static/js/menu.js"></script> -->
+    <script src="../static/js/dashboard.js"></script>
+    <!-- <script src="js/login.js" defer></script>
+    <script src="js/signup.js" defer></script> -->
+</body>
+</html>
