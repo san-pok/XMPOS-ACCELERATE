@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Function to fetch instance count and update the UI
     function fetchMonolithInstanceCount() {
         // Show the loading spinner
-        // document.getElementById('loadingSpinnerMono').style.display = 'inline-block';
+        document.getElementById('loadingSpinnerMono').style.display = 'inline-block';
         fetch('/monolith/count-running-ec2-instances')
             .then(response => response.json())
             .then(data => {
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             .finally(() => {
                 // Hide the loading spinner regardless of the outcome
-                // document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('loadingSpinner').style.display = 'none';
             });
     }
 
@@ -41,42 +41,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     fetchLightsailInstanceCount();
     fetchMonolithInstanceCount();
     
-    // if (monolithDeploymentLink) {
-    //     monolithDeploymentLink.addEventListener('click', function(event) {
-    //         event.preventDefault(); // Prevent the default behavior of the anchor tag
-
-    //         // Load the input-monolith.html content dynamically
-    //         fetch('/input-monolith') // Assuming the route is '/input-monolith'
-    //             .then(response => response.text())
-    //             .then(html => {
-    //                 // Replace the content of the current page with input-monolith.html content
-    //                 document.documentElement.innerHTML = html;
-    //                 alert('input-monolith.html loaded successfully!');
-    //                 // Insert the content of input-monolith.html into a container
-    //                 document.getElementById('content-container').innerHTML = html;
-    //                 // Now that the content is loaded, load the input-monolith.js file dynamically
-    //                 const script = document.createElement('script');
-    //                 script.src = '/static/js/input-monolith.js'; // Adjust the path if needed
-    //                 document.body.appendChild(script);
-    //             })
-    //             .catch(error => console.error('Error loading input-monolith.html:', error));
-    //     });
-    // } else {
-    //     console.error("Anchor tag with ID 'monolith-deployment' not found.");
-    // }
-
-    // if (monolithDeploymentLink) {
-    //     monolithDeploymentLink.addEventListener('click', function(event){
-    //         event.preventDefault(); // Prevent the default behavior of following the link
-    //         window.location.href = '../static/input-monolith.html';
-    //         // window.location.href = './static/lightsail-deployment.html';
-    //     });
-    // } else {
-    //     console.error("Button with ID 'wordpressEc2Btn' not found.");
-    // }
-
-
-
     document.addEventListener('DOMContentLoaded', function() {
         const terraformOutput = document.getElementById('statusMessage').textContent;
         console.log(terraformOutput); // Output the Terraform output to the console
@@ -103,7 +67,7 @@ document.querySelectorAll('.destroyBtn').forEach(button => {
 
             let destroyRoute;
             if (deploymentType === 'Monolith') {
-                destroyRoute = `/destroy-ec2?instance_id=${instanceId}`;
+                destroyRoute = `/monolith/destroy-ec2?instance_id=${instanceId}`;
                 // print('Deployment type is :', deploymentType)
             } else if (deploymentType === 'Lightsail') {
                 destroyRoute = `/destroy-lightsail?instance_id=${instanceId}`;

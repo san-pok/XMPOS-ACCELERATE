@@ -53,11 +53,6 @@ def send_css(path):
 def send_js(path):
     return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'static', 'js'), path)
 
-# # Serve HTML files
-# @app.route('/static/<path:path>')
-# def send_html(path):
-#     return send_from_directory(os.path.join(os.path.dirname(__file__), '..', 'static'), path)
-
 
 @app.route(f'{high_prefix}/deploy', methods=['POST'])
 def deploy_infrastructure():
@@ -545,6 +540,7 @@ def submit_form_monolith():
         print('incoming data from creation ec2 \n', output_data_of_ec2)
         # Generate current timestamp
         current_timestamp = generate_timestamp()
+        print ('Output of current time', current_timestamp)
         # Add deployment type to instance data
         output_data_of_ec2['deployment_type'] = 'Monolith'
         # Add timestamp to instance data
@@ -684,26 +680,10 @@ def get_instance_types_monolith():
         region = request.args.get('region')
         # region = 'ap-southeast-2'
         ec2 = boto3.client('ec2', region_name=region)
-        # ec2 = boto3.client('ec2')
-        # Retrieve instance types for the specified region
-        # instance_types = ec2.describe_instance_types()
         instance_types = ec2.describe_instance_type_offerings()
-        # Retrieve instance types for the specified region
-        # instance_types = ec2.describe_instance_types()['InstanceTypes']
 
         # Extract instance type names from the response
         instance_type_names = [instance['InstanceType'] for instance in instance_types['InstanceTypeOfferings']]
-
-        # instance_details = []
-        # for instance_type in instance_types:
-        #     details = {
-        #         'InstanceType': instance_type['InstanceType'],
-        #         'VCpus': instance_type['VCpuInfo']['DefaultVCpus'],
-        #         'MemoryInfo': instance_type['MemoryInfo']['SizeInMiB'],
-        #         'GpuInfo': instance_type.get('GpuInfo', {}),
-        #         'StorageInfo': instance_type['InstanceStorageSupported']
-        #     }
-        #     instance_details.append(details)
 
         # Sort instance types in ascending order
         sorted_instance_types = sorted(instance_type_names)
@@ -756,7 +736,65 @@ def generate_new_key_pair():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route(f'{mono_prefix}/destroy-ec2')
+def destroy_ec2():
+    os.chdir('./terraform/monolithic')
+    instance_id = request.args.get('instance_id')
 
+    # Run Terraform Command to destroy EC2 instance
+    try:
+        subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
+        instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+        print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
+
+        # Get instance data from S3 instance_data.json
+        for instance in instance_data:
+            if instance['instance_id'] == instance_id:
+                # Generate current timestamp
+                current_timestamp = generate_timestamp()
+                # Update deletion_time for destroying time
+                instance['deletion_time'] = current_timestamp
+                instance['instance_state'] = 'Destroyed'
+
+                # Save the updated instance data back to S3
+                print("Instance data retrieved from S3 when instance is being destroyed to be saved:", instance_data)
+                unwrapped_list = {}
+                for dictionary in instance_data:
+                    unwrapped_list.update(dictionary)
+                save_instance_data_to_s3(unwrapped_list, bucket_name, key_prefix_history)
+        
+        #delete instance details from S3
+        delete_instance_details_from_s3(instance_id)
+        # return instance_data
+        return 'EC2 instance destroyed successfully'
+    except subprocess.CalledProcessError as e:
+        return f'Error destroying EC2 instance : {e}'
+    finally:
+        os.chdir(original_dir)
+
+def delete_instance_details_from_s3(instance_id):
+    s3_client = boto3.client('s3')
+    try:
+        response = s3_client.get_object(Bucket=bucket_name, Key=key_prefix)
+        instance_data = json.loads(response['Body'].read().decode('utf-8'))
+    except Exception as e:
+        print(f"Error retrieving instance data from s3: {e}")
+        return
+    
+    #find and remove the instance with the provided instance ID
+    for instance in instance_data:
+        if instance['instance_id'] == instance_id:
+            instance_data.remove(instance)
+    # Update the instance_data.json file in S3 with the modified list
+    try: 
+        s3_client.put_object(
+            Bucket=bucket_name,
+            Key=key_prefix,
+            Body=json.dumps(instance_data).encode('utf-8')
+        )
+        print(f"Instance with Instance ID '{instance_id}' deleted from S3.")
+    except Exception as e:
+        print(f"Error updating instance data in S3: {e}")
 
 
     
@@ -824,6 +862,8 @@ def count_running_ec2_instances():
 
     except Exception as e:
         return jsonify({'error': str(e)})
+
+
 @app.route('/count-lightsail-instances')
 def count_instances():
 
@@ -864,7 +904,12 @@ def count_instances():
     print(f"Total number of Lightsail instances Access Denied errors: {access_denied_count}")
     return jsonify({'running_instances': total_instance_count})
 
-
+@app.route('/get-deployment-history')
+def deployment_history():
+    
+    deployment_history_data = get_instance_data_from_s3(bucket_name, key_prefix_history )
+    # print('Deployment History Data: \n', deployment_history_data)
+    return deployment_history_data
 
 
 if __name__ == '__main__':

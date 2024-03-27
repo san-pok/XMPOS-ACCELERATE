@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import json
 import subprocess
 import boto3
@@ -31,6 +31,8 @@ def capture_ec2_and_lightsail_instance_output():
 
 def generate_timestamp():
     """Generate and return the current timestamp."""
+    d1 = datetime.now()
+    print ("it is generating Datetime.now() ", d1)
     return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 def save_instance_data_to_s3(new_data, bucket_name, key):
@@ -77,3 +79,4 @@ def get_instance_data_from_s3(bucket_name, key):
     except:
         print(f"Error retriving instance json datta from S3: {e} ")
         return[]
+    
