@@ -11,6 +11,11 @@ from botocore.exceptions import NoCredentialsError, ClientError
 import logging
 import datetime
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+load_dotenv()
 
 highbucket_name = 'amirxmopbucket'
 region_name = 'ap-southeast-2'
@@ -27,6 +32,103 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8000"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
+AWS_REGION = os.getenv('AWS_REGION')
+COGNITO_USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
+COGNITO_APP_CLIENT_ID = os.getenv('COGNITO_APP_CLIENT_ID')
+
+cognito_client = boto3.client('cognito-idp', region_name=AWS_REGION)
+
+
+@app.route('/')
+def index():
+    return "Welcome to the Deployment Platform!"
+
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+
+    try:
+        response = cognito_client.sign_up(
+            ClientId=os.getenv('COGNITO_APP_CLIENT_ID'),
+            Username=email,
+            Password=password,
+            UserAttributes=[{'Name': 'email', 'Value': email}],
+        )
+        return jsonify({'message': 'Signup successful. Please check your email to verify your account.'}), 200
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        if error_code == 'UsernameExistsException':
+            return jsonify({'error': 'User already exists.'}), 409  # 409 Conflict
+        else:
+            return jsonify({'error': 'Failed to sign up. Please try again.'}), 500
+
+
+@app.route('/verify', methods=['POST'])
+def verify():
+    data = request.get_json()
+    email = data.get('email')
+    code = data.get('code')
+
+    try:
+        response = cognito_client.confirm_sign_up(
+            ClientId=os.getenv('COGNITO_APP_CLIENT_ID'),
+            Username=email,
+            ConfirmationCode=code,
+            ForceAliasCreation=False
+        )
+        return jsonify({'message': 'Account verified successfully'}), 200
+    except cognito_client.exceptions.UserNotFoundException:
+        return jsonify({'error': 'User does not exist.'}), 404
+    except cognito_client.exceptions.CodeMismatchException:
+        return jsonify({'error': 'Invalid verification code.'}), 400
+    except cognito_client.exceptions.NotAuthorizedException:
+        return jsonify({'error': 'User is already confirmed.'}), 400
+    except Exception as e:
+        # Generic error handling
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    try:
+        auth_result = cognito_client.initiate_auth(
+            ClientId=COGNITO_APP_CLIENT_ID,
+            AuthFlow='USER_PASSWORD_AUTH',
+            AuthParameters={'USERNAME': email, 'PASSWORD': password}
+        )
+        return jsonify({'message': 'Login successful', 'tokens': auth_result}), 200
+    except cognito_client.exceptions.NotAuthorizedException:
+        return jsonify({'error': 'Incorrect username or password.'}), 401
+    except cognito_client.exceptions.UserNotFoundException:
+        return jsonify({'error': 'User does not exist.'}), 404
+    except cognito_client.exceptions.UserNotConfirmedException:
+        return jsonify({'error': 'User is not confirmed. Please check your email for the confirmation link.'}), 401
+    except Exception as e:
+        # Log the exception details for debugging purposes
+        print(e)
+        return jsonify({'error': 'Login failed due to an unexpected error. Please try again later.'}), 500
+
+
+@app.route('/menu')
+def menu():
+    # Placeholder for actual logic
+    return jsonify([
+        {"name": "Deploy Monolith", "url": "/deploy-monolith"},
+        {"name": "Deploy Highly Available", "url": "/deploy-highly-available"},
+        {"name": "Deploy Lightsail", "url": "/deploy-lightsail"},
+        {"name": "Deployment History", "url": "/deployment-history"},
+    ]), 200
 
 
 @app.route(f'{high_prefix}/deploy', methods=['POST'])
@@ -342,6 +444,7 @@ def generate_ssh_key(user_input):
     # Note: For production use, securely store the private key if it's ever needed again.
     return public_key.decode('utf-8')
 
+
 @app.route('/deploy', methods=['POST'])
 def deploy_instance():
     data = request.json
@@ -376,7 +479,8 @@ def deploy_instance():
             raise Exception('Error planning with Terraform')
 
         # Apply Terraform
-        apply_output = subprocess.run(["terraform", "apply", "-auto-approve"], cwd=terraform_dir, capture_output=True, text=True)
+        apply_output = subprocess.run(["terraform", "apply", "-auto-approve"], cwd=terraform_dir, capture_output=True,
+                                      text=True)
         print(apply_output.stdout)
         if apply_output.returncode != 0:
             print(apply_output.stderr)
@@ -394,7 +498,8 @@ def deploy_instance():
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         save_deployment_to_s3(data.get('instanceName', 'XMOPSTeamTwo'), timestamp, deployment_status)
 
-        return jsonify({'message': 'Lightsail deployed successfully!', 'wordpressInstallationUrl': wordpressInstallationUrl})
+        return jsonify(
+            {'message': 'Lightsail deployed successfully!', 'wordpressInstallationUrl': wordpressInstallationUrl})
 
     except Exception as e:
         # Log the error and save the 'failed' status if an exception is caught
@@ -402,7 +507,6 @@ def deploy_instance():
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         status = "success"  # or "failed" based on your deployment outcome
         save_deployment_to_s3(instance_name, timestamp, status)
-
 
         return jsonify({'message': 'Error deploying Lightsail instance', 'error': str(e)}), 500
 
@@ -477,7 +581,8 @@ def get_deployment_history():
         print(f"Error fetching deployment history: {e}")
         return jsonify({'error': 'Error fetching deployment history'}), 500
 
-#Add Monolitic Routes only
+
+# Add Monolitic Routes only
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, use_reloader=False)
