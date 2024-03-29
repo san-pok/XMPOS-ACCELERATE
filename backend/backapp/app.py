@@ -33,7 +33,7 @@ CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8000"}})
 def deploy_infrastructure():
     try:
 
-        high_terraform_dir = "../terraform/highly"
+        high_terraform_dir = "../../terraform/highly"
 
         # Initialize Terraform
         init_output = subprocess.run(["terraform", "init"], cwd=high_terraform_dir, capture_output=True, text=True)
@@ -61,7 +61,7 @@ def deploy_infrastructure():
 def destroy_infrastructure():
     try:
         # Check if the destroy.sh script exists
-        script_path = '../terraform/highly/destroy.sh'
+        script_path = '../../terraform/highly/destroy.sh'
         print("Absolute path of script:", os.path.abspath(script_path))  # Debugging line
         if not os.path.exists(script_path):
             error_message = 'Error: destroy.sh script not found'
@@ -356,7 +356,7 @@ def deploy_instance():
     os.environ['TF_VAR_bundle_id'] = data.get('instanceSize', 'nano_3_2')
     os.environ['TF_VAR_key_pair_name'] = 'integrateLightsail'
 
-    terraform_dir = "../terraform/lightsail"
+    terraform_dir = "../../terraform/lightsail"
     deployment_status = "failed"  # Assume failure by default
 
     try:
