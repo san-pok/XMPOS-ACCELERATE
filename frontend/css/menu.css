@@ -219,6 +219,7 @@ main{
     margin-left: 3rem;
 
 }
+
 main .date{
     display: inline-block;
     background: var(--color-light);
@@ -231,6 +232,7 @@ main .date input[type="date"]{
  background: transparent;
  color: var(--color-dark);
 }
+
 main .insights{
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -326,7 +328,7 @@ main table tbody tr td{
     display: none;
 }
 .right .theme-toggler{
-    background: var(--color-light);
+    background: var(--color-dark);
     display: flex;
     justify-content: space-between;
     align-items: center;

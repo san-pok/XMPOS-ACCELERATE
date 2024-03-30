@@ -380,6 +380,12 @@ Deployment Success Popup
   animation: rotationBack 1s linear infinite;
   transform-origin: center center;
 }
+main #dash-header{
+    color: var(--color-dark);
+}
+.dark-theme{
+    background-color: var(--color-light);
+}
     
 @keyframes rotation {
   0% {
@@ -397,12 +403,26 @@ Deployment Success Popup
     transform: rotate(-360deg);
   }
 } 
+.theme-toggler{
+    background-color: var(--color-dark);
+}
+.theme-toggler i{
+    color: var(--color-dark);
+}
+
+.menu-container{
+    display: grid;
+    width: 96%;
+    margin: 0 auto;
+    gap: 3rem;
+    grid-template-columns: 14rem auto 18rem;
+}
         
     </style>
 </head>
-<body>
+<body >
 
-    <div class="container w-[100vw]">
+    <div class="menu-container">
         <aside>
             <div class="top">
                 <div class="logo">
@@ -415,7 +435,7 @@ Deployment Success Popup
             <div class="sidebar">
                 <a href="../menu.html" >
                     <i class="fa-solid fa-grip"></i>
-                    <h3>Dashboard</h3>
+                    <h3 >Dashboard</h3>
                 </a>
                 <a href="">
                     <i class="fa-solid fa-bolt"></i>
@@ -450,8 +470,8 @@ Deployment Success Popup
         </aside>
 
 
-        <main>
-            <h1>Dashboard</h1>
+        <main class="">
+            <h1 class="text-2xl font-bold" id="dash-header">Dashboard</h1>
             <div class="date">
                 <input type="date" name="" id="">
             </div>
@@ -461,15 +481,15 @@ Deployment Success Popup
 
 
 
-            <div class="main-container flex justify-center items-center" >
+            <div class="main-container flex justify-center items-center w-[100%] h-[80vh] " >
   
-                <div class="container mx-auto max-w-[600px] flex justify-center items-center h-full">
+                <div class="container mx-auto max-w-[100%] flex justify-center items-center h-full ">
            
-            <form id="deployForm" class="flex flex-col items-start justify-center p-10 bg-slate-300 shadow-lg rounded-lg px-20 mx-auto">
-                <h1 class="p-5 mb-4 font-bold uppercase text-center">Deploy AWS Lightsail Instance</h1>
+            <form id="deployForm" class="flex flex-col items-start justify-center p-10 bg-slate-300 shadow-lg rounded-lg px-20 mx-auto  ">
+                <h1 class=" p-5 mb-4 font-bold uppercase text-center text-xl">Deploy AWS Lightsail Instance</h1>
                 <div class="form-input flex flex-col">
                 <label for="continent" class="py-4 uppercase font-bold">Select a Continent:</label>
-                <select id="continent" name="continent" class="w-64 p-1 py-2 rounded-lg shadow-md px-4">
+                <select id="continent" name="continent" class="w-[300px] p-1 py-2 rounded-lg shadow-md px-4 mb-4">
                     <option value="Asia">Asia</option>
                     <option value="US">US</option>
                     <option value="Europe">Europe</option>
@@ -477,21 +497,21 @@ Deployment Success Popup
             </div>
         
                 <label for="region" class="py-4 w-64 uppercase font-bold">Select a Region:</label>
-                <select id="region" name="region" class="w-64 p-1 py-2 rounded-lg shadow-md px-4">
+                <select id="region" name="region" class="w-[100%] p-1 py-2 rounded-lg shadow-md px-6 mb-4">
                     <!-- Regions will be populated based on continent selection -->
                 </select>
         
-                <label for="blueprint" class="py-4 w-64 uppercase font-bold">Select a blueprint:</label>
-                <select id="blueprint" name="blueprint" class="p-1 w-64 py-2 rounded-lg shadow-md px-4">
+                <label for="blueprint" class="py-4 w-70 uppercase font-bold">Select a blueprint:</label>
+                <select id="blueprint" name="blueprint" class="p-1 w-[100%] py-2 rounded-lg shadow-md px-6 mb-4">
                     <option value="wordpress" class="py-4 uppercase font-bold">WordPress</option>
                     <!-- Add more blueprints as needed -->
                 </select>
         
                 <label for="sshKey" class="py-4 uppercase font-bold"> Public SSH Key/Default SSH Key:</label>
-                <input type="text" id="sshKey" name="sshKey" class="py-2 px-5 w-64 rounded-lg shadow-md">
+                <input type="text" id="sshKey" name="sshKey" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
         
                 <label for="instanceSize" class="py-4 uppercase font-bold" >Choose your instance plan (Instance Size):</label>
-                <select id="instanceSize" name="instanceSize" class="p-1 w-64 py-2 rounded-lg shadow-md px-4">
+                <select id="instanceSize" name="instanceSize" class="p-1 w-[100%] py-2 rounded-lg shadow-md px-4 mb-4">
                     <option value="nano_3_2">Nano</option>
                     <option value="micro_3_2">Micro</option>
                     <option value="small_3_2">Small</option>
@@ -506,48 +526,9 @@ Deployment Success Popup
                 <button type="submit" class="px-12 py-4 bg-blue-500 rounded-2xl mt-6 flex justify-center items-center mx-auto text-white font-bold hover:bg-blue-800 hover:transition-all hover:ease-in-out hover:duration-300 shadow-md">Deploy</button>
             </form>
         
-            <!-- Deployment Progress Popup -->
-            <div id="deploymentProgressPopup" class="popup-overlay " style="display: none;" >
-                <div class="popup">
-                    <div class="coffee-icon">
-                        <div class="icons flex gap-2 mx-auto justify-center items-center">
-                            <i class="fa-solid fa-mug-hot text-green-700 text-center font-bold text-6xl"></i>
-                        </div>
-                    </div>
-                    <h2 class="text-center font-bold py-2">Deployment in Progress...</h2>
-                    <p class="py-2">Grab a coffee and let us deploy your infrastructure.</p>
-                    <!-- <div class="loader"></div> -->
-                    <span class="loader"></span>
-                </div>
-            </div>
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        <!-- Deployment Success Popup -->
-        <div id="deploymentSuccessPopup" class="popup-overlay" style="display: none;">
-            <div class="popup">
-                <div class="coffee-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24"><path d="M21.806 3.13c-1.29-.663-2.88-1.014-4.598-1.014-2.404 0-4.546.634-6.205 1.892-1.658-1.258-3.8-1.892-6.204-1.892-1.719 0-3.309.351-4.6 1.014-1.833.943-2.92 2.597-2.92 4.37v10.285c0 1.774 1.088 3.428 2.92 4.37 1.29.663 2.881 1.014 4.6 1.014s3.31-.351 4.6-1.014c1.655-.844 3.788-1.284 6.204-1.284s4.547.44 6.205 1.284c1.833.942 2.92 2.596 2.92 4.37v.635c0 1.774-1.087 3.428-2.92 4.37-1.29.664-2.881 1.014-4.6 1.014-1.718 0-3.308-.35-4.598-1.014-1.655-.842-3.799-1.284-6.204-1.284-2.405 0-4.547.442-6.205 1.284-1.831.942-2.92 2.596-2.92 4.37v.635h24v-.635c0-1.774-1.087-3.428-2.92-4.37-1.29-.663-2.881-1.014-4.6-1.014-1.719 0-3.309.351-4.598 1.014-1.655.842-3.8 1.284-6.205 1.284-2.405 0-4.547-.442-6.204-1.284-1.831-.942-2.92-2.596-2.92-4.37v-.635c0-1.774 1.089-3.428 2.92-4.37.699-.357 1.522-.626 2.425-.792v-4.955c0-.796.645-1.442 1.441-1.442h16.276c.796 0 1.441.646 1.441 1.442v4.955c.903.166 1.726.435 2.425.792v-4.46c0-1.774-1.088-3.428-2.92-4.37z"/><path d="M16 6.469v2.512c0 1.362-.457 2.573-1.289 3.503-.797.857-1.964 1.329-3.211 1.29-1.245.039-2.413-.433-3.211-1.29-.833-.93-1.29-2.141-1.29-3.503v-2.512h9.001zm-8.999-2.007v1.432c0 1.11.516 2.088 1.28 2.839.75.764 1.75 1.182 2.82 1.161 1.07.021 2.07-.397 2.82-1.161.764-.751 1.28-1.729 1.28-2.839v-1.432h-8.2z"/></svg>
-                </div>
-                <h2>Deployment Successful!</h2>
-                <p id="successMessage"></p>
-                <button onclick="closeSuccessPopup()">Close</button>
-            </div>
-        </div>
-        
-        
-        
-        
         </div>
         </div>
-        </div>
+        
             <!-- end of insights  -->
 
 
@@ -555,41 +536,9 @@ Deployment Success Popup
 
             
 
-            <div class="recent-deployment">
-                <h2>Recent Deployment</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Sno.</th>
-                            <th>Type of Architecture</th>
-                            <th>Timestamp</th>
-                            <th>Status</th>
-                            
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>01</td>
-                            <td>Monolithic</td>
-                            <td>2024-03-10</td>
-                            <td class="danger">Failed</td>
-                        </tr>
-                        <tr>
-                            <td>01</td>
-                            <td>Monolithic</td>
-                            <td>2024-03-10</td>
-                            <td class="danger">Failed</td>
-                        </tr>
-                        <tr>
-                            <td>01</td>
-                            <td>Monolithic</td>
-                            <td>2024-03-10</td>
-                            <td class="warning">Failed</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <a href="#">Show All</a>
-            </div>
+
+
+
         </main>
         <!-- end of main  -->
         <div class="right">
@@ -616,7 +565,20 @@ Deployment Success Popup
         </div>
     </div>
 
-
+ <!-- Deployment Progress Popup -->
+ <div id="deploymentProgressPopup" class="popup-overlay " style="display: none;" >
+    <div class="popup">
+        <div class="coffee-icon">
+            <div class="icons flex gap-2 mx-auto justify-center items-center">
+                <i class="fa-solid fa-mug-hot text-green-700 text-center font-bold text-6xl"></i>
+            </div>
+        </div>
+        <h2 class="text-center font-bold py-2">Deployment in Progress...</h2>
+        <p class="py-2">Grab a coffee and let us deploy your infrastructure.</p>
+        <!-- <div class="loader"></div> -->
+        <span class="loader"></span>
+    </div>
+</div>
   <!-- Deployment Progress Popup -->
   <div id="deploymentProgressPopup" class="popup-overlay " style="display: none;" >
     <div class="popup">
@@ -643,7 +605,17 @@ Deployment Success Popup
         <button onclick="closeSuccessPopup()">Close</button>
     </div>
 </div>
-
+<!-- Deployment Success Popup -->
+<div id="deploymentSuccessPopup" class="popup-overlay" style="display: none;">
+    <div class="popup">
+        <div class="coffee-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24"><path d="M21.806 3.13c-1.29-.663-2.88-1.014-4.598-1.014-2.404 0-4.546.634-6.205 1.892-1.658-1.258-3.8-1.892-6.204-1.892-1.719 0-3.309.351-4.6 1.014-1.833.943-2.92 2.597-2.92 4.37v10.285c0 1.774 1.088 3.428 2.92 4.37 1.29.663 2.881 1.014 4.6 1.014s3.31-.351 4.6-1.014c1.655-.844 3.788-1.284 6.204-1.284s4.547.44 6.205 1.284c1.833.942 2.92 2.596 2.92 4.37v.635c0 1.774-1.087 3.428-2.92 4.37-1.29.664-2.881 1.014-4.6 1.014-1.718 0-3.308-.35-4.598-1.014-1.655-.842-3.799-1.284-6.204-1.284-2.405 0-4.547.442-6.205 1.284-1.831.942-2.92 2.596-2.92 4.37v.635h24v-.635c0-1.774-1.087-3.428-2.92-4.37-1.29-.663-2.881-1.014-4.6-1.014-1.719 0-3.309.351-4.598 1.014-1.655.842-3.8 1.284-6.205 1.284-2.405 0-4.547-.442-6.204-1.284-1.831-.942-2.92-2.596-2.92-4.37v-.635c0-1.774 1.089-3.428 2.92-4.37.699-.357 1.522-.626 2.425-.792v-4.955c0-.796.645-1.442 1.441-1.442h16.276c.796 0 1.441.646 1.441 1.442v4.955c.903.166 1.726.435 2.425.792v-4.46c0-1.774-1.088-3.428-2.92-4.37z"/><path d="M16 6.469v2.512c0 1.362-.457 2.573-1.289 3.503-.797.857-1.964 1.329-3.211 1.29-1.245.039-2.413-.433-3.211-1.29-.833-.93-1.29-2.141-1.29-3.503v-2.512h9.001zm-8.999-2.007v1.432c0 1.11.516 2.088 1.28 2.839.75.764 1.75 1.182 2.82 1.161 1.07.021 2.07-.397 2.82-1.161.764-.751 1.28-1.729 1.28-2.839v-1.432h-8.2z"/></svg>
+        </div>
+        <h2>Deployment Successful!</h2>
+        <p id="successMessage"></p>
+        <button onclick="closeSuccessPopup()">Close</button>
+    </div>
+</div>
 
     <!-- <h2>Menu</h2>
     <ul id="menuList">
