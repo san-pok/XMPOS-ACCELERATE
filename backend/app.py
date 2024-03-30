@@ -38,6 +38,7 @@ CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8000"}})
 CORS(app, resources={r"/*": {"origins": "*"}})
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
+# getting the userpool details from env file
 AWS_REGION = os.getenv('AWS_REGION')
 COGNITO_USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
 COGNITO_APP_CLIENT_ID = os.getenv('COGNITO_APP_CLIENT_ID')
