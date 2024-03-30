@@ -15,5 +15,6 @@ venv/
 .terraform
 .terraform.lock.hcl
 
+#Ignore the states file
 terraform.tfstate
 terraform.tfstate.backup
