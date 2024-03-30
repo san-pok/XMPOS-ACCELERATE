@@ -188,20 +188,7 @@ background: linear-gradient(90deg, rgba(8,7,25,1) 0%, rgba(2,19,84,1) 35%, rgba(
     
 } 
 
-/* .container .form .inputBox input:valid ~ span,
-.container .form .inputBox input:focus ~ span
-{
-    color: #00dfc4;
-    border: 1px solid #00dfc4;
-    background: #2d1e6b;
-    transform: translateX(25px) translateY(-52px);
-    font-size: 1rem;
-    padding: 0 10px;
-    margin: 25px 0;
-    border-radius: 10px;
-    letter-spacing: 0.1rem;
 
-} */
 .container .form .inputBox input:valid ~ span{
     color: #00dfc4;
     border: 1px solid #00dfc4;
@@ -244,17 +231,7 @@ background: linear-gradient(90deg, rgba(8,7,25,1) 0%, rgba(2,19,84,1) 35%, rgba(
 }
 
 
-/* .container .form .inputBox input:valid,
-.container .form .inputBox input:focus
-{
-   
-    border: 1px solid #00dfc4;
-    background: #2d1e6b;
 
- 
-    
-
-} */
 
 
 
