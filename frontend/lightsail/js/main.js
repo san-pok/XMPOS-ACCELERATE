@@ -88,7 +88,7 @@ function closeSuccessPopup() {
     const successPopup = document.getElementById('deploymentSuccessPopup');
     if (successPopup) {
         successPopup.style.display = 'none';
-        window.location.href = 'menu.html';
+        window.location.href = '../../menu.html';
     }
 }
 

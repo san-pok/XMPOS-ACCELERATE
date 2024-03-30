@@ -45,7 +45,7 @@ main #dash-header{
                 </div>
             </div>
             <div class="sidebar">
-                <a href="" class="active">
+                <a href="./menu.html" >
                     <i class="fa-solid fa-grip"></i>
                     <h3>Dashboard</h3>
                 </a>
@@ -61,7 +61,7 @@ main #dash-header{
                     <i class="fa-solid fa-microchip"></i>
                     <h3>Deploy Lightsail</h3>
                 </a>
-                <a href="./deploymenthistory.html">
+                <a href="#" class="active">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <h3>Deployment History</h3>
                 </a>
@@ -87,43 +87,14 @@ main #dash-header{
             <div class="date" style="background-color: var(--color-dark); color: var(--color-light);">
                 <input type="date" name="" id="currentDate" class="font-bold text-xl " style="color: var(--color-white);">
             </div>
-            <div class="insights">
-                <div class="monolith">
-                    <i class="fa-solid fa-bolt"></i>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Monolithic</h3>
-                        </div>
-                    </div>
-                    <small class="text-muted">Monolithic Arch</small>
-                </div>
-                <!-- monolith ends  -->
 
-                <div class="highly">
-                    <i class="fa-solid fa-bolt"></i>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Highly Available</h3>
-                        </div>
-                    </div>
-                    <small class="text-muted">Hihly Available Arch</small>
-                </div>
-                <!-- highly available ends here  -->
-                <div class="lightsail">
-                    <i class="fa-solid fa-bolt"></i>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Lightsail</h3>
-                        </div>
-                    </div>
-                    <small class="text-muted">Lightsail Arch</small>
-                </div>
 
-            </div>
-            <!-- end of insights  -->
+            
+
+
 
             <div class="recent-deployment">
-                <h2 style="font-size: 22px;" id="dash-header">Recent Deployment</h2>
+                <h2 style="font-size: 22px; margin:0 40%; width: 100%; margin-block: 30px;" id="dash-header">Deployment History</h2>
                 <!-- <table>
                     <thead>
                         <tr>
@@ -160,8 +131,8 @@ main #dash-header{
                 <div class="main-container flex justify-center items-center h-screen">
                     <div class="container mx-auto max-w-4xl" >
                         <table class="table-auto w-full mt-10" style="width: 65vw;">
-                            <thead >
-                                <tr class="bg-blue-500 text-white" >
+                            <thead>
+                                <tr class="bg-blue-500 text-white">
                                     <th class="px-4 py-2" id="dash-header">S.No</th>
                                     <th class="px-4 py-2" id="dash-header">Architecture</th>
                                     <th class="px-4 py-2" id="dash-header">Timestamp</th>
