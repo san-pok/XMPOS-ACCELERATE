@@ -1,16 +1,14 @@
+
+
 variable "instance_name" {
   description = "The name of the Lightsail instance"
   type        = string
 }
 
-variable "instance_location" {
-  description = "The AWS region and availability zone for the Lightsail instance"
-  type        = string
-}
-
 variable "key_pair_name" {
-  description = "Name for the Lightsail Key Pair"
+  description = "Base name for the Lightsail Key Pair, a unique suffix will be appended"
   type        = string
+  default     = "XMOPSTeamTwo"
 }
 
 variable "ssh_key" {
@@ -21,7 +19,7 @@ variable "ssh_key" {
 variable "bundle_id" {
   description = "The ID of the Lightsail bundle"
   type        = string
-  default     = "nano_3_2"  # Ensure this default value matches your frontend options.
+  default     = "nano_3_2"
 }
 
 variable "blueprint" {

@@ -451,7 +451,7 @@ def generate_ssh_key(user_input):
 @app.route('/deploy', methods=['POST'])
 def deploy_instance():
     data = request.json
-    ssh_key_user_input = data.get('sshKey', 'default')  # Use 'default' if 'sshKey' not provided
+    ssh_key_user_input = data.get('sshKey', 'XmopsTeamTwo')  # Use 'default' if 'sshKey' not provided
 
     # Generate SSH key based on the user input
     public_ssh_key = generate_ssh_key(ssh_key_user_input)
@@ -462,7 +462,7 @@ def deploy_instance():
     os.environ['TF_VAR_bundle_id'] = data.get('instanceSize', 'nano_3_2')
     os.environ['TF_VAR_key_pair_name'] = 'integrateLightsail'
 
-    terraform_dir = "../../terraform/lightsail"
+    terraform_dir = "../terraform/lightsail"
     deployment_status = "failed"  # Assume failure by default
 
     try:
@@ -509,7 +509,7 @@ def deploy_instance():
         print(f"Deployment failed: {str(e)}")
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         status = "success"  # or "failed" based on your deployment outcome
-        save_deployment_to_s3(instance_name, timestamp, status)
+        save_deployment_to_s3("XMOPSteamTwo", timestamp, status)
 
         return jsonify({'message': 'Error deploying Lightsail instance', 'error': str(e)}), 500
 
