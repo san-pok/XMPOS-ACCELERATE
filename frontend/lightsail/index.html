@@ -404,10 +404,19 @@ main #dash-header{
   }
 } 
 .theme-toggler{
-    background-color: var(--color-dark);
+   
+    border: 2px solid var(--color-dark);
+    /* background: var(--color-dark);   */
+   
+    
 }
 .theme-toggler i{
-    color: var(--color-dark);
+    color: var(--color-primary);
+    
+    color: black;
+    padding: 10px 14px;
+    
+    
 }
 
 .menu-container{
@@ -472,8 +481,8 @@ main #dash-header{
 
         <main class="">
             <h1 class="text-2xl font-bold" id="dash-header">Dashboard</h1>
-            <div class="date">
-                <input type="date" name="" id="">
+            <div class="date" style="background-color: var(--color-dark); color: var(--color-light);">
+                <input type="date" name="" id="currentDate" class="font-bold text-xl " style="color: var(--color-white);">
             </div>
 
 
@@ -542,14 +551,14 @@ main #dash-header{
         </main>
         <!-- end of main  -->
         <div class="right">
-            <div class="top">
+            <div class="top" >
                 <button id="menu-btn">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <div class="theme-toggler">
+                <div class="theme-toggler"  >
                    
                     <i class="active fa-solid fa-sun "></i>
-                    <i class="fa-solid fa-moon"></i>
+                    <i class="fa-solid fa-moon" style="color: white; "></i>
                 
                 </div>
                 <div class="profile">
@@ -633,5 +642,19 @@ main #dash-header{
     <!-- <script src="js/login.js" defer></script>
     <script src="js/signup.js" defer></script> -->
     <script src="js/main.js"></script>
+
+
+    <script>
+        window.onload = function() {
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+            var yyyy = today.getFullYear();
+    
+            today = yyyy + '-' + mm + '-' + dd;
+            document.getElementById("currentDate").value = today;
+        };
+    </script>
+    
 </body>
 </html>
