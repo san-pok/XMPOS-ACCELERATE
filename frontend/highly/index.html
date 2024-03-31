@@ -108,39 +108,25 @@
 
                     <form id="deployForm" class="flex flex-col items-start justify-center p-10 bg-slate-100 shadow-lg rounded-lg px-20 mx-auto  ">
                         <h1 class=" p-5 mb-4 font-bold uppercase text-center text-xl">Deploy Highly Available Instance</h1>
-                        <div class="form-input flex flex-col">
-                            <label for="continent" class="py-4 uppercase font-bold">Select a Continent:</label>
-                            <select id="continent" name="continent" class="w-[300px] p-1 py-2 rounded-lg shadow-md px-4 mb-4">
-                                <option value="Asia">Asia</option>
-                                <option value="US">US</option>
-                                <option value="Europe">Europe</option>
-                            </select>
-                        </div>
 
                         <label for="region" class="py-4 w-64 uppercase font-bold">Select a Region:</label>
                         <select id="region" name="region" class="w-[100%] p-1 py-2 rounded-lg shadow-md px-6 mb-4">
-                            <!-- Regions will be populated based on continent selection -->
+                            <option value="ap-southeast-2">Sydney Region</option>
+                            <option value="ap-southeast-1">Singapore Region</option>
+                            <option value="us-west-1">North California Region</option>
                         </select>
 
-                        <label for="blueprint" class="py-4 w-70 uppercase font-bold">Select a blueprint:</label>
-                        <select id="blueprint" name="blueprint" class="p-1 w-[100%] py-2 rounded-lg shadow-md px-6 mb-4">
-                            <option value="wordpress" class="py-4 uppercase font-bold">WordPress</option>
-                            <!-- Add more blueprints as needed -->
-                        </select>
+                        <label for="min_instances" class="py-4 uppercase font-bold"> Minimum Instances :</label>
+                        <input type="text" id="min_instances" name="min_instances" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
 
-                        <label for="sshKey" class="py-4 uppercase font-bold"> Public SSH Key/Default SSH Key:</label>
-                        <input type="text" id="sshKey" name="sshKey" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
+                        <label for="max_instances" class="py-4 uppercase font-bold"> Maximum Instances :</label>
+                        <input type="text" id="max_instances" name="max_instances" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
 
-                        <label for="instanceSize" class="py-4 uppercase font-bold" >Choose your instance plan (Instance Size):</label>
-                        <select id="instanceSize" name="instanceSize" class="p-1 w-[100%] py-2 rounded-lg shadow-md px-4 mb-4">
-                            <option value="nano_3_2">Nano</option>
-                            <option value="micro_3_2">Micro</option>
-                            <option value="small_3_2">Small</option>
-                            <option value="medium_3_2">Medium</option>
-                            <option value="large_3_2">Large</option>
-                            <option value="xlarge_3_2">Xlarge</option>
-                            <option value="2xlarge_3_2">2Xlarge</option>
-                            <!-- Ensure these options match the bundle IDs available in your AWS region -->
+                        <label for="instance_type" class="py-4 w-64 uppercase font-bold">Select Instance Type:</label>
+                        <select id="instance_type" name="instance_type" class="w-[100%] p-1 py-2 rounded-lg shadow-md px-6 mb-4">
+                            <option value="t2.micro">t2.micro</option>
+                            <option value="t2.medium">t2.medium</option>
+                            <option value="t3.medium">t3.medium</option>
                         </select>
 
                         <p id="errorMessage" style="color: red;"></p>
