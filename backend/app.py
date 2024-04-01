@@ -1,3 +1,4 @@
+import shutil
 from flask import Flask, jsonify, render_template, request, redirect, send_file, send_from_directory
 from flask_cors import CORS
 import subprocess
@@ -510,13 +511,42 @@ def submit_form_monolith():
         ami_id = request.json.get('aws-ami')
         instance_type = request.json.get('instance-type')
         key_pair = request.json.get('key_pair')
+        security_group = request.json.get('security_group')
+        security_group_description = request.json.get('security_group_description')
+        allow_ssh = request.json.get('allow-ssh')
+        allow_http = request.json.get('allow-http')
+        selectedSGId = request.json.get('selectedSGId')
+        createdSG = request.json.get('createdSG')
+        newSecurityGroupName = request.json.get('newSecurityGroupName')
+        storage_size_gb = request.json.get('ebs-storage')
+        database_type = request.json.get('database_type')
 
-        # Print the received data
+        if allow_ssh == 'on':
+            allow_ssh = 'true'
+        else:
+            allow_ssh = 'false'
+
+        if allow_http == 'on':
+            allow_http = 'true'
+        else:
+            allow_http = 'false'
+
+        # # Check if selectedSGId is not empty, otherwise use createdSG
+        # selectedSG_to_pass = security_group if security_group else createdSG
+        # print ('Selected SG to pass ', selectedSG_to_pass)
+        
+
         print("Received data:")
         print("AWS Region:", aws_region)
         print("AMI ID:", ami_id)
         print("Instance Type:", instance_type)
         print("Key Pair:", key_pair)
+        print("Created SG Name:", newSecurityGroupName)
+        print("SG id:", selectedSGId)
+        print("storage_size_gb:", storage_size_gb)
+        print("database_type:", database_type)
+
+
 
         # Get the absolute path to terraform.auto.tfvars for debugging
         tfvars_file = os.path.abspath('terraform.auto.tfvars')
@@ -530,11 +560,26 @@ def submit_form_monolith():
             f.write(f'ami_id = "{ami_id}"\n')
             f.write(f'instance_type = "{instance_type}"\n')
             f.write(f'key_name = "{key_pair}"\n')
+            f.write(f'security_group_name = "{newSecurityGroupName}"\n')
+            f.write(f'security_group_description = "{security_group_description}"\n')
+            f.write(f'allow_ssh = {allow_ssh}\n')
+            f.write(f'allow_http = {allow_http}\n')
+            f.write(f'storage_size_gb = {storage_size_gb}\n')
+            f.write(f'database_type = "{database_type}"\n')
 
         # #Trigger Terraform deployment
             
         subprocess.run(['terraform', 'init',], check=True)
+        # Run terraform import to import the existing security group
+        # Run terraform state rm command to remove the existing security group from the state
+        # subprocess.run(['terraform', 'state', 'rm', 'aws_security_group.sg_name'], check=True)
+        # Backup the Terraform state file
+        # shutil.copy('terraform.tfstate', 'terraform.tfstate.backup')
+        # subprocess.run(['terraform', 'import', 'aws_security_group.sg_name', selectedSGId], check=True)
         subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)  
+
+        # Remove the imported resource from the Terraform state file
+        # remove_resource_from_state('terraform.tfstate', 'aws_security_group.sg_name')
       
         output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
         print('incoming data from creation ec2 \n', output_data_of_ec2)
@@ -564,6 +609,18 @@ def submit_form_monolith():
     finally:
         os.chdir(original_dir)
 
+# Function to remove resource from Terraform state file
+def remove_resource_from_state(state_file, resource_address):
+    with open(state_file, 'r') as f:
+        state_data = json.load(f)
+    
+    # Remove the resource entry from the state data
+    if resource_address in state_data['resources']:
+        del state_data['resources'][resource_address]
+
+    # Write the modified state data back to the state file
+    with open(state_file, 'w') as f:
+        json.dump(state_data, f, indent=2)
 
 #route to fetch aws regions 
 @app.route(f'{mono_prefix}/get-regions', methods=['GET'])
@@ -892,7 +949,7 @@ def count_instances():
             instance_count_in_region = len(instances_response['instances'])
             total_instance_count += instance_count_in_region
 
-            print(f"Region: {region_name}, Lightsail Instance Count: {instance_count_in_region}")
+            # print(f"Region: {region_name}, Lightsail Instance Count: {instance_count_in_region}")
         except botocore.exceptions.ClientError as e: 
             if e.response['Error']['Code'] == 'AccessDeniedException':
                 # print(f"Lightsail Instance Access Denied in region {region_name}")
@@ -911,12 +968,53 @@ def deployment_history():
     # print('Deployment History Data: \n', deployment_history_data)
     return deployment_history_data
 
+@app.route(f'{mono_prefix}/get-security-groups')
+def get_security_groups():
+    aws_region = request.args.get('region')
+    try: 
+        # aws_region = 'ap-southeast-1'
+        ec2_client = boto3.client('ec2', region_name = aws_region)
+        response = ec2_client.describe_security_groups()
+        # Extract security group information from the response
+        security_groups = response['SecurityGroups']
+        # Extract relevant data from security groups 
+        formatted_security_groups = []
+        for group in security_groups:
+            formatted_security_groups.append({
+                'GroupName': group['GroupName'],
+                'GroupId': group['GroupId'],
+            })
+        return jsonify({'security_groups': formatted_security_groups})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+    
+@app.route(f'{mono_prefix}/create_security_group', methods=['POST'])
+def create_security_group():
+    data = request.json
+    group_name = data.get('new_sg_name')
+    description = data.get('new_sg_description')
+    aws_region = data.get('region')
+    # group_name = 'group_name'
+    # description ='description'
+    ec2_client = boto3.client('ec2', region_name = aws_region)
+
+    if not all([group_name, description]):
+        return jsonify({'error': 'Missing required parameters'}), 400
+    
+    try:
+        response = ec2_client.create_security_group(
+            GroupName=group_name,
+            Description=description
+        )
+        return jsonify({'generated_sg': response}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
      # Save the original directory
     original_dir = os.getcwd()
 
-    bucket_name = 'xmops-data-bucket-team2'
+    bucket_name = 'xmops-data-bucket-team2p'
     key_prefix = 'instance_record/instance_data.json' 
     key_prefix_history = 'instance_record/instance_data_history.json' 
     get_instance_data_from_s3(bucket_name, key_prefix)

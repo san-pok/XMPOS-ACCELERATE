@@ -1,4 +1,10 @@
 aws_region = "ap-southeast-2"
-ami_id = "ami-000c1b0c8eaca9787"
+ami_id = "ami-0b3e4eb7e01e957f8"
 instance_type = "t2.micro"
-key_name = "wordpress_server"
+key_name = "MyKeypair"
+security_group_name = "undefined"
+security_group_description = "undefined"
+allow_ssh = true
+allow_http = true
+storage_size_gb = 9
+database_type = "mariadb"

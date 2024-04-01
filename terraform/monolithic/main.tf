@@ -4,86 +4,121 @@ provider "aws" {
 data "aws_region" "current" {}
 
 
+data "aws_security_groups" "existing_sg" {
+  filter {
+    name   = "group-name"
+    values = [var.security_group_name]
+  }
+}
+
+# For mysql_php_apache2.sh
+data "local_file" "mysql_template_file" {
+  filename = "${path.module}/ubuntu_user_data/mysql_php_apache2.sh"
+}
+
+# For mariadb_php_apache2.sh
+data "local_file" "mariadb_template_file" {
+  filename = "${path.module}/ubuntu_user_data/mariadb_php_apache2.sh"
+}
+
+locals {
+  mysql_content_available = var.database_type == "mysql" ? length(data.local_file.mysql_template_file.content) : 0
+  mariadb_content_available = var.database_type == "mariadb" ? length(data.local_file.mariadb_template_file.content) : 0
+}
+# # Render MySQL template
+# resource "local_file" "mysql_template_rendered" {
+#   filename = "${path.module}/mysql_php_apache2.sh"
+#   content  = templatefile("${path.module}/mysql_php_apache2.sh.tpl", {
+#     # Add any variables you need to pass to the template here
+#   })
+# }
+
+# # Render MariaDB template
+# resource "local_file" "mariadb_template_rendered" {
+#   filename = "${path.module}/ubuntu/mariadb_php_apache2.sh"
+#   content  = templatefile("${path.module}/ubuntu/mariadb_php_apache2.sh.tpl", {
+#     # Add any variables you need to pass to the template here
+#   })
+# }
+
 resource "aws_instance" "EC2-create-from-button" {
   ami           = var.ami_id
   instance_type = var.instance_type
-
-  # key_name      = "wordpress_server"
   key_name      = var.key_name  # Use the variable here
-  vpc_security_group_ids = [aws_security_group.wordpress_sg.id]  # Associate the security group
+  # vpc_security_group_ids = [for sg in aws_security_group.sg_name : sg.id]  # Accessing specific instances of the security group
+  # vpc_security_group_ids = length(data.aws_security_groups.existing_sg.ids) > 0 ? data.aws_security_groups.existing_sg.ids : [aws_security_group.sg_name.id]
+  
+  # Use the storage_size_gb variable here
+  ebs_block_device {
+    device_name           = "/dev/sdf"
+    volume_size           = var.storage_size_gb
+    encrypted             = true
+    delete_on_termination = true
+  }
 
-  tags = {
+  tags = { 
     Name = "bimba.ec2instance"
   }
-  # lifecycle {
-  #   prevent_destroy = true
+  vpc_security_group_ids = [aws_security_group.sg_name.id]
+  user_data = <<-EOF
+    #!/bin/bash
+    echo "Executing ${var.database_type} setup script..."
+    ${var.database_type == "mysql" ? data.local_file.mysql_template_file.content :
+      var.database_type == "mariadb" ? data.local_file.mariadb_template_file.content :
+      ""}
+
+  EOF
+}
+# Define aws_security_group.sg_name as per your requirement
+# This resource will be used only if the user doesn't choose an existing security group
+resource "aws_security_group" "sg_name" {
+  # count = length(data.aws_security_groups.existing_sg.ids) > 0 ? 0 : 1  # Conditionally create the security group based on a variable
+  name        = var.security_group_name
+  # description = "Allow inbound traffic to WordPress"
+  description = var.security_group_description
+
+  # SSH rule
+  dynamic "ingress" {
+    for_each = var.allow_ssh ? [1] : []
+    content {
+      from_port = 22
+      to_port = 22
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+
+  # HTTP rule
+  dynamic "ingress" {
+    for_each = var.allow_http ? [1] : []
+    content {
+      from_port = 80
+      to_port = 80
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+  
+  # ingress {
+  #   from_port   = 80
+  #   to_port     = 80
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
   # }
   
+  # ingress {
+  #   from_port   = 443
+  #   to_port     = 443
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
-  user_data = <<-EOF
-              #!/bin/bash
-              # Update package lists
-              sudo apt-get update
-
-              # Install Apache2, MySQL, PHP, and other necessary packages
-              sudo apt-get install -y apache2 mysql-server php libapache2-mod-php php-mysql
-
-              # Enable Apache2 and MySQL services
-              sudo systemctl enable apache2
-              sudo systemctl enable mysql
-
-              # Start Apache2 and MySQL services
-              sudo systemctl start apache2
-              sudo systemctl start mysql
-
-              # Set up MySQL database and user for WordPress
-              sudo mysql -u root -e "CREATE DATABASE wordpress;"
-              sudo mysql -u root -e "CREATE USER 'wpadmin'@'localhost' IDENTIFIED BY 'wpadminpass';"
-              sudo mysql -u root -e "GRANT ALL PRIVILEGES ON wordpress.* TO 'wpadmin'@'localhost';"
-              sudo mysql -u root -e "FLUSH PRIVILEGES;"
-
-              # Install WordPress
-              cd /var/www/html
-              sudo wget https://wordpress.org/latest.tar.gz
-              sudo tar -xzf latest.tar.gz --strip-components=1
-              sudo rm -f latest.tar.gz
-              sudo chown -R www-data:www-data /var/www/html
-              sudo cp wp-config-sample.php wp-config.php
-              sudo sed -i "s/database_name_here/wordpress/" wp-config.php
-              sudo sed -i "s/username_here/wpadmin/" wp-config.php
-              sudo sed -i "s/password_here/wpadminpass/" wp-config.php
-              sudo rm /var/www/html/index.html
-              sudo systemctl restart apache2
-              echo "Wordpress installation script has completed. "
-              
-              EOF
-
-}
-
-resource "aws_security_group" "wordpress_sg" {
-  name        = "wordpress_sg"
-  description = "Allow inbound traffic to WordPress"
-  
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # ingress {
+  #   from_port = 22
+  #   to_port = 22
+  #   protocol = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
   
   egress {
     from_port   = 0

@@ -76,7 +76,7 @@ def get_instance_data_from_s3(bucket_name, key):
         # print("instance data from s3 bucket get_instance_data_from_s3 Function: \n",instance_data)
         return instance_data
         
-    except:
+    except Exception as e: 
         print(f"Error retriving instance json datta from S3: {e} ")
         return[]
     

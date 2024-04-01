@@ -218,38 +218,7 @@
             <br>
             <hr>
             <br>
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title text-center">Deployment History</h5>
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped" id="historyTable" style="background-color: #f0f0f0;">
-                                <thead>
-                                <tr>
-                                    <th class="small">Deployment type</th>
-                                    <th class="small">Created Time</th>
-                                    <th class="small">Deleted Time</th>
-                                    <th class="small">Availabilty Zone</th>
-                                    <th class="small">Status</th>
-                                </tr>
-                                </thead>
-                                <tbody id="historyTableBody" >
-                                    {% for entry in deployment_history|reverse %}
-                                    <tr>
-                                        <td class="small">{{ entry.deployment_type }}</td>
-                                        <td class="small">{{ entry.creation_time }}</td>
-                                        <td class="small">{{ entry.deletion_time }}</td>
-                                        <td class="small">{{ entry.availability_zone }}</td>
-                                        <td class="small">{{ entry.instance_state }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                <!-- More deployment entries can be added dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
         </main>
         <!-- end of main  -->
         <div class="right">
