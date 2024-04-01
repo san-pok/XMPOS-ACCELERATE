@@ -9,6 +9,9 @@ $(document).ready(function () {
     const $searchAmiInput = $('#search_ami_type');
     const $dropdownInstanceContainer = $('#instanceTypeDropdown');
     const $dropdownAmiContainer = $('#amiTypeDropdown');
+    const keyPairSelection = $('input[name="key_pair_selection"]');
+    const existingKeyPairsContainer = $('#existingKeyPairsContainer');
+    const existingKeyPairSelect = $('#existing_key_pair');
 
     let instanceTypes = [];
     let amiList = [];
@@ -191,6 +194,73 @@ $(document).ready(function () {
             $dropdownAmiContainer.addClass('hidden');
         }
     });
+
+    // Event listener for key pair selection radio buttons
+    keyPairSelection.on('change', function () {
+        const selectedValue = $(this).val();
+        if (selectedValue === 'create') {
+            $('#newKeyPairContainer').removeClass('hidden');
+            existingKeyPairsContainer.addClass('hidden');
+        } else if (selectedValue === 'existing') {
+            $('#newKeyPairContainer').addClass('hidden');
+            existingKeyPairsContainer.removeClass('hidden');
+            fetchExistingKeyPairs();
+        }
+    });
+
+    // Event listener for creating a new key pair
+    $('#createNewKeyPairBtn').on('click', function () {
+        const newKeyPairName = $('#new_key_pair_name').val().trim();
+        if (newKeyPairName) {
+            createNewKeyPair(newKeyPairName);
+        } else {
+            alert('Please enter a key pair name.');
+        }
+    });
+
+    // Function to create a new key pair (you can replace this with your actual API call)
+    function createNewKeyPair(newKeyPairName) {
+        event.preventDefault();
+        $.ajax({
+            url: 'http://127.0.0.1:5000/highly/create_key_pair',
+            method: 'POST',
+            data: { new_key_pair_name: newKeyPairName },
+            success: function (data) {
+                alert(data.message);
+            },
+            error: function (error) {
+                alert('Error creating key pair: ' + error);
+            }
+        });
+    }
+
+    // Function to fetch existing key pairs based on region
+    function fetchExistingKeyPairs() {
+        const selectedRegion = $('#region').val();
+        $.ajax({
+            url: 'http://127.0.0.1:5000/highly/existing_key_pairs',
+            method: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            data: { region: encodeURIComponent(selectedRegion) },
+            success: function (data) {
+                populateExistingKeyPairs(data);
+            },
+            error: function (error) {
+                console.error('Error fetching existing key pairs:', error);
+            }
+        });
+    }
+
+    // Populate existing key pairs dropdown
+    function populateExistingKeyPairs(data) {
+        existingKeyPairSelect.empty();
+        const keyPairs = data.existing_key_pairs;
+
+        keyPairs.forEach(keyPair => {
+            const option = $('<option>', { value: keyPair, text: keyPair });
+            existingKeyPairSelect.append(option);
+        });
+    }
 
     // Fetch regions and populate the region select dropdown when DOM content is loaded
     fetchRegionsAndPopulate();

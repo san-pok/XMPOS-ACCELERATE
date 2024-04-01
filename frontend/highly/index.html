@@ -148,6 +148,30 @@
                         <label for="max_instances" class="py-4 uppercase font-bold">Maximum Instances:</label>
                         <input type="text" id="max_instances" name="max_instances" class="py-2 px-6 w-full rounded-lg shadow-md mb-4">
 
+                        <label for="key_pair_selection" class="py-4 uppercase font-bold">Key Pair:</label>
+                        <div class="flex items-center mb-4">
+                            <input type="radio" id="create_key_pair" name="key_pair_selection" value="create" checked>
+                            <label for="create_key_pair" class="ml-2 mr-8">Create new key pair</label>
+
+                            <input type="radio" id="use_existing_key_pair" name="key_pair_selection" value="existing">
+                            <label for="use_existing_key_pair" class="ml-2">Use existing key pair</label>
+                        </div>
+
+                        <div id="newKeyPairContainer" class="py-4">
+                            <label for="new_key_pair_name" class="py-4 uppercase font-bold"> Enter New key pair name :</label>
+                            <input type="text" id="new_key_pair_name" name="new_key_pair_name" class="py-2  w-[60%] rounded-lg shadow-md mb-4">
+
+                            <button id="createNewKeyPairBtn" class="w-[20%]">Create</button>
+                        </div>
+
+                        <!-- Container for existing key pairs -->
+                        <div id="existingKeyPairsContainer" class="hidden py-4">
+                            <label for="existing_key_pair" class="py-2 uppercase font-bold">Existing Key Pairs:</label>
+                            <select id="existing_key_pair" name="existing_key_pair" class="py-2 px-6 w-full rounded-lg shadow-md">
+                                <!-- Options will be dynamically added here -->
+                            </select>
+                        </div>
+
 
 
                         <p id="errorMessage" style="color: red;"></p>
