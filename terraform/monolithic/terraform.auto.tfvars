@@ -1,10 +1,10 @@
 aws_region = "ap-southeast-2"
-ami_id = "ami-0b3e4eb7e01e957f8"
+ami_id = "ami-0ce7edf3564b54498"
 instance_type = "t2.micro"
-key_name = "MyKeypair"
-security_group_name = "undefined"
-security_group_description = "undefined"
+key_name = "wordpress_server"
+security_group_name = "bimba_tap"
+security_group_description = "wordpress app allows HTTP, and allow ssh"
 allow_ssh = true
 allow_http = true
-storage_size_gb = 9
+storage_size_gb = 8
 database_type = "mariadb"

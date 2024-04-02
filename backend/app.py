@@ -1,5 +1,5 @@
 import shutil
-from flask import Flask, jsonify, render_template, request, redirect, send_file, send_from_directory
+from flask import Flask, jsonify, render_template, request, redirect, send_file, send_from_directory, session
 from flask_cors import CORS
 import subprocess
 import json
@@ -30,12 +30,17 @@ logging.basicConfig(level=logging.INFO)
 
 # app = Flask(__name__)
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
+app.secret_key = 'your_secret_key'
 
 CORS(app)  # Enable CORS for all routes
 CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:8000"}})
 
 @app.route('/')
 def dashboard():
+    # Fetch and store AWS regions in session
+    # if 'aws_regions' not in session:
+    #     get_all_regions_monolith()
+
     # return render_template('dashboard.html')
     instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
     # print("Instance data retrieved from S3 instance_data.json:\n", instance_data)
@@ -654,6 +659,9 @@ def get_all_regions_monolith():
                 if e.response['Error']['Code'] == 'UnauthorizedOperation':
                     # Append "No Access" to regions with UnauthorizedOperation errors
                     region['DisplayName'] += ' (No Access)'
+            
+        # Store AWS regions in the session
+        session['aws_regions'] = all_regions
 
         return jsonify({'regions': all_regions})
     except Exception as e:

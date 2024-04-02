@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (existingKeyPairRadio.checked) {
             existingKeyPairDropdown.style.display = 'block';
             const existingKeyPairs = await fetchExistingKeyPairs(selectedRegion);
-            populateExistingKeyPairDropdown(existingKeyPairs);
+            populateExistingKeyPairDropdown(existingKeyPairs, 'Select a key Pair');
             newKeyPairInput.style.display = 'none';
             newSecurityGroupDescriptionInput.style.display = 'none';
             generateKeyPairBtn.style.display = 'none'; // Hide the generate button when "Use Existing Key Pair" is selected
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             existingKeyPairDropdown.style.display = 'block';
             const existingKeyPairs = await fetchExistingKeyPairs(selectedRegion);
             existingKeyPairs.push(generatedKeyPair); // Assuming newKeyPairName is the name of the generated key pair
-            populateExistingKeyPairDropdown(existingKeyPairs);
+            populateExistingKeyPairDropdown(existingKeyPairs, 'Select a Key Pair');
             newKeyPairInput.style.display = 'none';
         } catch (error) {
             console.error('Error generating new key pair:', error);
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const existingSecurityGroups = await fetchExistingSecurityGroups(selectedRegion);
             console.log('Existing Security Groups', existingSecurityGroups);
             // alert(existingSecurityGroups);
-            populateExistingSecurityGroupDropdown(existingSecurityGroups);
+            populateExistingSecurityGroupDropdown(existingSecurityGroups, 'Select a Security Group');
 
             // Set the value of existingSecurityGroupDropdown to the first option
             if(existingSecurityGroups.length > 0){
@@ -211,24 +211,39 @@ document.addEventListener('DOMContentLoaded', async function() {
     createSecurityGroupBtn.addEventListener('click', async function() {
         try{
             // Get the value of the new security group name 
-            const newSecurityGroupName = newSecurityGroupNameInput.value.trim();
-            const newSecurityGroupDescription = newSecurityGroupDescriptionInput.value.trim();
-            alert(newSecurityGroupName);
-            alert(newSecurityGroupDescription);
+            newSecurityGroupName = newSecurityGroupNameInput.value.trim();
+            newSecurityGroupDescription = newSecurityGroupDescriptionInput.value.trim();
+            console.log('newSecurityGroupName :', newSecurityGroupName);
+            console.log('newSecurityGroupDescription :', newSecurityGroupDescription);
+            // alert(newSecurityGroupName);
+            // alert(newSecurityGroupDescription);
             if(!newSecurityGroupName || !newSecurityGroupDescription){
                 alert('Please enter a name for the new security group');
                 return;
             }
+            newSecurityGroupSection.style.display = 'block';
+            // Create a new paragraph element to display the name and description
+            const paragraph = document.createElement('p');
+            paragraph.textContent = `Name: ${newSecurityGroupName}, Description: ${newSecurityGroupDescription}`;
+            // Apply styles to the paragraph
+            paragraph.style.color = 'green';
+            // Get the container element to append the paragraph
+            const newSGSection = document.getElementById('new-sg-section');
+            newSGSection.appendChild(paragraph);
+
             const selectedRegion = regionDropdown.value;
             // // Call fetch function
             // const createdSecurityGroup = await createSecurityGroup(newSecurityGroupName, newSecurityGroupDescription, selectedRegion);
             // // Display the generated sg here
-            existingSecurityGroupDropdown.style.display = 'block';
+            // existingSecurityGroupDropdown.style.display = 'block';
             // const existingSGs = await fetchExistingSecurityGroups(selectedRegion);
             // existingSGs.push(createdSecurityGroup);
             // populateExistingSecurityGroupDropdown(existingSGs);
-            // newSecurityGroupNameInput.style.display = 'none';
-            newSecurityGroupSection.style.display = 'none';
+            newSecurityGroupNameInput.style.display = 'none';
+            newSecurityGroupDescriptionInput.style.display = 'none';
+            createSecurityGroupBtn.style.display = 'none';
+            // newSecurityGroupSection.style.display = 'none';
+            // existingSecurityGroupDropdown.style.display = 'none';
         } catch (error){
             console.error('Error creating new security group:', error);
             // Handle error if creation fails
@@ -342,9 +357,23 @@ document.addEventListener('DOMContentLoaded', async function() {
                 messageElement.textContent = `Generating potential operating systems for region ... (Elapsed time: ${elapsedTime} seconds)`;
             }, 1000); // Update every second
 
+            // Check if AWS regions are already stored in session storage
+            const storedRegions = sessionStorage.getItem('aws_regions');
+            if(storedRegions){
+                clearInterval(timerInterval);
+                const endTime = Date.now();
+                elapsedTime = Math.floor((endTime-startTime) / 1000);
+                messageElement.textContent = `(Elapsed time: ${elapsedTime} seconds to fetch all OS )`;
+
+                return JSON.parse(storedRegions);
+            }
+
             const response = await fetch('/monolith/get-regions');
             const data = await response.json();
             console.log(`Consoling data, ${data}`);
+
+            // Store AWS regions in session storage
+            sessionStorage.setItem('aws_regions', JSON.stringify(data.regions));
 
             // Clear generating message and stop the timer
             clearInterval(timerInterval);
@@ -535,9 +564,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Function to populate existing key pair dropdown with options
-    function populateExistingKeyPairDropdown(existingKeyPairs) {
+    function populateExistingKeyPairDropdown(existingKeyPairs, placeholder) {
         const dropdown = document.getElementById('existing-key-pair');
         dropdown.innerHTML = '';
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = 'Select a key pair';
+        placeholderOption.textContent = placeholder;
+        dropdown.appendChild(placeholderOption)
         existingKeyPairs.forEach(keyPair => {
             const optionElement = document.createElement('option');
             optionElement.value = keyPair;
@@ -547,9 +580,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Function to populate existing security groups dropdown with options
-    function populateExistingSecurityGroupDropdown(existingSecurityGroups){
+    function populateExistingSecurityGroupDropdown(existingSecurityGroups, placeholder){
         const dropdown = document.getElementById('existing-sg');
         dropdown.innerHTML = '';
+
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = placeholder;
+        dropdown.appendChild(placeholderOption)
+
         console.log('Existing Security groups in PopulateExistingSG ', existingSecurityGroups);
         existingSecurityGroups.forEach(sg =>{
             const optionElement = document.createElement('option');
