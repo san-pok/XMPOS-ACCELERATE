@@ -192,10 +192,16 @@ def validate_form():
 
         # Perform form validations
         errors = {}
-        for key, value in data.items():
+        for item in data:
+            key = item.get('name')
+            value = item.get('value')
+
+
             # Check for required fields
-            if not value.strip():
-                errors[key] = 'This field is required'
+            if key in ['ami_type', 'instance_type', 'min_instances', 'max_instances', 'key_pair_selection', 'storage_size', 'db_engine', 'engine_version']:
+                if not value.strip():
+                    errors[key] = 'This field is required'
+
             # Check for numeric fields
             if key.endswith('min_instances') or key.endswith('max_instances'):
                 if not value.isdigit():
@@ -204,26 +210,29 @@ def validate_form():
         if errors:
             return jsonify({'error': 'Form validation failed', 'errors': errors}), 400
         else:
-
             # Check if the user chose to create a new key pair
-            if 'new_key_pair_name' in data:
 
+            key_pair_selection = next((item.get('value') for item in data if item.get('name') == 'key_pair_selection'), None)
+
+            if key_pair_selection == "create":
                 create_key_pair(data)
 
-                data['key_pair_name'] = data['new_key_pair_name']
-                data.pop('new_key_pair_name')
+                new_key_pair_name = next((item.get('value') for item in data if item.get('name') == 'new_key_pair_name'), None)
+
+                data.append({'name': 'key_pair_name', 'value': new_key_pair_name})
 
             else:
+                existing_key_pair_name = next((item.get('value') for item in data if item.get('name') == 'existing_key_pair'), None)
+                data.append({'name': 'key_pair_name', 'value': existing_key_pair_name})
 
-                data['key_pair_name'] = data['existing_key_pair_name']
-                data.pop('existing_key_pair_name')
-
-            # Read existing terraform.auto.tfvars content
-            with open('terraform.auto.tfvars', 'r') as f:
+            with open('../terraform/highly/terraform.auto.tfvars', 'r') as f:
                 existing_content = f.readlines()
 
             # Update validated input fields
-            for key, value in data.items():
+            for item in data:
+                key = item.get('name')
+                value = item.get('value')
+
                 # Exclude double quotations for numeric fields
                 if key.endswith('min_instances') or key.endswith('max_instances'):
                     new_line = f"{key} = {value}\n"
@@ -240,21 +249,18 @@ def validate_form():
                     existing_content.append(new_line)
 
             # Write updated content back to terraform.auto.tfvars
-            with open('terraform.auto.tfvars', 'w') as f:
+            with open('../terraform/highly/terraform.auto.tfvars', 'w') as f:
                 f.writelines(existing_content)
 
-                # Trigger infrastructure deployment
-                # response = deploy_infrastructure()
+            # Trigger infrastructure deployment
+            # response = deploy_infrastructure()
 
-                # if response[1] == 200:  # Check the status code
-                return jsonify({'message': 'Form validation successful and infrastructure deployment triggered'}), 200
-            # else:
-            #   return jsonify({'error': 'Failed to trigger infrastructure deployment after form validation'}), 500
+            # if response[1] == 200:  # Check the status code
+            return jsonify({'message': 'Form validation successful and infrastructure deployment triggered'}), 200
 
     except Exception as e:
         error_message = f'Error validating form data: {str(e)}'
         return jsonify({'error': error_message}), 500
-
 
 @app.route(f'{high_prefix}/existing_key_pairs', methods=['POST'])
 def get_key_pairs():
@@ -388,6 +394,8 @@ def list_db_engine_types():
 
     for engine in response['DBEngineVersions']:
         engine_types.add(engine['Engine'])
+
+    engine_types.add('mysql')
 
     return jsonify(list(engine_types))
 
