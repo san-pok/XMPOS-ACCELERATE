@@ -393,3 +393,105 @@ main table tbody tr td{
     
     
 }
+
+#lightsailInstanceCount, #MonolithInstanceCount {
+    font-size: 12px; /* Larger font size */
+    font-weight: bold; /* Bold text */
+    color: #5f8da9; /* Nice blue color */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    margin-left: 15px;
+}
+
+.table-smaller th,
+.table-smaller td {
+    padding: 0.25rem; /* Adjust the padding as needed */
+}
+
+.sidebar h3 {
+    font-size: 14px; /* Adjust the font size as needed */
+}
+
+main .instance-status-container {
+    margin-top: 1rem;
+}
+
+main .instance-status-container h5 {
+    margin-bottom: 0.8rem;
+}
+
+.table-responsive {
+    overflow-x: auto; /* Enable horizontal scrolling on small screens */
+}
+
+main .instance-status-container table {
+    background: var(--color-white);
+    width: 100%;
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease-in-out;
+    table-layout: auto; /* Allow the table to adjust its layout based on content */
+}
+
+.instance-status-container table:hover {
+    box-shadow: none;
+}
+
+.instance-status-container table tbody td {
+    height: 2.8rem;
+    border-bottom: 1px solid var(--color-light);
+}
+
+.instance-status-container table tbody tr:last-child td {
+    border: none;
+}
+
+.instance-status-container a {
+    text-align: center;
+    display: block;
+    margin: 1rem auto;
+    color: var(--color-primary);
+}
+
+.destroy-button {
+    background-color: #ff4d4f; /* Red color for background */
+    color: #fff; /* White color for text */
+    font-weight: bold;
+    padding: 0.5rem 1rem; /* Adjust padding for better spacing */
+    border: none;
+    border-radius: 0.5rem; /* Rounded corners */
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+    width: auto; /* Allow button width to adjust based on content */
+    margin: 0.2rem; /* Add margin for spacing between buttons */
+}
+
+.destroy-button:hover {
+    background-color: #500202; /* Darker red color on hover */
+}
+.destroying {
+    background-color: #f8d7da; /* Initial background color (red) */
+    transition: background-color 0.5s ease, transform 0.5s ease; /* Transition background color and size */
+    transform: scale(1); /* Initial size */
+}
+.spinner {
+            
+    display: inline-block; /* Ensure the spinner behaves like an inline element */
+    border: 4px solid #f3f3f3; /* Light grey */
+    border-top: 4px solid #dbbc34; /* Blue */
+    border-radius: 50%;
+    width: 25px; /* Adjust the width to make it smaller */
+    height: 25px; /* Adjust the height to make it smaller */
+    animation: spin 1s linear infinite;
+    }
+
+    .spinner--hidden {
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+

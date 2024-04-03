@@ -6,30 +6,28 @@
     <title>Menu</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="./css/menu.css">
-    
     <style>
-.theme-toggler{
-   
-   border: 2px solid var(--color-dark);
-   /* background: var(--color-dark);   */
-  
-   
-}
-.theme-toggler i{
-   color: var(--color-primary);
-   
-   color: black;
-   padding: 10px 14px;
-   
-   
-}
-main #dash-header{
-    color: var(--color-dark);
-}
-.dark-theme{
-    background-color: var(--color-light);
-}
-
+        .theme-toggler{
+        
+        border: 2px solid var(--color-dark);
+        /* background: var(--color-dark);   */
+        
+        
+        }
+        .theme-toggler i{
+        color: var(--color-primary);
+        
+        color: black;
+        padding: 10px 14px;
+        
+        
+        }
+        main #dash-header{
+            color: var(--color-dark);
+        }
+        .dark-theme{
+            background-color: var(--color-light);
+        }
     </style>
 </head>
 <body>
@@ -49,7 +47,7 @@ main #dash-header{
                     <i class="fa-solid fa-grip"></i>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="">
+                <a href="./monolith/input-monolith.html" id="monolith-deployment">
                     <i class="fa-solid fa-bolt"></i>
                     <h3>Deploy Monolith</h3>
                 </a>
@@ -65,7 +63,7 @@ main #dash-header{
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <h3>Deployment History</h3>
                 </a>
-                <a href="">
+                <a href="reports.html">
                     <i class="fa-solid fa-file-pdf"></i>
                     <h3>Reports</h3>
                 </a>
@@ -96,6 +94,11 @@ main #dash-header{
                         </div>
                     </div>
                     <small class="text-muted">Monolithic Arch</small>
+                    <p class="card-text" id="total-running-instances">Total Running: 
+                        <span id="MonolithInstanceCount" class="">
+                            <span class="spinner"></span>
+                        </span>
+                    </p>
                 </div>
                 <!-- monolith ends  -->
 
@@ -110,48 +113,74 @@ main #dash-header{
                 </div>
                 <!-- highly available ends here  -->
                 
-                    <div class="lightsail">
-                        <i class="fa-solid fa-bolt"></i>
-                        <div class="middle">
-                            <div class="left">
-                                <h3>  <a href="./lightsail/index.html">Lightsail </a></h3>
-                            </div>
+                <div class="lightsail">
+                    <i class="fa-solid fa-bolt"></i>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>  <a href="./lightsail/index.html">Lightsail </a></h3>
                         </div>
-                        <small class="text-muted">Lightsail Arch</small>
                     </div>
-                
-
+                    <small class="text-muted">Lightsail Arch</small>
+                    <p class="card-text" >Total Running: 
+                        <span id="lightsailInstanceCount">
+                            <span id="loaderLightsail" class="" role="status" >
+                                <!-- <span>Fetching</span> -->
+                                <span class="spinner"></span>
+                            </span>
+                           
+                        </span>
+                    </p>
+                </div>
             </div>
             <!-- end of insights  -->
+            <br>
+            <hr>
+            <br>
+            <div class="instance-status-container">
+                <h2 style="font-size: 22px;">Instance Status</h2>
+                <p id="statusMessage" class="text-sm text-gray-600"></p>
+                <div class="table-responsive">
+                    <table id="instanceStatusTable" class="w-full table-auto">
+                        <thead class="bg-blue-500 text-white">
+                            <tr>
+                                <th class="px-4 py-2">Created Time</th>
+                                <th class="px-4 py-2">Deployment Type</th>
+                                <th class="px-4 py-2">Instance ID / Project Name</th>
+                                <th class="px-4 py-2">Running Application</th>
+                                <th class="px-4 py-2">Instance Type / Bundle ID</th>
+                                <th class="px-4 py-2">Region / Availability Zone</th>
+                                <th class="px-4 py-2">State</th>
+                                <th class="px-4 py-2">Public IP</th>
+                                <th class="px-4 py-2">Destroy</th>
+                            </tr>
+                        </thead>
+                        <tbody id="instanceStatusBody">
+                            <!-- Table rows will be dynamically populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <div class="recent-deployment">
-                <h2 style="font-size: 22px;" id="dash-header">Recent Deployment</h2>
-               
-
-
-                <div class="main-container flex justify-center items-center h-screen">
-                    <div class="container mx-auto max-w-4xl" >
-                        <table class="table-auto w-full mt-10" style="width: 65vw;">
-                            <thead >
-                                <tr class="bg-blue-500 text-white" >
-                                    <th class="px-4 py-2" id="dash-header">S.No</th>
-                                    <th class="px-4 py-2" id="dash-header">Architecture</th>
-                                    <th class="px-4 py-2" id="dash-header">Timestamp</th>
-                                    <th class="px-4 py-2" id="dash-header">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="deploymentHistoryTable">
-                                <!-- Deployment history rows will be inserted here -->
-                            </tbody>
-                        </table>
-                    </div>
+                <h2 style="font-size: 22px;">Recent Deployment</h2>
+                <div class="table-responsive">
+                    <table class="w-full table-auto mt-10">
+                        <thead class="bg-blue-500 text-white">
+                            <tr>
+                                <th class="px-4 py-2">S.No</th>
+                                <th class="px-4 py-2">Architecture</th>
+                                <th class="px-4 py-2">Timestamp</th>
+                                <th class="px-4 py-2">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deploymentHistoryTable">
+                            <!-- Deployment history rows will be inserted here -->
+                        </tbody>
+                    </table>
                 </div>
-
-
-
-
-                <a href="#">Show All</a>
             </div>
+            <a href="#">Show All</a>
+          
         </main>
         <!-- end of main  -->
         <div class="right">
@@ -193,9 +222,16 @@ main #dash-header{
   <!--
         <button id="signOut">Sign Out</button> -->
 
-    </ul>
+    <!-- </ul> -->
+
     <script src="js/menu.js" defer></script>
-    <script src="js/main.js" defer></script>
+    <!-- Include jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- <script src="/frontend/js/menu.js"></script> -->
+
+    <!-- <script src="js/main.js" defer></script> -->
     <!-- <script src="js/login.js" defer></script>
     <script src="js/signup.js" defer></script> -->
     <script>
