@@ -172,6 +172,41 @@
                             </select>
                         </div>
 
+                        <label for="storage_size" class="py-4 uppercase font-bold"> Storage Size :</label>
+                        <input type="text" id="storage_size" name="storage_size" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
+
+                        <label for="storage_type" class="py-4 w-64 uppercase font-bold">Select OS:</label>
+                        <select id="storage_type" name="storage_type" class="w-[100%] p-1 py-2 rounded-lg shadow-md px-6 mb-4">
+                            <option value="gp2">gp2</option>
+                            <option value="gp3">gp3</option>
+                        </select>
+
+                        <h2 class="font-bold"> RDS Configuration</h2>
+
+                        <label for="search_db_engine" class="block text-gray-700 text-sm font-bold mb-2">Select DB Engine:</label>
+                        <div class="relative w-full">
+                            <input type="text" id="search_db_engine" placeholder="Type to Search and Select DB Engine" class="py-2 px-6 w-full rounded-lg shadow-md mb-4 focus:outline-none focus:border-blue-500">
+                            <input type="hidden" id="selected_db_engine" name="db_engine">
+                            <div id="dbEngineDropDown" class="absolute left-0 mt-2 w-full bg-white border rounded-lg shadow-md z-10 hidden">
+                                <!-- Options will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <label for="search_engine_version" class="block text-gray-700 text-sm font-bold mb-2">Select DB Engine Version:</label>
+                        <div class="relative w-full">
+                            <input type="text" id="search_engine_version" placeholder="Type to Search and Select DB Engine Version" class="py-2 px-6 w-full rounded-lg shadow-md mb-4 focus:outline-none focus:border-blue-500">
+                            <input type="hidden" id="selected_engine_version" name="engine_version">
+                            <div id="engineVersionDropDown" class="absolute left-0 mt-2 w-full bg-white border rounded-lg shadow-md z-10 hidden">
+                                <!-- Options will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <label for="environment" class="py-4 w-64 uppercase font-bold">Select Environment:</label>
+                        <select id="environment" name="environment" class="w-[100%] p-1 py-2 rounded-lg shadow-md px-6 mb-4">
+                            <option value="production">Production</option>
+                            <option value="development">Development</option>
+                        </select>
+
 
 
                         <p id="errorMessage" style="color: red;"></p>

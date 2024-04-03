@@ -2,18 +2,26 @@ $(document).ready(function () {
     const regionSelect = $('#region');
     const osSelect = $('#os_type');
     const instanceTypeSelect = $('#instance_type');
+    const dbEngineSelect = $('#search_db_engine');
+    const dbEngineVersion = $('#search_engine_version');
     const amiTypeSelect = $('#search_ami_type');
     const deployForm = $('#deployForm');
     const formInputs = deployForm.find('input, select, button');
     const $searchInstanceInput = $('#search_instance_type');
+    const $searchDbEngine = $('#search_db_engine');
+    const $searchEngineVersion = dbEngineVersion;
     const $searchAmiInput = $('#search_ami_type');
     const $dropdownInstanceContainer = $('#instanceTypeDropdown');
+    const $dropDbEngineContainer = $('#dbEngineDropDown');
+    const $dropEngineVersionContainer = $('#engineVersionDropDown');
     const $dropdownAmiContainer = $('#amiTypeDropdown');
     const keyPairSelection = $('input[name="key_pair_selection"]');
     const existingKeyPairsContainer = $('#existingKeyPairsContainer');
     const existingKeyPairSelect = $('#existing_key_pair');
 
     let instanceTypes = [];
+    let dbEngineList = [];
+    let engineVersionList = [];
     let amiList = [];
     let regions = [];
 
@@ -45,6 +53,62 @@ $(document).ready(function () {
         instanceTypes.forEach(type => {
             const option = $('<option>', { value: type, text: type });
             instanceTypeSelect.append(option);
+        });
+    }
+
+    function fetchDbEnginesAndPopulate(region) {
+        if (!region) {
+            return;
+        }
+
+        $.ajax({
+            url: 'http://127.0.0.1:5000/highly/db_engine_types',
+            method: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            data: { region: encodeURIComponent(region) },
+            success: function (data) {
+                dbEngineList = data;
+                populateDbEngineSelect();
+            },
+            error: function (error) {
+                console.error('Error fetching Db Engine types:', error);
+            }
+        });
+    }
+
+
+    function populateDbEngineSelect() {
+        dbEngineSelect.empty();
+
+        dbEngineList.forEach(type => {
+            const option = $('<option>', { value: type, text: type });
+            dbEngineSelect.append(option);
+        });
+    }
+
+    function fetchEngineVersionsAndPopulate(region,engine) {
+
+        $.ajax({
+            url: 'http://127.0.0.1:5000/highly/db_engine_versions',
+            method: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            data: { region: encodeURIComponent(region), engine: engine },
+            success: function (data) {
+                engineVersionList = data;
+                populateEngineVersionSelect();
+            },
+            error: function (error) {
+                console.error('Error fetching Db Engine Version types:', error);
+            }
+        });
+    }
+
+    function populateEngineVersionSelect() {
+        dbEngineVersion.empty();
+
+        engineVersionList.forEach(type => {
+            const option = $('<option>', { value: type, text: type });
+            dbEngineVersion.append(option);
         });
     }
 
@@ -114,6 +178,7 @@ $(document).ready(function () {
         fetchInstanceTypesAndPopulate(selectedRegion);
         const osType = $('#os_type').val();
         fetchAmisAndPopulate(selectedRegion, osType);
+        fetchDbEnginesAndPopulate(selectedRegion);
     });
 
     osSelect.on('change', function () {
@@ -133,6 +198,16 @@ $(document).ready(function () {
     $searchAmiInput.on('input', function () {
         const searchText = $(this).val().trim();
         createAmiDropdownOptions(searchText);
+    });
+
+    $searchDbEngine.on('input', function () {
+        const searchText = $(this).val().trim();
+        createDbEngineDropdown(searchText);
+    });
+
+    $searchEngineVersion.on('input', function () {
+        const searchText = $(this).val().trim();
+        createEngineVersionDropdown(searchText);
     });
 
     // Function to create dropdown options based on search input for instance types
@@ -155,6 +230,55 @@ $(document).ready(function () {
             $dropdownInstanceContainer.removeClass('hidden');
         } else {
             $dropdownInstanceContainer.addClass('hidden');
+        }
+    }
+
+    function createDbEngineDropdown(searchText) {
+        const filteredDbEngines = dbEngineList.filter(type =>
+            type.toLowerCase().includes(searchText.toLowerCase())
+        );
+        $dropDbEngineContainer.empty();
+
+        filteredDbEngines.forEach(type => {
+            const $option = $('<div>', { class: 'dropdown-option', text: type });
+            $option.on('click', function () {
+                $searchDbEngine.val(type);
+                const selectedRegion = regionSelect.val();
+
+                fetchEngineVersionsAndPopulate(selectedRegion,type);
+                $dropDbEngineContainer.empty();
+
+
+            });
+            $dropDbEngineContainer.append($option);
+        });
+
+        if (searchText.trim() !== '') {
+            $dropDbEngineContainer.removeClass('hidden');
+        } else {
+            $dropDbEngineContainer.addClass('hidden');
+        }
+    }
+
+    function createEngineVersionDropdown(searchText) {
+        const filteredEngineVersions = engineVersionList.filter(type =>
+            type.toLowerCase().includes(searchText.toLowerCase())
+        );
+        $dropEngineVersionContainer.empty();
+
+        filteredEngineVersions.forEach(type => {
+            const $option = $('<div>', { class: 'dropdown-option', text: type });
+            $option.on('click', function () {
+                $searchEngineVersion.val(type);
+                $dropEngineVersionContainer.empty();
+            });
+            $dropEngineVersionContainer.append($option);
+        });
+
+        if (searchText.trim() !== '') {
+            $dropEngineVersionContainer.removeClass('hidden');
+        } else {
+            $dropEngineVersionContainer.addClass('hidden');
         }
     }
 
@@ -192,6 +316,20 @@ $(document).ready(function () {
     $(document).on('click', function (e) {
         if (!$dropdownAmiContainer.is(e.target) && $dropdownAmiContainer.has(e.target).length === 0) {
             $dropdownAmiContainer.addClass('hidden');
+        }
+    });
+
+    // Event listener for clearing the db Engine type dropdown on click outside
+    $(document).on('click', function (e) {
+        if (!$dropDbEngineContainer.is(e.target) && $dropDbEngineContainer.has(e.target).length === 0) {
+            $dropDbEngineContainer.addClass('hidden');
+        }
+    });
+
+    // Event listener for clearing the Engine Version type dropdown on click outside
+    $(document).on('click', function (e) {
+        if (!$dropEngineVersionContainer.is(e.target) && $dropEngineVersionContainer.has(e.target).length === 0) {
+            $dropEngineVersionContainer.addClass('hidden');
         }
     });
 
@@ -264,4 +402,51 @@ $(document).ready(function () {
 
     // Fetch regions and populate the region select dropdown when DOM content is loaded
     fetchRegionsAndPopulate();
+
+    $('#deployForm').on('submit', function (event) {
+        event.preventDefault(); // Prevent the default form submission behavior
+
+        const formData = $(this).serializeArray();
+
+        // Manually replace values for dynamically populated inputs if they exist
+        replaceFormDataValue(formData, 'ami_type', $('#search_ami_type').val());
+        replaceFormDataValue(formData, 'instance_type', $('#search_instance_type').val());
+        replaceFormDataValue(formData, 'db_engine', $('#search_db_engine').val());
+        replaceFormDataValue(formData, 'engine_version', $('#search_engine_version').val());
+
+        // Convert formData to JSON format
+        const jsonData = JSON.stringify(formData);
+
+        console.log(jsonData)
+
+        // Send an AJAX request to your API endpoint
+
+        $.ajax({
+            url: 'http://127.0.0.1:5000/highly/validate_form',
+            method: 'POST',
+            data: jsonData,
+            contentType: 'application/json', // Set the Content-Type header to JSON
+            success: function (response) {
+                console.log('Form validation successful:', response);
+                // You can handle the success response here, such as showing a success message to the user
+                alert('Form validation successful and infrastructure deployment triggered');
+            },
+            error: function (error) {
+                console.error('Error validating form:', error);
+                // You can handle the error response here, such as showing an error message to the user
+                alert('Error validating form. Please try again.');
+            }
+        });
+
+    });
+
+    function replaceFormDataValue(formData, key, value) {
+        const index = formData.findIndex(item => item.name === key);
+        if (index !== -1) {
+            formData[index].value = value;
+        } else {
+            formData.push({ name: key, value: value });
+        }
+    }
+
 });
