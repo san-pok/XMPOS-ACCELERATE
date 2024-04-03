@@ -207,6 +207,20 @@
                             <option value="development">Development</option>
                         </select>
 
+                        <label for="vcpus" class="py-4 uppercase font-bold"> Number of vCPUs :</label>
+                        <input type="text" id="vcpus" name="vcpus" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
+
+                        <label for="memory_capacity" class="py-4 uppercase font-bold">Memory Capacity (GB):</label>
+                        <input type="text" id="memory_capacity" name="memory_capacity" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
+
+                        <label for="storage_capacity" class="py-4 uppercase font-bold">Storage Capacity (GB):</label>
+                        <input type="text" id="storage_capacity" name="storage_capacity" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
+
+                        <label for="multi_az" class="py-4 w-64 uppercase font-bold">Select Availability:</label>
+                        <select id="multi_az" name="multi_az" class="w-[100%] p-1 py-2 rounded-lg shadow-md px-6 mb-4">
+                            <option value="true">Multi-AZ</option>
+                            <option value="false">No Replicas</option>
+                        </select>
 
 
                         <p id="errorMessage" style="color: red;"></p>

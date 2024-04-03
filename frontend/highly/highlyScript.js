@@ -417,8 +417,6 @@ $(document).ready(function () {
         // Convert formData to JSON format
         const jsonData = JSON.stringify(formData);
 
-        console.log(jsonData)
-
         // Send an AJAX request to your API endpoint
 
         $.ajax({
@@ -427,8 +425,6 @@ $(document).ready(function () {
             data: jsonData,
             contentType: 'application/json', // Set the Content-Type header to JSON
             success: function (response) {
-                console.log('Form validation successful:', response);
-                // You can handle the success response here, such as showing a success message to the user
                 alert('Form validation successful and infrastructure deployment triggered');
             },
             error: function (error) {
