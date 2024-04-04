@@ -18,3 +18,9 @@ venv/
 #Ignore the states file
 terraform.tfstate
 terraform.tfstate.backup
+
+
+.DS_Store
+terraform.auto.tfvars
+
+

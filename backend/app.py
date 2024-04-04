@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, redirect
+from flask import Flask, jsonify, render_template, request, redirect, session
 from flask_cors import CORS
 import subprocess
 import json
@@ -11,7 +11,9 @@ from botocore.exceptions import ClientError
 from botocore.exceptions import NoCredentialsError, ClientError
 import logging
 import datetime
-
+import botocore
+from operator import itemgetter
+from handler import capture_ec2_and_lightsail_instance_output, generate_timestamp, get_instance_data_from_s3, prepare_eamil, save_instance_data_to_s3
 
 
 from dotenv import load_dotenv
@@ -28,7 +30,7 @@ create_bucket_config = {
 
 # Define the prefix
 high_prefix = '/highly'
-mono_prefix = '/mono'
+mono_prefix = '/monolith'
 
 logging.basicConfig(level=logging.INFO)
 
@@ -44,6 +46,8 @@ COGNITO_USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
 COGNITO_APP_CLIENT_ID = os.getenv('COGNITO_APP_CLIENT_ID')
 
 cognito_client = boto3.client('cognito-idp', region_name=AWS_REGION)
+
+app.secret_key = 'your_secret_key'
 
 
 @app.route('/')
@@ -587,6 +591,568 @@ def get_deployment_history():
 
 
 # Add Monolitic Routes only
+##############################   Add Monolitic Routes only     ####################
+
+# route to fetch instance status data
+@app.route('/fetch-instance-status')
+def fetch_instance_status():
+    # return render_template('dashboard.html')
+    instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+    return jsonify(instance_data)
+    
+#route to fetch aws regions 
+@app.route(f'{mono_prefix}/get-regions', methods=['GET'])
+def get_all_regions_monolith():
+    # Create an EC2 client
+    ec2_client = boto3.client('ec2')
+    try:
+        # Describe all regions
+        response = ec2_client.describe_regions()
+
+        # Extract region names from the response
+        all_regions = [{'DisplayName': region['RegionName'], 'Endpoint': region['Endpoint'], 'RegionName': region['RegionName']} for region in response['Regions']]
+
+        # Check each region for permissions to run instances
+        authorized_regions = []
+
+        # Iterate over each region
+        for region in all_regions:
+            region_name = region['RegionName']
+            
+            # Create an EC2 client for the specific region
+            ec2_client = boto3.client('ec2', region_name=region_name)
+
+            try:
+                # Get all EC2 instances in the current region
+                instances_response = ec2_client.describe_instances()
+                region['DisplayName'] += ' (******* Access *******)'
+                authorized_regions.append(region)
+                
+            except botocore.exceptions.ClientError as e:
+                if e.response['Error']['Code'] == 'UnauthorizedOperation':
+                    # Append "No Access" to regions with UnauthorizedOperation errors
+                    region['DisplayName'] += ' (No Access)'
+            
+        # Store AWS regions in the session
+        session['aws_regions'] = all_regions
+
+        return jsonify({'regions': all_regions})
+    except Exception as e:
+        print(f"Error retrieving regions: {e}")
+        return []
+
+@app.route(f'{mono_prefix}/amis', methods=['GET'])
+def get_amis_monolith():
+    try:
+        region = request.args.get('region')
+        os_type = request.args.get('os_type')
+
+        ec2 = boto3.client('ec2', region_name=region)
+
+        # Define filters based on the OS type
+        if os_type == 'ubuntu':
+            filters = [
+                {'Name': 'name', 'Values': ['ubuntu/images/*']},
+                # {'Name': 'description', 'Values': ['*Ubuntu*']},
+                {'Name': 'architecture', 'Values': ['x86_64']},
+                {'Name': 'root-device-type', 'Values': ['ebs']},
+                {'Name': 'virtualization-type', 'Values': ['hvm']},
+                {'Name': 'state', 'Values': ['available']},
+                {'Name': 'is-public', 'Values': ['true']},
+                {'Name': 'owner-id', 'Values': ['099720109477']}  # AWS-owned AMIs
+                
+            ]
+        elif os_type == 'windows':
+            filters = [
+                {'Name': 'platform', 'Values': ['windows']},
+                {'Name': 'architecture', 'Values': ['x86_64']},
+                {'Name': 'root-device-type', 'Values': ['ebs']},
+                {'Name': 'virtualization-type', 'Values': ['hvm']},
+                {'Name': 'state', 'Values': ['available']},
+                {'Name': 'is-public', 'Values': ['true']},
+                {'Name': 'owner-id', 'Values': ['099720109477']},  # AWS-owned AMIs
+            ]
+        else:  # Assume Linux AMIs
+            filters = [
+                {'Name': 'name', 'Values': ['amzn2-ami-hvm-*']},
+                {'Name': 'architecture', 'Values': ['x86_64']},
+                {'Name': 'root-device-type', 'Values': ['ebs']},
+                {'Name': 'virtualization-type', 'Values': ['hvm']},
+                {'Name': 'state', 'Values': ['available']},
+                {'Name': 'is-public', 'Values': ['true']},
+                {'Name': 'owner-id', 'Values': ['099720109477']},  # AWS-owned AMIs
+            ]
+        print ('Selected os: ', filters)
+        # Retrieve AMIs based on the filters
+        images = ec2.describe_images(Filters=filters)['Images']
+        
+        # Extract desired attributes for the fetched AMIs
+        amis = extract_info(images)
+        amisJson =json.dumps(amis, indent = 4 )
+        # print ('Selected AMIs: ', amisJson)
+        # return jsonify({os_type: amis})
+        return amisJson
+    except Exception as e:
+        return {'error': str(e)}
+def extract_info(images):
+    extracted_images = []
+    for image in images:
+        # Exclude Marketplace AMIs
+        extracted_image = {
+            'Architecture': image['Architecture'],
+            'ImageId': image['ImageId'],
+            'PlatformDetails': image['PlatformDetails'],
+            'RootDeviceType': image['RootDeviceType'],
+            'VirtualizationType': image['VirtualizationType'],
+            'Description': image['Description'],
+            'ImageType': image['ImageType'],
+            'Public': image['Public']
+        }
+        extracted_images.append(extracted_image)
+    return extracted_images
+
+@app.route(f'{mono_prefix}/instance-types', methods=['GET'])
+def get_instance_types_monolith():
+    try:
+        region = request.args.get('region')
+        # region = 'ap-southeast-2'
+        ec2 = boto3.client('ec2', region_name=region)
+        instance_types = ec2.describe_instance_type_offerings()
+
+        # Extract instance type names from the response
+        instance_type_names = [instance['InstanceType'] for instance in instance_types['InstanceTypeOfferings']]
+
+        # Sort instance types in ascending order
+        sorted_instance_types = sorted(instance_type_names)
+
+        # Filter instance types based on FreeTierEligible attribute
+        # free_tier_instance_types = [instance_type for instance_type in instance_types if instance_type.get('FreeTierEligible', True)]
+
+        # return jsonify({'instance_types': instance_type_names, 'Free_instance_types': free_tier_instance_types} )
+        return jsonify({'instance_types': sorted_instance_types})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+    
+@app.route(f'{mono_prefix}/existing_key_pairs', methods=['GET'])
+def get_existing_key_pairs():
+    region = request.args.get('region')
+
+    try:
+        ec2 = boto3.client('ec2', region_name=region)
+
+        # Retrieve the list of existing key pairs
+        response = ec2.describe_key_pairs()
+        key_pairs = [key_pair['KeyName'] for key_pair in response['KeyPairs']]
+        print(f"Existing Key Pairs in {region}:", key_pairs)
+
+        return jsonify({'existing_key_pairs': key_pairs})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route(f'{mono_prefix}/generate_key_pair', methods=['POST'])
+def generate_new_key_pair():
+    data = request.get_json()
+    region = data.get('region')
+    new_key_pair_name = data.get('new_key_pair_name')
+    print('Region:', region)
+    print('New Key Pair Name:', new_key_pair_name)
+
+    try:
+        ec2 = boto3.client('ec2', region_name=region)
+
+        # Generate a new key pair
+        response = ec2.create_key_pair(KeyName=new_key_pair_name)
+
+        # Save the private key to a file
+        key_material = response['KeyMaterial']
+        key_file_path = f"{new_key_pair_name}.pem"
+        with open(key_file_path, 'w') as key_file:
+            key_file.write(key_material)
+
+        return jsonify({'message': 'Key pair created successfully', 'key_file_path': key_file_path}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+@app.route(f'{mono_prefix}/get-security-groups')
+def get_security_groups():
+    aws_region = request.args.get('region')
+    try: 
+        # aws_region = 'ap-southeast-1'
+        ec2_client = boto3.client('ec2', region_name = aws_region)
+        response = ec2_client.describe_security_groups()
+        # Extract security group information from the response
+        security_groups = response['SecurityGroups']
+        # Extract relevant data from security groups 
+        formatted_security_groups = []
+        for group in security_groups:
+            formatted_security_groups.append({
+                'GroupName': group['GroupName'],
+                'GroupId': group['GroupId'],
+            })
+        return jsonify({'security_groups': formatted_security_groups})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+    
+@app.route(f'{mono_prefix}/create_security_group', methods=['POST'])
+def create_security_group():
+    data = request.json
+    group_name = data.get('new_sg_name')
+    description = data.get('new_sg_description')
+    aws_region = data.get('region')
+    # group_name = 'group_name'
+    # description ='description'
+    ec2_client = boto3.client('ec2', region_name = aws_region)
+
+    if not all([group_name, description]):
+        return jsonify({'error': 'Missing required parameters'}), 400
+    
+    try:
+        response = ec2_client.create_security_group(
+            GroupName=group_name,
+            Description=description
+        )
+        return jsonify({'generated_sg': response}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route(f'{mono_prefix}/deploy-monolith', methods=['POST'])
+def submit_form_monolith():
+    os.chdir('../terraform/monolithic')
+    try: 
+        aws_region = request.json.get('aws-region')
+        ami_id = request.json.get('aws-ami')
+        instance_type = request.json.get('instance-type')
+        key_pair = request.json.get('key_pair')
+        security_group = request.json.get('security_group')
+        security_group_description = request.json.get('security_group_description')
+        allow_ssh = request.json.get('allow-ssh')
+        allow_http = request.json.get('allow-http')
+        selectedSGId = request.json.get('selectedSGId')
+        createdSG = request.json.get('createdSG')
+        newSecurityGroupName = request.json.get('newSecurityGroupName')
+        storage_size_gb = request.json.get('ebs-storage')
+        database_type = request.json.get('database_type')
+
+        if allow_ssh == 'on':
+            allow_ssh = 'true'
+        else:
+            allow_ssh = 'false'
+
+        if allow_http == 'on':
+            allow_http = 'true'
+        else:
+            allow_http = 'false'
+
+        # # Check if selectedSGId is not empty, otherwise use createdSG
+        # selectedSG_to_pass = security_group if security_group else createdSG
+        # print ('Selected SG to pass ', selectedSG_to_pass)
+        
+
+        print("Received data:")
+        print("AWS Region:", aws_region)
+        print("AMI ID:", ami_id)
+        print("Instance Type:", instance_type)
+        print("Key Pair:", key_pair)
+        print("Created SG Name:", newSecurityGroupName)
+        print("SG id:", selectedSGId)
+        print("storage_size_gb:", storage_size_gb)
+        print("database_type:", database_type)
+
+
+
+        # Get the absolute path to terraform.auto.tfvars for debugging
+        tfvars_file = os.path.abspath('terraform.auto.tfvars')
+        print("Absolute path to terraform.auto.tfvars:", tfvars_file)
+
+        # Write the user-submitted values to a TFVars file
+        # with open('./terraform/wordpress-ec2/terraform.auto.tfvars', 'w') as f:
+        with open('terraform.auto.tfvars', 'w') as f:
+
+            f.write(f'aws_region = "{aws_region}"\n')
+            f.write(f'ami_id = "{ami_id}"\n')
+            f.write(f'instance_type = "{instance_type}"\n')
+            f.write(f'key_name = "{key_pair}"\n')
+            f.write(f'security_group_name = "{newSecurityGroupName}"\n')
+            f.write(f'security_group_description = "{security_group_description}"\n')
+            f.write(f'allow_ssh = {allow_ssh}\n')
+            f.write(f'allow_http = {allow_http}\n')
+            f.write(f'storage_size_gb = {storage_size_gb}\n')
+            f.write(f'database_type = "{database_type}"\n')
+
+        # #Trigger Terraform deployment
+            
+        subprocess.run(['terraform', 'init',], check=True)
+        # Run terraform import to import the existing security group
+        # Run terraform state rm command to remove the existing security group from the state
+        # subprocess.run(['terraform', 'state', 'rm', 'aws_security_group.sg_name'], check=True)
+        # Backup the Terraform state file
+        # shutil.copy('terraform.tfstate', 'terraform.tfstate.backup')
+        # subprocess.run(['terraform', 'import', 'aws_security_group.sg_name', selectedSGId], check=True)
+        subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)  
+
+        # Remove the imported resource from the Terraform state file
+        # remove_resource_from_state('terraform.tfstate', 'aws_security_group.sg_name')
+      
+        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
+        print('incoming data from creation ec2 \n', output_data_of_ec2)
+        # Generate current timestamp
+        current_timestamp = generate_timestamp()
+        print ('Output of current time', current_timestamp)
+        # Add deployment type to instance data
+        output_data_of_ec2['deployment_type'] = 'Monolith'
+        # Add timestamp to instance data
+        output_data_of_ec2['creation_time'] = current_timestamp
+        output_data_of_ec2['deletion_time'] = ''
+
+        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
+
+        instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+        print("Instance data retrieved from S3:", instance_data)
+        # Add the new entry to the deployment history for instance creation
+       
+        # refresh_page()
+        return jsonify(instance_data), 200, {'message': 'Wordpress on EC2 is deployed successfully.'}
+        # return render_template('index.html')
+
+    except Exception as e:
+        error_message = str(e)
+        logging.error(f'Error occurred: {error_message}')  # Log the error
+        return f'Error: {error_message}', 500 # Return an error response with status code 500
+    finally:
+        os.chdir(original_dir)
+
+
+@app.route('/count-running-ec2-instances')
+# @app.route(f'{mono_prefix}/count-running-ec2-instances')
+def count_running_ec2_instances():
+    try:
+        # Create an EC2 client
+        ec2_client = boto3.client('ec2')
+
+        # Get all EC2 regions
+        regions_response = ec2_client.describe_regions()
+
+        # Check each region for permissions to run instances
+        authorized_regions = []
+
+        # Initialize count for running instances and access denied regions
+        total_running_instance_count = 0
+        access_denied_count = 0
+        authorized_regions_count = 0
+
+        # Iterate over each region
+        for region in regions_response['Regions']:
+            region_name = region['RegionName']
+
+            # Create an EC2 client for the specific region
+            ec2_client = boto3.client('ec2', region_name=region_name)
+
+            try:
+                # Get all EC2 instances in the current region
+                instances_response = ec2_client.describe_instances()
+
+                # Filter running instances
+                running_instances = []
+
+                # Iterate each reservation in the list of reservations
+                for reservation in instances_response['Reservations']:
+                    # Retrieve a list of instances within the current reservation
+                    instance_in_reservation = reservation['Instances']
+                    # Iterate over each instance in the list of instances
+                    for instance in instance_in_reservation:
+                        # Check if current instance is running
+                        if instance['State']['Name'] == 'running':
+                            running_instances.append(instance)
+
+                # Count the number of running instances in the current region
+                running_instance_count_in_region = len(running_instances)
+                total_running_instance_count += running_instance_count_in_region
+
+                # print(f"Region: {region_name}, Running EC2 Instance Count: {running_instance_count_in_region}")
+                authorized_regions_count += 1
+                authorized_regions.append(region_name)
+
+            except botocore.exceptions.ClientError as e:
+                if e.response['Error']['Code'] == 'UnauthorizedOperation':
+                    access_denied_count += 1
+
+        print(f"Total number of running EC2 instances across all regions: {total_running_instance_count}")
+        print(f"Total number of EC2 Instance UnauthorizedOperation errors: {access_denied_count}")
+        print("EC2 Instance Authorized regions:", authorized_regions, "Number of EC2 Instance Authorized regions: ", authorized_regions_count)
+        
+        return jsonify({'running_instances': total_running_instance_count,
+                        'Authorized regions': authorized_regions,
+                        'Number of Authorized regions': authorized_regions_count })
+
+    except Exception as e:
+        return jsonify({'error': str(e)})
+ 
+
+@app.route('/count-lightsail-instances')
+def count_instances():
+
+    # Create a Lightsail client
+    lightsail_client = boto3.client('lightsail')
+
+    # Get all Lightsail regions
+    regions_response = lightsail_client.get_regions()
+
+    # Initialize count for all instances
+    total_instance_count = 0
+    access_denied_count = 0
+    # Iterate over each region
+    for region in regions_response['regions']:
+        region_name = region['name']
+        
+        # Create a Lightsail client for the specific region
+        lightsail_client = boto3.client('lightsail', region_name=region_name)
+
+        try: 
+
+            # Get all Lightsail instances in the current region
+            instances_response = lightsail_client.get_instances()
+
+            # Count the number of instances in the current region
+            instance_count_in_region = len(instances_response['instances'])
+            total_instance_count += instance_count_in_region
+
+            # print(f"Region: {region_name}, Lightsail Instance Count: {instance_count_in_region}")
+        except botocore.exceptions.ClientError as e: 
+            if e.response['Error']['Code'] == 'AccessDeniedException':
+                # print(f"Lightsail Instance Access Denied in region {region_name}")
+                access_denied_count += 1
+            else :
+                raise e
+
+    print(f"Total number of Lightsail instances across all regions: {total_instance_count}")
+    print(f"Total number of Lightsail instances Access Denied errors: {access_denied_count}")
+    return jsonify({'running_instances': total_instance_count})
+
+@app.route(f'{mono_prefix}/destroy-ec2')
+def destroy_ec2():
+    os.chdir('../terraform/monolithic')
+    instance_id = request.args.get('instance_id')
+
+    # Run Terraform Command to destroy EC2 instance
+    try:
+        subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
+        instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+        print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
+
+        # Get instance data from S3 instance_data.json
+        for instance in instance_data:
+            if instance['instance_id'] == instance_id:
+                # Generate current timestamp
+                current_timestamp = generate_timestamp()
+                # Update deletion_time for destroying time
+                instance['deletion_time'] = current_timestamp
+                instance['instance_state'] = 'Destroyed'
+
+                # Save the updated instance data back to S3
+                print("Instance data retrieved from S3 when instance is being destroyed to be saved:", instance_data)
+                unwrapped_list = {}
+                for dictionary in instance_data:
+                    unwrapped_list.update(dictionary)
+                save_instance_data_to_s3(unwrapped_list, bucket_name, key_prefix_history)
+        
+        #delete instance details from S3
+        delete_instance_details_from_s3(instance_id)
+        # return instance_data
+        return 'EC2 instance destroyed successfully'
+    except subprocess.CalledProcessError as e:
+        return f'Error destroying EC2 instance : {e}'
+    finally:
+        os.chdir(original_dir)
+
+def delete_instance_details_from_s3(instance_id):
+    s3_client = boto3.client('s3')
+    try:
+        response = s3_client.get_object(Bucket=bucket_name, Key=key_prefix)
+        instance_data = json.loads(response['Body'].read().decode('utf-8'))
+    except Exception as e:
+        print(f"Error retrieving instance data from s3: {e}")
+        return
+    
+    #find and remove the instance with the provided instance ID
+    for instance in instance_data:
+        if instance['instance_id'] == instance_id:
+            instance_data.remove(instance)
+    # Update the instance_data.json file in S3 with the modified list
+    try: 
+        s3_client.put_object(
+            Bucket=bucket_name,
+            Key=key_prefix,
+            Body=json.dumps(instance_data).encode('utf-8')
+        )
+        print(f"Instance with Instance ID '{instance_id}' deleted from S3.")
+    except Exception as e:
+        print(f"Error updating instance data in S3: {e}")
+
+@app.route(f'{mono_prefix}/destroy-lightsail')
+def destroy_lightsail():
+    os.chdir('../terraform/wordpress-lightsail')
+    instance_id = request.args.get('instance_id')
+    # Run Terraform Command to destroy EC2 instance
+    try:
+        subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
+        instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+        print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
+        
+        # Get instance data from S3 instance_data.json
+        for instance in instance_data:
+            if instance['instance_id'] == instance_id:
+                # Generate current timestamp
+                current_timestamp = generate_timestamp()
+                # Update deletion_time for destroying time
+                instance['deletion_time'] = current_timestamp
+                instance['instance_state'] = 'Destroyed'
+
+                # Save the updated instance data back to S3
+                print("Instance data retrieved from S3 when instance is being destroyed to be saved:", instance_data)
+                unwrapped_list = {}
+                for dictionary in instance_data:
+                    unwrapped_list.update(dictionary)
+                save_instance_data_to_s3(unwrapped_list, bucket_name, key_prefix_history)
+        #delete instance details from S3
+        delete_instance_details_from_s3(instance_id)
+        return 'Lightsail instance destroyed successfully'
+    except subprocess.CalledProcessError as e:
+        return f'Error destroying Lightsail instance : {e}'
+    finally:
+        os.chdir(original_dir)
+
+@app.route('/get-deployment-history')
+def deployment_history():
+    
+    deployment_history_data = get_instance_data_from_s3(bucket_name, key_prefix_history )
+    # print('Deployment History Data: \n', deployment_history_data)
+    sorted_deployment_history_data = sorted(deployment_history_data, key=itemgetter('creation_time'))
+    # print (sorted_deployment_history_data)
+    return deployment_history_data
+
+@app.route('/send-email', methods=['POST'])
+def send_email():
+    try:
+        # Get email addresses from request parameters
+        email_addresses = request.json.get('emailAddresses')
+        print('Received emaill address: ',email_addresses)
+        # instance_id = request.args.get('instance_id')
+
+        prepare_eamil(bucket_name, key_prefix_history, email_addresses)
+        return jsonify({'message': 'Email sent successfully'})
+    except Exception as e:
+        return jsonify({'error sending email in handler function': str(e)}), 500
+
+
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000, use_reloader=False)
+    # Save the original directory
+    original_dir = os.getcwd()
+
+    bucket_name = 'xmops-data-bucket-team2'
+    key_prefix = 'instance_record/instance_data.json' 
+    key_prefix_history = 'instance_record/instance_data_history.json' 
+    get_instance_data_from_s3(bucket_name, key_prefix)
+
+
+    app.run(debug=True, port=5000)
+
