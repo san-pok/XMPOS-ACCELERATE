@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
     document.getElementById('downloadButton').addEventListener('click', async function() {
+      
 
         try{
             // Fetch history Json data from the server
@@ -49,10 +50,43 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     });
 
-    document.getElementById('sendEmailButton').addEventListener('click', function() {
+    document.getElementById('sendEmailButton').addEventListener('click', async function() {
+        // Gather email addresses from input fields
+        const emailInputs = document.getElementById('email').value;
+        console.log('emailInputs:', emailInputs)
+        // const emailAddresses = [];
+        // emailInputs.forEach(input => {
+        //     emailAddresses.push(input.value);
+        // });
+
+         // Check if email address is empty
+        if (!emailInputs.trim()) {
+            alert('Please enter an email address.');
+            return; // Stop execution if email address is empty
+        }
+
+
         // Placeholder functionality for send email button
         alert('Sending email with deployment history...');
         // Implement actual send email functionality here
+        try{
+            // Fetch send-email endpoint with email addresses
+            const response = await fetch(`${baseUrl}/send-email`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ emailAddresses: emailInputs })
+            });
+            if (!response.ok) {
+                throw new Error('Failed to send email');
+            }
+            // Handle successful response
+            console.log('Email sent successfully');
+            
+        } catch (error) {
+            console.error('Error fetching send emial function is flask')
+        }
     });
     
 });
