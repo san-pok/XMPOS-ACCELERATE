@@ -831,6 +831,7 @@ def submit_form_monolith():
         newSecurityGroupName = request.json.get('newSecurityGroupName')
         storage_size_gb = request.json.get('ebs-storage')
         database_type = request.json.get('database_type')
+        web_server_engine = request.json.get('web-server')
 
         if allow_ssh == 'on':
             allow_ssh = 'true'
@@ -856,6 +857,7 @@ def submit_form_monolith():
         print("SG id:", selectedSGId)
         print("storage_size_gb:", storage_size_gb)
         print("database_type:", database_type)
+        print("web_server_engine:", web_server_engine)
 
 
 
@@ -877,7 +879,7 @@ def submit_form_monolith():
             f.write(f'allow_http = {allow_http}\n')
             f.write(f'storage_size_gb = {storage_size_gb}\n')
             f.write(f'database_type = "{database_type}"\n')
-
+            f.write(f'web_server = "{web_server_engine}"\n')
         # #Trigger Terraform deployment
             
         subprocess.run(['terraform', 'init',], check=True)
@@ -1148,7 +1150,7 @@ if __name__ == '__main__':
     # Save the original directory
     original_dir = os.getcwd()
 
-    bucket_name = 'xmops-data-bucket-team2'
+    bucket_name = 'xmops-data-bucket-team2p'
     key_prefix = 'instance_record/instance_data.json' 
     key_prefix_history = 'instance_record/instance_data_history.json' 
     get_instance_data_from_s3(bucket_name, key_prefix)
