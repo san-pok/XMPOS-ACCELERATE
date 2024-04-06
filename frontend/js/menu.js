@@ -121,9 +121,6 @@ document.body.addEventListener('click', async function(event) {
         const deploymentType = event.target.getAttribute('data-deploymenttype');
         // document.getElementById('statusMessage').textContent = ``;
         
-        // Perform actions such as destroying the instance
-        // You can add your logic here
-        
         // For testing purposes, log the instanceId and deploymentType to the console
         console.log('Instance ID:', instanceId);
         console.log('Deployment Type:', deploymentType);
@@ -137,13 +134,13 @@ document.body.addEventListener('click', async function(event) {
             // Displaying status message
             document.getElementById('statusMessage').textContent = `Destroying ${deploymentType} instance...`;
 
-            // // Apply visual indication to the table row
+            // Apply visual indication to the table row
             // const tableRow = this.closest('tr');
             // tableRow.classList.add('destroying');
 
             let destroyRoute;
             if (deploymentType === 'Monolith') {
-                alert("in the if Monolith");
+                // alert("in the if Monolith");
                 destroyRoute = `${baseUrl}/monolith/destroy-ec2?instance_id=${instanceId}`;
                 // print('Deployment type is :', deploymentType)
             } else if (deploymentType === 'Lightsail') {

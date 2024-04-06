@@ -37,8 +37,8 @@
                                     <select id="aws-os" name="aws-os" class="col-md-12 mt-2">
                                         <option value="">Select Operation System</option>
                                         <option value="ubuntu">Ubuntu</option>
-                                        <option value="amazon-linux">Amazon Linux</option>
-                                        <option value="windows">Windows</option>
+                                        <!-- <option value="amazon-linux">Amazon Linux</option>
+                                        <option value="windows">Windows</option> -->
                                         <!-- Add more OS options as needed -->
                                     </select>
                                 </div>
@@ -160,9 +160,10 @@
                                 <div class="form-group">
                                     <label for="php-version">PHP Version</label>
                                     <select id="php-version" name="php-version" class="col-md-12 mt-2" required>
+                                        <option value="">Select PHP</option>
                                         <option value="7.4">PHP 7.4</option>
-                                        <option value="7.3">PHP 7.3</option>
-                                        <option value="7.2">PHP 7.2</option>
+                                        <!-- <option value="7.3">PHP 7.3</option>
+                                        <option value="7.2">PHP 7.2</option> -->
                                         <!-- Add more PHP versions as needed -->
                                     </select>
                                     <small class="form-text text-muted">Choose the version of PHP you want to use for your application.</small>
@@ -170,8 +171,9 @@
                                 <div class="form-group">
                                     <label for="web-server">Web Server (Apache or Nginx)</label>
                                     <select id="web-server" name="web-server" class="col-md-12 mt-2" required>
-                                        <option value="Apache">Apache</option>
-                                        <option value="Nginx">Nginx</option>
+                                        <option value="">Select Web Server Engine</option>
+                                        <option value="apache2">Apache</option>
+                                        <option value="nginx">Nginx</option>
                                         <!-- Add more web server options as needed -->
                                     </select>
                                     <small class="form-text text-muted">Choose the web server software you want to use for hosting your application.</small>

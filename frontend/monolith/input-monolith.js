@@ -282,7 +282,16 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     storageInput.addEventListener('change', function(){
         dbTypeDropdown.disabled = false;
-    })
+    });
+
+    dbTypeDropdown.addEventListener('change', function(){
+        // alert('Hey');
+        phpVersionDropdown.disabled = false;
+    });
+    phpVersionDropdown.addEventListener('change', function(){
+        // alert('Hey');
+        webServerDropdown.disabled = false;
+    });
 
                             
     // Add event listener for form submission
