@@ -13,6 +13,7 @@ import ssl
 import smtplib
 import subprocess
 import tempfile
+import time
 import boto3
 from flask import app, flash, jsonify, request
 from reportlab.lib.pagesizes import letter
@@ -22,9 +23,12 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
 
 
-def capture_ec2_and_lightsail_instance_output():
-    output = subprocess.check_output(['terraform', 'output', '-json']).decode('utf-8')
+def capture_ec2_and_lightsail_instance_output(state_file_path):
+    print(f'state_file_path: {state_file_path}')
+
+    output = subprocess.check_output(['terraform', 'output', '-json', f'-state={state_file_path}']).decode('utf-8')
     output_json = json.loads(output)
+    # print(f'output_json: {output}')
 
     # Extracting values with graceful handling of missing keys
     received_data = {
@@ -225,3 +229,8 @@ def generate_pdf(data):
 
     return pdf_filename
 
+def generate_unique_id():
+    # Get current timestamp
+    timestamp_ms = int(time.time() * 100)
+    # Convert timestamp to a string and return its as the unique ID
+    return str(timestamp_ms)

@@ -13,7 +13,7 @@ import logging
 import datetime
 import botocore
 from operator import itemgetter
-from handler import capture_ec2_and_lightsail_instance_output, generate_timestamp, get_instance_data_from_s3, prepare_eamil, save_instance_data_to_s3
+from handler import capture_ec2_and_lightsail_instance_output, generate_timestamp, generate_unique_id, get_instance_data_from_s3, prepare_eamil, save_instance_data_to_s3
 
 
 from dotenv import load_dotenv
@@ -860,6 +860,9 @@ def submit_form_monolith():
         print("web_server_engine:", web_server_engine)
 
 
+        # Generate unique identifier for the deployment 
+        deployment_id = generate_unique_id()
+        print(f'deployment_id: {deployment_id}')
 
         # Get the absolute path to terraform.auto.tfvars for debugging
         tfvars_file = os.path.abspath('terraform.auto.tfvars')
@@ -868,7 +871,6 @@ def submit_form_monolith():
         # Write the user-submitted values to a TFVars file
         # with open('./terraform/wordpress-ec2/terraform.auto.tfvars', 'w') as f:
         with open('terraform.auto.tfvars', 'w') as f:
-
             f.write(f'aws_region = "{aws_region}"\n')
             f.write(f'ami_id = "{ami_id}"\n')
             f.write(f'instance_type = "{instance_type}"\n')
@@ -880,26 +882,22 @@ def submit_form_monolith():
             f.write(f'storage_size_gb = {storage_size_gb}\n')
             f.write(f'database_type = "{database_type}"\n')
             f.write(f'web_server = "{web_server_engine}"\n')
-        # #Trigger Terraform deployment
-            
-        subprocess.run(['terraform', 'init',], check=True)
-        # Run terraform import to import the existing security group
-        # Run terraform state rm command to remove the existing security group from the state
-        # subprocess.run(['terraform', 'state', 'rm', 'aws_security_group.sg_name'], check=True)
-        # Backup the Terraform state file
-        # shutil.copy('terraform.tfstate', 'terraform.tfstate.backup')
-        # subprocess.run(['terraform', 'import', 'aws_security_group.sg_name', selectedSGId], check=True)
-        subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)  
 
-        # Remove the imported resource from the Terraform state file
-        # remove_resource_from_state('terraform.tfstate', 'aws_security_group.sg_name')
-      
-        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
+        #define directory path for the deployment's state file
+        state_file_dir = f'state_files'
+    
+        # specify path to the Terraform state file
+        state_file_path = f'{state_file_dir}/{deployment_id}.terraform.tfstate'
+        subprocess.run(['terraform', 'init',], check=True)
+        subprocess.run(['terraform', 'apply', '-auto-approve', f'-state={state_file_path}'], check=True)  
+        
+        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output(state_file_path)
         print('incoming data from creation ec2 \n', output_data_of_ec2)
         # Generate current timestamp
         current_timestamp = generate_timestamp()
         print ('Output of current time', current_timestamp)
         # Add deployment type to instance data
+        output_data_of_ec2['deployment_id'] = deployment_id
         output_data_of_ec2['deployment_type'] = 'Monolith'
         # Add timestamp to instance data
         output_data_of_ec2['creation_time'] = current_timestamp
@@ -908,7 +906,7 @@ def submit_form_monolith():
         save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
 
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
-        print("Instance data retrieved from S3:", instance_data)
+        # print("Instance data retrieved from S3:", instance_data)
         # Add the new entry to the deployment history for instance creation
        
         # refresh_page()
@@ -1033,10 +1031,26 @@ def count_instances():
 def destroy_ec2():
     os.chdir('../terraform/monolithic')
     instance_id = request.args.get('instance_id')
+    deployment_id = request.args.get('deployment_id')
+    # print (f'deployment_id: {deployment_id}')
+
+    deployment_id_tfstate = deployment_id + ".terraform.tfstate"
+    print (f'deployment_id_tfstate:, {deployment_id_tfstate}')
+    # Construct the path to the state_files folder
+    state_files_folder = 'state_files'
+
+    # Iterate through the files in the state_files directory
+    for filename in os.listdir(state_files_folder):
+        if filename.startswith(deployment_id_tfstate):
+            state_file_path = os.path.abspath(os.path.join(state_files_folder, filename))
+            print(f'Found state file for deployment ID {deployment_id_tfstate}: {state_file_path}')
+            break
+    else:
+        return f'Error: State file not found for deployment ID {deployment_id_tfstate}'
 
     # Run Terraform Command to destroy EC2 instance
     try:
-        subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
+        subprocess.run(['terraform', 'destroy', '-auto-approve', f'-state={state_file_path}'], check=True)
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
 
@@ -1089,13 +1103,192 @@ def delete_instance_details_from_s3(instance_id):
     except Exception as e:
         print(f"Error updating instance data in S3: {e}")
 
-@app.route(f'{mono_prefix}/destroy-lightsail')
-def destroy_lightsail():
-    os.chdir('../terraform/wordpress-lightsail')
-    instance_id = request.args.get('instance_id')
-    # Run Terraform Command to destroy EC2 instance
+
+@app.route('/get-deployment-history')
+def deployment_history():
+    
+    deployment_history_data = get_instance_data_from_s3(bucket_name, key_prefix_history )
+    # print('Deployment History Data: \n', deployment_history_data)
+    sorted_deployment_history_data = sorted(deployment_history_data, key=itemgetter('creation_time'))
+    # print (sorted_deployment_history_data)
+    return sorted_deployment_history_data
+
+@app.route('/send-email', methods=['POST'])
+def send_email():
     try:
-        subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
+        # Get email addresses from request parameters
+        email_addresses = request.json.get('emailAddresses')
+        print('Received emaill address: ',email_addresses)
+        # instance_id = request.args.get('instance_id')
+
+        prepare_eamil(bucket_name, key_prefix_history, email_addresses)
+        return jsonify({'message': 'Email sent successfully'})
+    except Exception as e:
+        return jsonify({'error sending email in handler function': str(e)}), 500
+
+# Route to fetch Lightsail regions
+@app.route('/lightsail-regions')
+def get_lightsail_regions():
+    lightsail = boto3.client('lightsail')
+    try:
+        # Call the AWS API to describe Lightsail regions
+        response = lightsail.get_regions()
+        # print(json.dumps(response, indent=4))
+        # regions = [region['name'] for region in response['regions']]
+        regions = [{'name': region['name'], 'displayName': region['displayName']} for region in response['regions']]
+        print('Regions: ', regions)
+        return jsonify({'regions':regions})
+    except Exception as e:
+        print('Error fetching Lightsail regions:', e)
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/lightsail-blueprints')
+def get_lightsail_blueprints():
+    lightsail = boto3.client('lightsail')
+    region = request.args.get('region')
+    platform = request.args.get('platform')
+    try:
+        response = lightsail.get_blueprints()
+        filtered_blueprints = []
+        # blueprints = [{'id': blueprint['blueprintId'], 'displayName': blueprint['name']} for blueprint in response['blueprints']]
+        for blueprint in response['blueprints']:
+            if blueprint['platform'] == platform:
+                # Extract WordPress version from the blueprintId
+                # wordpress_version = blueprint['blueprintId'].split('_')[2] if 'wordpress' in blueprint['blueprintId'] else None
+                filtered_blueprints.append({'id': blueprint['blueprintId'], 'displayName': blueprint['name'], 'type': blueprint['type']})
+        # print('filtered blueprints:\n', filtered_blueprints)
+        return jsonify({'blueprints': filtered_blueprints})
+    except Exception as e:
+        print ('Error fetching Lightsail blueprints: ', e)
+        return jsonify({'error': 'Internal server error '}), 500
+    
+@app.route('/lightsail-instance-plans')
+def get_lightsail_bundles():
+    platform = request.args.get('platform')
+    region = request.args.get('region') 
+    print('selected Platform in bundle', platform)
+    print('selected Region in bundle', region)
+    try:
+        # Create a Lightsail client for the specified region
+        lightsail = boto3.client('lightsail', region_name=region)
+        response = lightsail.get_bundles()
+        # response = lightsail.get_instance_metric_data()
+        # print(json.dumps(response, indent=4))
+        filtered_bundles = []
+        # # blueprints = [{'id': blueprint['blueprintId'], 'displayName': blueprint['name']} for blueprint in response['blueprints']]
+        for bundle in response['bundles']:
+            # if bundle['supportedPlatforms'] == platform:
+            #     filtered_bundles.append({'id': bundle['bundleId'], 'displayPrice': bundle['price']})
+             if platform in bundle['supportedPlatforms']:
+                 filtered_bundles.append({
+                    'id': bundle['bundleId'],
+                    'displayPrice': bundle['price'],
+                    'cpuCount': bundle['cpuCount'],
+                    'diskSizeInGb': bundle['diskSizeInGb'],
+                    'ramSizeInGb': bundle['ramSizeInGb'],
+                    'transferPerMonthInGb': bundle['transferPerMonthInGb']
+                })
+        # print('filtered bundles:\n', json.dumps(filtered_bundles, indent=4))
+        return jsonify({'bundles': filtered_bundles})
+        
+    except Exception as e:
+        print ('Error fetching Lightsail bundles: ', e)
+        return jsonify({'error': 'Internal server error '}), 500
+    
+@app.route('/deploy-lightsail', methods=['POST'])
+def submit_form_lightsail():
+    os.chdir('../terraform/lightsail_bb')
+    try: 
+        project_name = request.json.get('project-name')
+        aws_region = request.json.get('region')
+        platform = request.json.get('platform')
+        blueprint = request.json.get('lightsail-blueprint')
+        bundle_id = request.json.get('lightsail-bundle')
+
+         # Generate unique identifier for the deployment 
+        deployment_id = generate_unique_id()
+        print(f'deployment_id: {deployment_id}')
+
+        # Print the received data
+        print("Received data:")
+        print("AWS Region:", aws_region)
+        print("AWS Platform:", platform)
+        print("BluePrint:", blueprint)
+        print("Bundle_id or Instance plan:", bundle_id)
+
+        # Get the absolute path to terraform.auto.tfvars for debugging
+        tfvars_file = os.path.abspath('terraform.auto.tfvars')
+        print("Absolute path to terraform.auto.tfvars:", tfvars_file)
+       
+
+        # Write the user-submitted values to a TFVars file
+        # with open('./terraform/wordpress-ec2/terraform.auto.tfvars', 'w') as f:
+        with open('terraform.auto.tfvars', 'w') as f:
+
+            f.write(f'aws_region = "{aws_region}"\n')
+            f.write(f'project_name = "{project_name}"\n')
+            f.write(f'bundle_id = "{bundle_id}"\n')
+            f.write(f'lightsail_blueprints = {{"wordpress": "{blueprint}"}}\n')
+        
+        #define directory path for the deployment's state file
+        state_file_dir = f'state_files'
+    
+        # specify path to the Terraform state file
+        state_file_path = f'{state_file_dir}/{deployment_id}.terraform.tfstate'
+        subprocess.run(['terraform', 'init',], check=True)
+        subprocess.run(['terraform', 'apply', '-auto-approve', f'-state={state_file_path}'], check=True)  
+        
+        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output(state_file_path)
+        print('incoming data from creation ec2 \n', output_data_of_ec2)
+
+        # Add deployment type to instance data
+        output_data_of_ec2['deployment_id'] = deployment_id
+        output_data_of_ec2['deployment_type'] = 'Lightsail'
+         # Generate current timestamp
+        current_timestamp = generate_timestamp()
+        output_data_of_ec2['creation_time'] = current_timestamp
+        output_data_of_ec2['deletion_time'] = ''
+
+        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
+        # save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
+
+        instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+        print("Instance data retrieved from S3:", instance_data)
+        # Add the new entry to the deployment history for instance creation
+       
+        # refresh_page()
+        return jsonify(instance_data) 
+
+    except Exception as e:
+        error_message = str(e)
+        logging.error(f'Error occurred: {error_message}')  # Log the error
+        return f'Error: {error_message}', 500 # Return an error response with status code 500
+    finally:
+        os.chdir(original_dir)
+
+@app.route('/destroy-lightsail')
+def destroy_lightsail():
+    os.chdir('../terraform/lightsail_bb')
+    instance_id = request.args.get('instance_id')
+    deployment_id = request.args.get('deployment_id')
+    # Run Terraform Command to destroy EC2 instance
+
+    deployment_id_tfstate = deployment_id + ".terraform.tfstate"
+    print (f'deployment_id_tfstate:, {deployment_id_tfstate}')
+    # Construct the path to the state_files folder
+    state_files_folder = 'state_files'
+
+    # Iterate through the files in the state_files directory
+    for filename in os.listdir(state_files_folder):
+        if filename.startswith(deployment_id_tfstate):
+            state_file_path = os.path.abspath(os.path.join(state_files_folder, filename))
+            print(f'Found state file for deployment ID {deployment_id_tfstate}: {state_file_path}')
+            break
+    else:
+        return f'Error: State file not found for deployment ID {deployment_id_tfstate}'
+    
+    try:
+        subprocess.run(['terraform', 'destroy', '-auto-approve', f'-state={state_file_path}'], check=True)
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
         
@@ -1121,28 +1314,6 @@ def destroy_lightsail():
         return f'Error destroying Lightsail instance : {e}'
     finally:
         os.chdir(original_dir)
-
-@app.route('/get-deployment-history')
-def deployment_history():
-    
-    deployment_history_data = get_instance_data_from_s3(bucket_name, key_prefix_history )
-    # print('Deployment History Data: \n', deployment_history_data)
-    sorted_deployment_history_data = sorted(deployment_history_data, key=itemgetter('creation_time'))
-    # print (sorted_deployment_history_data)
-    return deployment_history_data
-
-@app.route('/send-email', methods=['POST'])
-def send_email():
-    try:
-        # Get email addresses from request parameters
-        email_addresses = request.json.get('emailAddresses')
-        print('Received emaill address: ',email_addresses)
-        # instance_id = request.args.get('instance_id')
-
-        prepare_eamil(bucket_name, key_prefix_history, email_addresses)
-        return jsonify({'message': 'Email sent successfully'})
-    except Exception as e:
-        return jsonify({'error sending email in handler function': str(e)}), 500
 
 
 
