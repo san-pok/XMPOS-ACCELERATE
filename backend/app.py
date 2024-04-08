@@ -51,6 +51,28 @@ def index():
     return "Welcome to the Deployment Platform!"
 
 
+"""
+Route: /signup
+Method: POST
+Description: Handles the signup process for new users. It receives user credentials (email and password)
+from the request body, then attempts to create a new user in the AWS Cognito user pool using these credentials.
+
+The route performs the following steps:
+1. Parses the incoming JSON payload from the request body to extract the 'email' and 'password'.
+2. Utilizes the AWS Cognito `sign_up` method to attempt to register the new user.
+   - The 'ClientId' is retrieved from the environment variables, which represents the unique identifier for the Cognito user pool client.
+   - 'Username' and 'Password' fields are populated with the user's email and password.
+   - 'UserAttributes' is used to set additional information for the user; in this case, the user's email.
+3. If the sign-up process is successful, it returns a JSON response with a message prompting the user to verify their account via email,
+   along with a 200 OK status code.
+4. In case of an exception (ClientError) during the sign-up process, it catches the exception and checks the error code.
+   - If the error code is 'UsernameExistsException', it returns a JSON response indicating that the user already exists, with a 409 Conflict status code.
+   - For any other error, it returns a generic sign-up failure message with a 500 Internal Server Error status code.
+
+This approach ensures that the user receives clear feedback on the outcome of their signup attempt and allows for straightforward
+integration with frontend applications that consume this API. It leverages AWS Cognito for user management, providing a secure
+and scalable user authentication and registration process.
+"""
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
@@ -73,6 +95,41 @@ def signup():
         else:
             return jsonify({'error': 'Failed to sign up. Please try again.'}), 500
 
+
+
+"""
+This endpoint is responsible for verifying user accounts through a verification code.
+It is part of a web service that interfaces with Amazon Cognito for user management.
+
+Route: /verify
+Method: POST
+Request Body:
+    - email (str): The email address of the user attempting verification.
+    - code (str): The verification code sent to the user's email.
+
+Process:
+1. The function first retrieves the JSON data sent in the POST request.
+2. It extracts the 'email' and 'code' values from the data.
+3. Using the Amazon Cognito client, it attempts to confirm the user's signup by calling the `confirm_sign_up` method.
+   This method requires:
+   - ClientId: The unique identifier for the Amazon Cognito application client, retrieved from environment variables.
+   - Username: The user's email address.
+   - ConfirmationCode: The verification code provided by the user.
+   - ForceAliasCreation: A flag set to False to prevent automatic alias creation.
+
+Responses:
+- Success: If the confirmation is successful, it returns a 200 HTTP status code with a message indicating the account
+  has been verified successfully.
+- User Not Found: If the specified user does not exist in Amazon Cognito, it returns a 404 status with an error message.
+- Code Mismatch: If the provided verification code does not match what's expected by Amazon Cognito, it returns a 400 status
+  with an error message.
+- User Already Confirmed: If the user is already confirmed, it attempts to confirm again and Cognito raises a NotAuthorizedException,
+  resulting in a 400 status code with an error message.
+- Generic Error: For any other exceptions, it captures the exception message and returns a 500 status code with an error message.
+
+This endpoint is crucial for the security and integrity of the user registration process, ensuring that only users
+with access to the verification code (typically sent to their email) can complete their account setup.
+"""
 
 @app.route('/verify', methods=['POST'])
 def verify():
@@ -98,6 +155,33 @@ def verify():
         # Generic error handling
         return jsonify({'error': str(e)}), 500
 
+
+"""
+Route: /login
+Method: POST
+
+This route handles user login requests. It expects a JSON payload with 'email' and 'password' fields,
+authenticates the user against AWS Cognito, and returns appropriate responses based on the authentication outcome.
+
+Process:
+1. The request payload is extracted using Flask's request.get_json() method.
+2. The 'email' and 'password' are obtained from the payload. These are the credentials the user attempts to log in with.
+3. A try-except block is used to handle the authentication process and catch any potential errors that could occur during authentication.
+4. The cognito_client.initiate_auth method is called with necessary parameters, including:
+    - ClientId: The unique identifier for the Cognito application client.
+    - AuthFlow: Specifies 'USER_PASSWORD_AUTH' to indicate a username and password authentication flow.
+    - AuthParameters: A dictionary with 'USERNAME' and 'PASSWORD' keys, providing the credentials for authentication.
+5. If authentication is successful, a response with a 200 status code is returned to the client, containing a success message
+   and the authentication tokens provided by Cognito.
+6. If any Cognito-specific exceptions occur, such as NotAuthorizedException, UserNotFoundException, or UserNotConfirmedException,
+   appropriate JSON responses are returned with status codes indicating the error (401 for unauthorized, 404 for user not found,
+   and 401 for user not confirmed, respectively).
+7. For any other exceptions, a generic error message is returned with a 500 status code, indicating an internal server error.
+   The exception is printed to the console for debugging purposes.
+
+This route leverages AWS Cognito for user management and authentication, abstracting the complexity of handling secure password
+storage and validation. It provides clear and actionable feedback to the client based on the authentication result.
+"""
 
 @app.route('/login', methods=['POST'])
 def login():
