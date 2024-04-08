@@ -47,7 +47,7 @@
                     <i class="fa-solid fa-grip"></i>
                     <h3>Dashboard</h3>
                 </a>
-                <a href="./monolith/input-monolith.html" id="monolith-deployment">
+                <a href="./monolith/index.html" id="monolith-deployment">
                     <i class="fa-solid fa-bolt"></i>
                     <h3>Deploy Monolith</h3>
                 </a>
@@ -58,6 +58,10 @@
                 <a href="./lightsail/index.html">
                     <i class="fa-solid fa-microchip"></i>
                     <h3>Deploy Lightsail</h3>
+                </a>
+                <a href="./lightsail_bb/lightsail-deployment.html">
+                    <i class="fa-solid fa-microchip"></i>
+                    <h3>Lightsail BB</h3>
                 </a>
                 <a href="./deploymenthistory.html">
                     <i class="fa-solid fa-clock-rotate-left"></i>
@@ -143,6 +147,7 @@
                     <table id="instanceStatusTable" class="w-full table-auto">
                         <thead class="bg-blue-500 text-white">
                             <tr>
+                                <th class="px-4 py-2">Deployment ID</th>
                                 <th class="px-4 py-2">Created Time</th>
                                 <th class="px-4 py-2">Deployment Type</th>
                                 <th class="px-4 py-2">Instance ID / Project Name</th>
@@ -253,7 +258,7 @@
     })
     .catch(error => console.error('Error:', error));
 }
-fetchDeploymentHistory();
+// fetchDeploymentHistory();
     </script>
 
 

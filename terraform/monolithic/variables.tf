@@ -65,7 +65,6 @@ variable "web_server" {
   default = "apache2"
 }
 
-
 output "public_ip" {
   value       = aws_instance.EC2-create-from-button.public_ip
   description = "Public IP Address of EC2 instance"

@@ -94,6 +94,7 @@ function fetchInstanceStatusData() {
         data.forEach(instance => {
             const row = `
                 <tr>
+                    <td class="px-4 py-2">${instance.deployment_id}</td>
                     <td class="px-4 py-2">${instance.creation_time}</td>
                     <td class="px-4 py-2">${instance.deployment_type}</td>
                     <td class="px-4 py-2">${instance.instance_id === "N/A" ? instance.project_id : instance.instance_id}</td>
@@ -103,7 +104,7 @@ function fetchInstanceStatusData() {
                     <td class="px-4 py-2">${instance.instance_state === "N/A" ? "running" : instance.instance_state}</td>
                     <td class="px-4 py-2">${instance.public_ip}</td>
                     <td class="px-4 py-2">
-                        <button class="destroy-button hover:bg-red-600 text-white" data-instanceid="${instance.instance_id}" data-deploymenttype="${instance.deployment_type}">Destroy</button>
+                        <button class="destroy-button hover:bg-red-600 text-white" data-instanceid="${instance.instance_id}" data-deploymenttype="${instance.deployment_type}" data-deploymentid="${instance.deployment_id}">Destroy</button>
                     </td>
                 </tr>`;
             tableBody.innerHTML += row;
@@ -119,6 +120,7 @@ document.body.addEventListener('click', async function(event) {
         // Handle the click event for the "Destroy" button
         const instanceId = event.target.getAttribute('data-instanceid');
         const deploymentType = event.target.getAttribute('data-deploymenttype');
+        const deploymentId = event.target.getAttribute('data-deploymentid');
         // document.getElementById('statusMessage').textContent = ``;
         
         // For testing purposes, log the instanceId and deploymentType to the console
@@ -130,6 +132,7 @@ document.body.addEventListener('click', async function(event) {
             // // console.log('Instance ID:', instanceId); // Check if instanceId is correctly extracted
             alert(instanceId);
             alert(deploymentType);
+            alert(deploymentId);
             // const row = this.closest('tr'); //Get closest table row
             // Displaying status message
             document.getElementById('statusMessage').textContent = `Destroying ${deploymentType} instance...`;
@@ -141,10 +144,10 @@ document.body.addEventListener('click', async function(event) {
             let destroyRoute;
             if (deploymentType === 'Monolith') {
                 // alert("in the if Monolith");
-                destroyRoute = `${baseUrl}/monolith/destroy-ec2?instance_id=${instanceId}`;
+                destroyRoute = `${baseUrl}/monolith/destroy-ec2?instance_id=${instanceId}&&deployment_id=${deploymentId}`;
                 // print('Deployment type is :', deploymentType)
             } else if (deploymentType === 'Lightsail') {
-                destroyRoute = `${baseUrl}/monolith/destroy-lightsail?instance_id=${instanceId}`;
+                destroyRoute = `${baseUrl}/destroy-lightsail?instance_id=${instanceId}&&deployment_id=${deploymentId}`;
                 // print('Deployment type is :', deploymentType)
             }
 
