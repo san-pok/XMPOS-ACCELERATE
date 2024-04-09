@@ -1,11 +1,5 @@
-// const themeToggler =  document.querySelector(".theme-toggler");
-
-// themeToggler.addEventListener('click', function (){
-//     document.body.classList.toggle('dark-theme-variables')
-//     themeToggler.querySelector('i:nth-child(1)').classList.toggle('active');
-//     themeToggler.querySelector('i:nth-child(2)').classList.toggle('active');
-// });
 const baseUrl = 'http://127.0.0.1:5000';
+
 
 const themeToggler = document.querySelector(".theme-toggler");
 themeToggler.addEventListener("click", ()=>{
@@ -86,7 +80,7 @@ function fetchInstanceStatusData() {
     .then(response => response.json())
     .then(data => {
         // Update the status message if needed
-        document.getElementById('statusMessage').textContent = 'Instance status data fetched successfully';
+        // document.getElementById('statusMessage').textContent = 'Instance status data fetched successfully';
 
         // Populate the table with the received data
         const tableBody = document.getElementById('instanceStatusBody');

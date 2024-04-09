@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             alert(JSON.stringify(data));
             
             // Redirect to the main page
-            // window.location.href = 'http://127.0.0.1:8000/menu.html';
+            window.location.href = 'http://127.0.0.1:8000/menu.html';
             // Reload the page after a short delay
            
             // Send the form data to the server

@@ -26,7 +26,7 @@ const storageInput = document.getElementById('ebs-storage');
 const dbTypeDropdown = document.getElementById('database_type');
 const phpVersionDropdown = document.getElementById('php-version');
 const webServerDropdown = document.getElementById('web-server');
-const baseUrl = 'http://127.0.0.1:5000';
+// const baseUrl = 'http://127.0.0.1:5000';
 
 document.addEventListener('DOMContentLoaded', async function() {
     const regionDropdown = document.getElementById('aws-region');
@@ -118,11 +118,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
     // Add event listeners to the radio buttons
     existingKeyPairRadio.addEventListener('change', async function() {
+        
         const selectedRegion = regionDropdown.value;
+        // newKeyPairRadio.style.display = 'none'
         if (existingKeyPairRadio.checked) {
             existingKeyPairDropdown.style.display = 'block';
+            
             const existingKeyPairs = await fetchExistingKeyPairs(selectedRegion);
-            populateExistingKeyPairDropdown(existingKeyPairs, 'Select a key Pair');
+            populateExistingKeyPairDropdown(existingKeyPairs, 'Select an existing key Pair');
             newKeyPairInput.style.display = 'none';
             newSecurityGroupDescriptionInput.style.display = 'none';
             generateKeyPairBtn.style.display = 'none'; // Hide the generate button when "Use Existing Key Pair" is selected
@@ -135,6 +138,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
     newKeyPairRadio.addEventListener('change', function() {
+       
+        // existingKeyPairRadio.style.display = 'none'
         if (newKeyPairRadio.checked) {
             existingKeyPairDropdown.style.display = 'none';
             newKeyPairInput.style.display = 'block';
@@ -231,15 +236,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Get the container element to append the paragraph
             const newSGSection = document.getElementById('new-sg-section');
             newSGSection.appendChild(paragraph);
-
             const selectedRegion = regionDropdown.value;
-            // // Call fetch function
-            // const createdSecurityGroup = await createSecurityGroup(newSecurityGroupName, newSecurityGroupDescription, selectedRegion);
-            // // Display the generated sg here
-            // existingSecurityGroupDropdown.style.display = 'block';
-            // const existingSGs = await fetchExistingSecurityGroups(selectedRegion);
-            // existingSGs.push(createdSecurityGroup);
-            // populateExistingSecurityGroupDropdown(existingSGs);
             newSecurityGroupNameInput.style.display = 'none';
             newSecurityGroupDescriptionInput.style.display = 'none';
             createSecurityGroupBtn.style.display = 'none';
@@ -252,11 +249,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
     existingSecurityGroupDropdown.addEventListener('change', async function(){
-        // selectedSGValue = document.getElementById('existing-sg').value.GroupName;
-        // Assigning selectedSecurityGroupId here
-        // selectedSecurityGroupId = selectedSGValue.GroupId;
-        // selectedSecurityGroupId = document.getElementById('existing-sg').value.GroupId;
-
         // Accessing the selected option directly and retrieving its value object
         const selectedOptionValue = document.getElementById('existing-sg').value;
         // Splitting the value string using colon as the delimiter
@@ -271,8 +263,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             // console.log('Selected SG value NO JSONIFY:', selectedSecurityGroupId);
             // console.log('Selected SG value:', JSON.stringify(selectedSGValue), null, 2);
             console.log('Selected SG ID: ', selectedSecurityGroupId );
-            // allowSSHCheckbox.disabled = false;
-            // allowHTTPCheckbox.disabled = false;
         } else {
             console.error('Invalid format for selected option value:', selectedOptionValue);
         }
@@ -300,6 +290,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
              // Prevent the default form submission behavior
             event.preventDefault();
+            showDeploymentProgressPopup();
 
             // Gather the form data
             const formData = new FormData(form);
@@ -322,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             alert(data);
            
             // Redirect to the main page
-            window.location.href = 'http://127.0.0.1:8000/menu.html';
+            // window.location.href = 'http://127.0.0.1:8000/menu.html';
           
             // Send the form data to the server
             const response = await fetch(`${baseUrl}/monolith/deploy-monolith`, {
@@ -332,17 +323,62 @@ document.addEventListener('DOMContentLoaded', async function() {
                 },
                 body: JSON.stringify(data)
             })
-            
+            .then(handleResponse)
+            .then(showSuccessPopup)
+            .catch(handleError);
             // Reload the page after a short delay
             // window.location.href = '/';
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000); // Refresh after 1 seconds (adjust as needed)
+            // setTimeout(() => {
+            //     window.location.reload();
+            // }, 1000); // Refresh after 1 seconds (adjust as needed)
         } catch (error){
             console.error('Error on submitting forms for Monolith deployment ', error);
         }
 
     });
+
+    function showDeploymentProgressPopup() {
+        const popup = document.getElementById('deploymentProgressPopup');
+        if (popup) {
+            popup.style.display = 'flex';
+        }
+    }
+
+    function showSuccessPopup(data) {
+        const successPopup = document.getElementById('deploymentSuccessPopup');
+        const successMessage = document.getElementById('successMessage');
+        if (successPopup && successMessage) {
+            successMessage.innerHTML = `Deployment successful! <a href="${data.wordpressInstallationUrl}" target="_blank">Access your site</a>.`;
+            successPopup.style.display = 'flex';
+        }
+    }
+    
+    function closeSuccessPopup() {
+        const successPopup = document.getElementById('deploymentSuccessPopup');
+        if (successPopup) {
+            successPopup.style.display = 'none';
+            window.location.href = '../../menu.html';
+        }
+    }
+    
+    function handleResponse(response) {
+        if (!response.ok) {
+            return response.json().then(error => Promise.reject(error));
+        }
+        return response.json();
+    }
+    
+    function handleError(error) {
+        console.error('Error:', error);
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorMessage) {
+            errorMessage.textContent = error.message || 'An error occurred during deployment';
+        }
+        const progressPopup = document.getElementById('deploymentProgressPopup');
+        if (progressPopup) {
+            progressPopup.style.display = 'none';
+        }
+    }
 
     // Function to fetch AWS regions
     async function fetchAWSRegions() {
