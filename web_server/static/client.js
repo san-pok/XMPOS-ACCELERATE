@@ -72,23 +72,25 @@ document.querySelectorAll('.destroyBtn').forEach(button => {
         try {
             const instanceId = this.dataset.instanceid;
             const deploymentType = this.dataset.deploymenttype;
+            const deploymentId = this.dataset.deploymentid;
             // console.log('Instance ID:', instanceId); // Check if instanceId is correctly extracted
-            alert(instanceId);
+            
             alert(deploymentType);
+            alert(deploymentId);
             // const row = this.closest('tr'); //Get closest table row
             // Displaying status message
             document.getElementById('statusMessage').textContent = `Destroying ${deploymentType} instance...`;
 
             // Apply visual indication to the table row
             const tableRow = this.closest('tr');
-            tableRow.classList.add('destroying');
+            tableRow.classList.add('blinking-background');
 
             let destroyRoute;
             if (deploymentType === 'Monolith') {
-                destroyRoute = `/destroy-ec2?instance_id=${instanceId}`;
+                destroyRoute = `/destroy-ec2?instance_id=${instanceId}&&deployment_id=${deploymentId}`;
                 // print('Deployment type is :', deploymentType)
             } else if (deploymentType === 'Lightsail') {
-                destroyRoute = `/destroy-lightsail?instance_id=${instanceId}`;
+                destroyRoute = `/destroy-lightsail?instance_id=${instanceId}&&deployment_id=${deploymentId}`;
                 // print('Deployment type is :', deploymentType)
             }
 

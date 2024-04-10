@@ -1,14 +1,15 @@
 from datetime import datetime
 import json
+from operator import itemgetter
 import boto3
 import botocore
 import logging
 import os
 import time
-from flask import jsonify, request
+from flask import jsonify, request, session
 import subprocess
 from flask import Flask, render_template
-from handler import capture_ec2_and_lightsail_instance_output, generate_timestamp, get_instance_data_from_s3, get_instance_data_from_s3_hist, save_instance_data_to_s3, create_sqlite_database,insert_instance_data_to_sqlite, display_database_data, update_deployment_history
+from handler import capture_ec2_and_lightsail_instance_output, generate_timestamp, generate_unique_id, get_instance_data_from_s3, get_instance_data_from_s3_hist, prepare_eamil, save_instance_data_to_s3, create_sqlite_database,insert_instance_data_to_sqlite, display_database_data, update_deployment_history
 
 
 app = Flask(__name__, template_folder='templates')
@@ -16,6 +17,7 @@ app = Flask(__name__, template_folder='templates')
 lightsail = boto3.client('lightsail')
 
 count = 1
+app.secret_key = 'your_secret_key'
 
 # Initialize a global variable to store the total running instances
 total_running_instances = 0
@@ -51,15 +53,33 @@ def create_s3_bucket():
 # User Data is coming from submission button clicked 
 @app.route('/deploy-monolith', methods=['POST'])
 def submit_form_monolith():
-    data = request.data
-    print("dummy dummy", data)
-    global count
+    # data = request.data
     os.chdir('./terraform/wordpress-ec2')
     try: 
         aws_region = request.json.get('aws-region')
         ami_id = request.json.get('aws-ami')
         instance_type = request.json.get('instance-type')
         key_pair = request.json.get('key_pair')
+        security_group = request.json.get('security_group')
+        security_group_description = request.json.get('security_group_description')
+        allow_ssh = request.json.get('allow-ssh')
+        allow_http = request.json.get('allow-http')
+        selectedSGId = request.json.get('selectedSGId')
+        createdSG = request.json.get('createdSG')
+        newSecurityGroupName = request.json.get('newSecurityGroupName')
+        storage_size_gb = request.json.get('ebs-storage')
+        database_type = request.json.get('database_type')
+        web_server_engine = request.json.get('web-server')
+
+        if allow_ssh == 'on':
+            allow_ssh = 'true'
+        else:
+            allow_ssh = 'false'
+
+        if allow_http == 'on':
+            allow_http = 'true'
+        else:
+            allow_http = 'false'
 
         # Print the received data
         print("Received data:")
@@ -68,82 +88,58 @@ def submit_form_monolith():
         print("Instance Type:", instance_type)
         print("Key Pair:", key_pair)
 
-        # Get the absolute path to terraform.auto.tfvars for debugging
+        # Generate unique identifier for the deployment 
+        deployment_id = generate_unique_id()
+        print(f'deployment_id: {deployment_id}')
+
+        # Get the absolute path to terraform.auto.tfvars 
         tfvars_file = os.path.abspath('terraform.auto.tfvars')
         print("Absolute path to terraform.auto.tfvars:", tfvars_file)
 
         # Write the user-submitted values to a TFVars file
         # with open('./terraform/wordpress-ec2/terraform.auto.tfvars', 'w') as f:
         with open('terraform.auto.tfvars', 'w') as f:
-
             f.write(f'aws_region = "{aws_region}"\n')
             f.write(f'ami_id = "{ami_id}"\n')
             f.write(f'instance_type = "{instance_type}"\n')
             f.write(f'key_name = "{key_pair}"\n')
+            f.write(f'security_group_name = "{newSecurityGroupName}"\n')
+            f.write(f'security_group_description = "{security_group_description}"\n')
+            f.write(f'allow_ssh = {allow_ssh}\n')
+            f.write(f'allow_http = {allow_http}\n')
+            f.write(f'storage_size_gb = {storage_size_gb}\n')
+            f.write(f'database_type = "{database_type}"\n')
+            f.write(f'web_server = "{web_server_engine}"\n')
 
-        # #Trigger Terraform deployment
+        #define directory path for the deployment's state file
+        state_file_dir = f'state_files'
             
+        # specify path to the Terraform state file
+        state_file_path = f'{state_file_dir}/{deployment_id}.terraform.tfstate'
         subprocess.run(['terraform', 'init',], check=True)
-        subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)  
-        # subprocess.run(['terraform', 'plan',f'-state={count}.tfstate'], check=True)
-        # # subprocess.run(['terraform', 'init -state={count}.tfstate'], check=True)
-        # subprocess.run(['terraform', 'apply', f'-state={count}.tfstate', '-auto-approve'], check=True) 
-        # count += 1 
-        # terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True, text=True)  
-        # # terraform_process = subprocess.run(['terraform', 'apply', '-auto-approve'], check=True, capture_output=True)  
-        # terraform_output = terraform_process.stdout
-
-        # # Check if Terraform detected no changes
-        # if "No changes" in terraform_output:
-        #     print("EC2 instance is already deployed. Skipping saving instance data to S3.")
-        #     # return jsonify({'message': 'EC2 instance is already deployed'}), 200
-        #     return render_template('index.html', message='EC2 instance is already deployed')
-        # else: 
-        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
+        subprocess.run(['terraform', 'apply', '-auto-approve', f'-state={state_file_path}'], check=True)  
+      
+        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output(state_file_path)
         print('incoming data from creation ec2 \n', output_data_of_ec2)
         # Generate current timestamp
         current_timestamp = generate_timestamp()
         # Add deployment type to instance data
+        output_data_of_ec2['deployment_id'] = deployment_id
         output_data_of_ec2['deployment_type'] = 'Monolith'
         # Add timestamp to instance data
         output_data_of_ec2['creation_time'] = current_timestamp
         output_data_of_ec2['deletion_time'] = ''
+        output_data_of_ec2['newSecurityGroupName'] = newSecurityGroupName
+        output_data_of_ec2['allow_ssh'] = allow_ssh
+        output_data_of_ec2['allow_http'] = allow_http
+        output_data_of_ec2['storage_size_gb'] = storage_size_gb
+        output_data_of_ec2['database_type'] = database_type
+        output_data_of_ec2['web_server_engine'] = web_server_engine
 
         save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
 
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
-        # print("Instance data retrieved from S3:", instance_data)
-        # Add the new entry to the deployment history for instance creation
-       
-        # refresh_page()
         return jsonify(instance_data), 200, {'message': 'Wordpress on EC2 is deployed successfully.'}
-        # return render_template('index.html')
-
-        # Return instance data and total running instances count
-        # return jsonify({'instance_data': instance_data, 'total_running_instances': total_running_instances})
-    
-        # # Run Terraform apply command with subprocess.Popen
-        # terraform_process = subprocess.Popen(['terraform', 'apply', '-auto-approve'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-
-        # # Print output of the command in real-time
-        # for line in iter(terraform_process.stdout.readline, b''):
-        #     print(line, end='')
-
-        # # Wait for the command to finish and get the return code
-        # return_code = terraform_process.wait()
-
-        # # Check if Terraform detected no changes
-        # if return_code == 0:
-        #     print("Terraform apply succeeded!")
-
-        #     # Retrieve instance data from S3
-        #     instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
-        #     print("Instance data retrieved from S3:", instance_data)
-            
-        #     return render_template('index.html', message='Wordpress on EC2 is deployed successfully.')
-        # else:
-        #     print("Terraform apply failed!")
-        #     return render_template('index.html', message='Terraform apply failed!')
     except Exception as e:
         error_message = str(e)
         logging.error(f'Error occurred: {error_message}')  # Log the error
@@ -176,16 +172,31 @@ def get_instance_id():
 def destroy_ec2():
     os.chdir('./terraform/wordpress-ec2')
     instance_id = request.args.get('instance_id')
+    deployment_id = request.args.get('deployment_id')
+
+    deployment_id_tfstate = deployment_id + ".terraform.tfstate"
+    print (f'deployment_id_tfstate:, {deployment_id_tfstate}')
+    # Construct the path to the state_files folder
+    state_files_folder = 'state_files'
+
+    # Iterate through the files in the state_files directory
+    for filename in os.listdir(state_files_folder):
+        if filename.startswith(deployment_id_tfstate):
+            state_file_path = os.path.abspath(os.path.join(state_files_folder, filename))
+            print(f'Found state file for deployment ID {deployment_id_tfstate}: {state_file_path}')
+            break
+    else:
+        return f'Error: State file not found for deployment ID {deployment_id_tfstate}'
 
     # Run Terraform Command to destroy EC2 instance
     try:
-        subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
+        subprocess.run(['terraform', 'destroy', '-auto-approve', f'-state={state_file_path}'], check=True)
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
-        print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
+        # print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
 
         # Get instance data from S3 instance_data.json
         for instance in instance_data:
-            if instance['instance_id'] == instance_id:
+            if instance['deployment_id'] == deployment_id:
                 # Generate current timestamp
                 current_timestamp = generate_timestamp()
                 # Update deletion_time for destroying time
@@ -193,14 +204,14 @@ def destroy_ec2():
                 instance['instance_state'] = 'Destroyed'
 
                 # Save the updated instance data back to S3
-                print("Instance data retrieved from S3 when instance is being destroyed to be saved:", instance_data)
+                # print("Instance data retrieved from S3 when instance is being destroyed to be saved:", instance_data)
                 unwrapped_list = {}
                 for dictionary in instance_data:
                     unwrapped_list.update(dictionary)
                 save_instance_data_to_s3(unwrapped_list, bucket_name, key_prefix_history)
         
         #delete instance details from S3
-        delete_instance_details_from_s3(instance_id)
+        delete_instance_details_from_s3(deployment_id)
         # return instance_data
         return 'EC2 instance destroyed successfully'
     except subprocess.CalledProcessError as e:
@@ -217,6 +228,10 @@ def submit_form_lightsail():
         platform = request.json.get('platform')
         blueprint = request.json.get('lightsail-blueprint')
         bundle_id = request.json.get('lightsail-bundle')
+
+         # Generate unique identifier for the deployment 
+        deployment_id = generate_unique_id()
+        print(f'deployment_id: {deployment_id}')
 
         # Print the received data
         print("Received data:")
@@ -237,15 +252,22 @@ def submit_form_lightsail():
             f.write(f'project_name = "{project_name}"\n')
             f.write(f'bundle_id = "{bundle_id}"\n')
             f.write(f'lightsail_blueprints = {{"wordpress": "{blueprint}"}}\n')
+        
+        #define directory path for the deployment's state file
+        state_file_dir = f'state_files'
+
+        # specify path to the Terraform state file
+        state_file_path = f'{state_file_dir}/{deployment_id}.terraform.tfstate'
 
         #Trigger Terraform deployment
         subprocess.run(['terraform', 'init'], check=True)
-        subprocess.run(['terraform', 'apply', '-auto-approve'], check=True)  
+        subprocess.run(['terraform', 'apply', '-auto-approve', f'-state={state_file_path}'], check=True)  
 
-        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output()
+        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output(state_file_path)
         print('incoming data from creation ec2 \n', output_data_of_ec2)
 
         # Add deployment type to instance data
+        output_data_of_ec2['deployment_id'] = deployment_id
         output_data_of_ec2['deployment_type'] = 'Lightsail'
          # Generate current timestamp
         current_timestamp = generate_timestamp()
@@ -273,15 +295,31 @@ def submit_form_lightsail():
 def destroy_lightsail():
     os.chdir('./terraform/wordpress-lightsail')
     instance_id = request.args.get('instance_id')
+    deployment_id = request.args.get('deployment_id')
+
+    deployment_id_tfstate = deployment_id + ".terraform.tfstate"
+    print (f'deployment_id_tfstate:, {deployment_id_tfstate}')
+    # Construct the path to the state_files folder
+    state_files_folder = 'state_files'
+
+    # Iterate through the files in the state_files directory
+    for filename in os.listdir(state_files_folder):
+        if filename.startswith(deployment_id_tfstate):
+            state_file_path = os.path.abspath(os.path.join(state_files_folder, filename))
+            print(f'Found state file for deployment ID {deployment_id_tfstate}: {state_file_path}')
+            break
+    else:
+        return f'Error: State file not found for deployment ID {deployment_id_tfstate}'
+    
     # Run Terraform Command to destroy EC2 instance
     try:
-        subprocess.run(['terraform', 'destroy', '-auto-approve'], check=True)
+        subprocess.run(['terraform', 'destroy', '-auto-approve', f'-state={state_file_path}'], check=True)
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
-        print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
+        # print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
         
         # Get instance data from S3 instance_data.json
         for instance in instance_data:
-            if instance['instance_id'] == instance_id:
+            if instance['deployment_id'] == deployment_id:
                 # Generate current timestamp
                 current_timestamp = generate_timestamp()
                 # Update deletion_time for destroying time
@@ -295,7 +333,7 @@ def destroy_lightsail():
                     unwrapped_list.update(dictionary)
                 save_instance_data_to_s3(unwrapped_list, bucket_name, key_prefix_history)
         #delete instance details from S3
-        delete_instance_details_from_s3(instance_id)
+        delete_instance_details_from_s3(deployment_id)
         return 'Lightsail instance destroyed successfully'
     except subprocess.CalledProcessError as e:
         return f'Error destroying Lightsail instance : {e}'
@@ -343,12 +381,11 @@ def count_instances():
     return jsonify({'running_instances': total_instance_count})
 
 
-
 def refresh_page():
     time.sleep(1)
     return jsonify({'message': 'Page refreshed'})
 
-def delete_instance_details_from_s3(instance_id):
+def delete_instance_details_from_s3(deployment_id):
     s3_client = boto3.client('s3')
     try:
         response = s3_client.get_object(Bucket=bucket_name, Key=key_prefix)
@@ -359,7 +396,7 @@ def delete_instance_details_from_s3(instance_id):
     
     #find and remove the instance with the provided instance ID
     for instance in instance_data:
-        if instance['instance_id'] == instance_id:
+        if instance['deployment_id'] == deployment_id:
             instance_data.remove(instance)
     # Update the instance_data.json file in S3 with the modified list
     try: 
@@ -368,7 +405,7 @@ def delete_instance_details_from_s3(instance_id):
             Key=key_prefix,
             Body=json.dumps(instance_data).encode('utf-8')
         )
-        print(f"Instance with Instance ID '{instance_id}' deleted from S3.")
+        print(f"Instance with Instance ID '{deployment_id}' deleted from S3.")
     except Exception as e:
         print(f"Error updating instance data in S3: {e}")
 
@@ -444,20 +481,6 @@ def get_lightsail_bundles():
 def get_all_regions():
     # Create an EC2 client
     ec2_client = boto3.client('ec2')
-
-    # try:
-    #     # Describe all regions
-    #     response = ec2_client.describe_regions()
-
-    #     # Extract region names from the response
-    #     # all_regions = [region['RegionName'] for region in response['Regions']]
-    #     all_regions = [{'DisplayName': region['RegionName'], 'Endpoint': region['Endpoint'], 'RegionName': region['RegionName']} for region in response['Regions']]
-    #     print('Regions: ', all_regions)
-
-    #     return jsonify({'regions': all_regions})
-    # except Exception as e:
-    #     print(f"Error retrieving regions: {e}")
-    #     return []
     try:
         # Describe all regions
         response = ec2_client.describe_regions()
@@ -485,6 +508,8 @@ def get_all_regions():
                 if e.response['Error']['Code'] == 'UnauthorizedOperation':
                     # Append "No Access" to regions with UnauthorizedOperation errors
                     region['DisplayName'] += ' (No Access)'
+        # Store AWS regions in the session
+        session['aws_regions'] = all_regions
 
         return jsonify({'regions': all_regions})
     except Exception as e:
@@ -569,34 +594,13 @@ def get_instance_types():
         region = request.args.get('region')
         # region = 'ap-southeast-2'
         ec2 = boto3.client('ec2', region_name=region)
-        # ec2 = boto3.client('ec2')
-        # Retrieve instance types for the specified region
-        # instance_types = ec2.describe_instance_types()
         instance_types = ec2.describe_instance_type_offerings()
-        # Retrieve instance types for the specified region
-        # instance_types = ec2.describe_instance_types()['InstanceTypes']
-
         # Extract instance type names from the response
         instance_type_names = [instance['InstanceType'] for instance in instance_types['InstanceTypeOfferings']]
-
-        # instance_details = []
-        # for instance_type in instance_types:
-        #     details = {
-        #         'InstanceType': instance_type['InstanceType'],
-        #         'VCpus': instance_type['VCpuInfo']['DefaultVCpus'],
-        #         'MemoryInfo': instance_type['MemoryInfo']['SizeInMiB'],
-        #         'GpuInfo': instance_type.get('GpuInfo', {}),
-        #         'StorageInfo': instance_type['InstanceStorageSupported']
-        #     }
-        #     instance_details.append(details)
 
         # Sort instance types in ascending order
         sorted_instance_types = sorted(instance_type_names)
 
-        # Filter instance types based on FreeTierEligible attribute
-        # free_tier_instance_types = [instance_type for instance_type in instance_types if instance_type.get('FreeTierEligible', True)]
-
-        # return jsonify({'instance_types': instance_type_names, 'Free_instance_types': free_tier_instance_types} )
         return jsonify({'instance_types': sorted_instance_types})
     except Exception as e:
         return jsonify({'error': str(e)})
@@ -705,7 +709,69 @@ def generate_new_key_pair():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route(f'/get-security-groups')
+def get_security_groups():
+    aws_region = request.args.get('region')
+    try: 
+        # aws_region = 'ap-southeast-1'
+        ec2_client = boto3.client('ec2', region_name = aws_region)
+        response = ec2_client.describe_security_groups()
+        # Extract security group information from the response
+        security_groups = response['SecurityGroups']
+        # Extract relevant data from security groups 
+        formatted_security_groups = []
+        for group in security_groups:
+            formatted_security_groups.append({
+                'GroupName': group['GroupName'],
+                'GroupId': group['GroupId'],
+            })
+        return jsonify({'security_groups': formatted_security_groups})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+@app.route(f'/create_security_group', methods=['POST'])
+def create_security_group():
+    data = request.json
+    group_name = data.get('new_sg_name')
+    description = data.get('new_sg_description')
+    aws_region = data.get('region')
+    # group_name = 'group_name'
+    # description ='description'
+    ec2_client = boto3.client('ec2', region_name = aws_region)
+
+    if not all([group_name, description]):
+        return jsonify({'error': 'Missing required parameters'}), 400
     
+    try:
+        response = ec2_client.create_security_group(
+            GroupName=group_name,
+            Description=description
+        )
+        return jsonify({'generated_sg': response}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/get-deployment-history')
+def deployment_history():
+    
+    deployment_history_data = get_instance_data_from_s3(bucket_name, key_prefix_history )
+    # print('Deployment History Data: \n', deployment_history_data)
+    sorted_deployment_history_data = sorted(deployment_history_data, key=itemgetter('creation_time'), reverse=True)
+    # print (sorted_deployment_history_data)
+    return sorted_deployment_history_data
+
+@app.route('/send-email', methods=['POST'])
+def send_email():
+    try:
+        # Get email addresses from request parameters
+        email_addresses = request.json.get('emailAddresses')
+        print('Received emaill address: ',email_addresses)
+        # instance_id = request.args.get('instance_id')
+
+        prepare_eamil(bucket_name, key_prefix_history, email_addresses)
+        return jsonify({'message': 'Email sent successfully'})
+    except Exception as e:
+        return jsonify({'error sending email in handler function': str(e)}), 500
     
 if __name__ == '__main__':
 
@@ -713,7 +779,7 @@ if __name__ == '__main__':
     original_dir = os.getcwd()
     # database_name = 'team2.db'
 
-    bucket_name = 'xmops-data-bucket-team2'
+    bucket_name = 'xmops-data-bucket-team2p'
     key_prefix = 'instance_record/instance_data.json' 
     key_prefix_history = 'instance_record/instance_data_history.json' 
 

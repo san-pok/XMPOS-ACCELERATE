@@ -1,16 +1,23 @@
 from cmath import e
+import csv
 from datetime import datetime
+from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import os
+import smtplib
 import sqlite3
 import subprocess
 import json
+import time
 import uuid
 import boto3
 from flask import Flask, jsonify
 
 
-def capture_ec2_and_lightsail_instance_output():
-    output = subprocess.check_output(['terraform', 'output', '-json']).decode('utf-8')
+def capture_ec2_and_lightsail_instance_output(state_file_path):
+    output = subprocess.check_output(['terraform', 'output', '-json', f'-state={state_file_path}']).decode('utf-8')
     output_json = json.loads(output)
 
     # Extracting values with graceful handling of missing keys
@@ -248,24 +255,114 @@ def list_tables(database_name):
         print(table[0])
     conn.close() 
 
+def generate_unique_id():
+    # Get current timestamp
+    timestamp_ms = int(time.time() * 100)
+    # Convert timestamp to a string and return its as the unique ID
+    return str(timestamp_ms)
 
 
-def empty_instance_table(database_name):
-    try:
-        # Connect to SQLite database
-        conn = sqlite3.connect(database_name)
-        cursor = conn.cursor()
 
-        # Execute a DELETE statement to remove all records from the instances table
-        cursor.execute("DELETE FROM instances")
+def prepare_eamil(bucket_name, key_prefix_history, emailInput):
+    smtp_port = 587
+    smtp_server = "smtp.gmail.com"
 
-        # Commit the transaction and close the connection
-        conn.commit()
-        conn.close()
+    sender_email = "btbyambadorj@gmail.com"
+    sender_password = 'uezzvoajklvxrksi'
 
-        print("Table 'instances' emptied successfully.")
+    # receiver_email = ["herosteelfixing@gmail.com, 103133909@student.swin.edu.au, adiyabaatarmiigaa976@gmail.com "]
+    receiver_email = [emailInput ]
+    # name the email subject
+    subject = "XMOPTS USAGE REPORT with attachments!!"
 
-    except sqlite3.Error as e:
-        print("Error emptying table:", e)
+    print(f'receiver_email: {receiver_email}')
+    print(f'bucket_name: {bucket_name}')
+    print(f'key_prefix_history: {key_prefix_history}')
+
+
+    deployment_history_data = get_instance_data_from_s3(bucket_name, key_prefix_history)
+    # print(f'deployment_history_data: {deployment_history_data}')
+    # Generate CSV
+    csv_filename = generate_csv(deployment_history_data )
+
+    # # Generate CSV
+    # pdf_data = generate_pdf(deployment_history_data,)
+    # print (pdf_data)
+    
+    for person in receiver_email:
+
+        # Make the body of the email
+        body = f"""
+        Hello Customer, 
+        XMOPS Team 2 are sending your deployment history. 
+        Please find the attached
+
+        Best regards 
+        Team 2
+        """
+
+        # make a MIME object to define parts of the email
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = person
+        msg['Subject'] = subject
+
+        # Attach the body of the message
+        msg.attach(MIMEText(body, 'plain'))
+
+        # Define the file to attach
+        filename = csv_filename
+
+        # Open the file in python as a binary
+        attachment= open(filename, 'rb')  # r for read and b for binary
+
+        # Encode as base 64
+        attachment_package = MIMEBase('application', 'octet-stream')
+        attachment_package.set_payload((attachment).read())
+        encoders.encode_base64(attachment_package)
+        attachment_package.add_header('Content-Disposition', "attachment; filename= " + filename)
+        msg.attach(attachment_package)
+
+        # Cast as string
+        text = msg.as_string()
+
+        # Connect with the server
+        print("Connecting to server...")
+        TIE_server = smtplib.SMTP(smtp_server, smtp_port)
+        TIE_server.starttls()
+        TIE_server.login(sender_email, sender_password)
+        print("Succesfully connected to server")
+        print()
+
+        # Send emails to "person" as list is iterated
+        print(f"Sending email to: {person}...")
+        TIE_server.sendmail(sender_email, person, text)
+        print(f"Email sent to: {person}")
+        print()
+
+    # Close the port
+    TIE_server.quit()
+    os.remove(filename)
+
+def generate_csv(data):
+    # Get all unique keys across all dictionaries in `data`
+    all_keys = set().union(*(d.keys() for d in data))
+
+    # Fill in missing keys with None
+    for d in data:
+        for key in all_keys:
+            d.setdefault(key, None)
+    
+    filename = "deployment_hist.csv "       
+    with open(filename, 'w', encoding='utf8', newline='') as output_file:
+        fc = csv.DictWriter(output_file, 
+                        fieldnames=data[0].keys(),
+
+                        )
+        fc.writeheader()
+        fc.writerows(data)
+
+    return filename
+
 
 

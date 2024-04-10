@@ -21,9 +21,9 @@
             <div class="col-md-6">
                 <nav class="text-md-right">
                     <ul class="list-inline">
-                        <li class="list-inline-item"><a href="#deployment-options" class="text-white">Deployment Options</a></li>
-                        <li class="list-inline-item"><a href="#deployment-history" class="text-white">Deployment History</a></li>
-                        <li class="list-inline-item"><a href="#configuration-settings" class="text-white">Configuration Settings</a></li>
+                        <!-- <li class="list-inline-item"><a href="#deployment-options" class="text-white">Deployment Options</a></li> -->
+                        <li class="list-inline-item"><a href="../static/report.html" class="text-white">Deployment Reports</a></li>
+                        <li class="list-inline-item"><a href="#configuration-settings" class="text-white">Configuration</a></li>
                     </ul>
                 </nav>
             </div>
@@ -110,7 +110,7 @@
                                                 <div class="card-body">
                                                     <h5 class="card-title">High Available</h5>
                                                     <!-- Example: Show running Monolith instances -->
-                                                    <p class="card-text">Total Running: 1</p>
+                                                    <p class="card-text">Total Running: N/A</p>
                                                     <!-- Add more details here as needed -->
                                                 </div>
                                             </div>
@@ -133,47 +133,40 @@
                                         <table id="instanceStatusTable" class="table table-bordered table-sm table-smaller">
                                             <thead>
                                             <tr>
-                                                <th class="small-font ">Created Time</th>
+                                                <th class="small-font">Deployment ID</th>
+                                                <th class="small-font">Created Time</th>
                                                 <th class="small-font">Deployment Type</th>
                                                 <th class="small-font ">Instance ID / Project Name</th>
                                                 <th class="small-font ">Running application</th>
                                                 <th class="small-font ">Instance Type / Bundle ID</th>
-                                                <!-- <th class="small-font ">AMI-ID</th> -->
-                                                <!-- <th class="small-font ">Availabilty zone</th> -->
                                                 <th class="small-font ">Region / Availabilty zone</th>
                                                 <th class="small-font ">State</th>   
-                                                <!-- <th class="small-font">Instance Type</th> -->
-                                                <!-- <th class="small-font ">Key-Name</th> -->
                                                 <th class="small-font ">Public-IP</th>
+                                                <th class="small-font">Database Type</th>
+                                                <th class="small-font">Web Server Engine</th>
+                                                <th class="small-font">Security Group Name</th>
                                                 <th class="small-font ">Destroy</th>
                                             </tr>
                                             </thead>
                                             <tbody id="instanceStatusBody">
                                             <!-- Table rows will be dynamically populated here -->
                                             {% for instance in instance_data %}
-                                            <tr>
-                                                <td class="small">{{ instance.creation_time }}</td>
-                                                <td class="small">{{ instance.deployment_type }}</td>
-                                                <!-- <td class="small ">{{ instance.id }}</td> -->
-                                                <td class="small ">{{ instance.project_id if instance.instance_id == "N/A" else instance.instance_id }}</td>
-                                                <td class="small ">{{ "Wordpress" if instance.blueprint_id == "N/A" else instance.blueprint_id }}</td>
-                                                <!-- <td class="small ">{{ instance.instance_type }}</td> -->
-                                                <!-- <td class="small ">{{ instance.instance_type if instance.instance_type == "N/A" else instance.bundle_id }}</td> -->
-                                                <td class="small ">{{ instance.bundle_id if instance.instance_type == "N/A" else instance.instance_type }}</td>
-                                                <!-- <td class="small ">{{ instance.ami_id }}</td> -->
-                                                <!-- <td class="small ">{{ instance.availability_zone }}</td> -->
-                                                <!-- <td class="small ">{{ instance.instance_region if instance.instance_region == "N/A" else instance.availability_zone}}</td> -->
-                                                <td class="small ">{{ instance.availability_zone if instance.instance_region == "N/A" else instance.instance_region}}</td>
-                                                <!-- <td class="small ">{{ instance.instance_state }}</td> -->
-                                                <!-- <td class="small ">{{ instance.instance_state if instance.instance_state == "N/A" else "running"}}</td> -->
-                                                <td class="small ">{{ "running" if instance.instance_state == "N/A" else instance.instance_state}}</td>
-                                                <!-- <td class="small ">{{ instance.key_name }}</td> -->
-                                                <td class="small ">{{ instance.public_ip }}</td>
+                                            <tr class="{% if instance.deployment_type == 'Lightsail' %} lightsail-row {% elif instance.deployment_type == 'Monolith' %} monolith-row {% endif %}">
+                                                <td class="small-font">{{ instance.deployment_id }}</td>
+                                                <td class="small-font">{{ instance.creation_time }}</td>
+                                                <td class="small-font">{{ instance.deployment_type }}</td>
+                                                <td class="small-font">{{ instance.project_id if instance.instance_id == "N/A" else instance.instance_id }}</td>
+                                                <td class="small-font">{{ "Wordpress" if instance.blueprint_id == "N/A" else instance.blueprint_id }}</td>
+                                                <td class="small-font">{{ instance.bundle_id if instance.instance_type == "N/A" else instance.instance_type }}</td>
+                                                <td class="small-font">{{ instance.availability_zone if instance.instance_region == "N/A" else instance.instance_region}}</td>
+                                                <td class="small-font">{{ "running" if instance.instance_state == "N/A" else instance.instance_state}}</td>
+                                                <td class="small-font">{{ instance.public_ip }}</td>
+                                                <td class="small-font">{{ "Lightsail" if instance.database_type == "N/A" else instance.database_type }}</td>
+                                                <td class="small-font">{{ "Lightsail" if instance.web_server_engine == "N/A" else instance.web_server_engine }}</td>
+                                                <td class="small-font">{{ "Lightsail" if instance.newSecurityGroupName == "N/A" else instance.newSecurityGroupName }}</td>
                                                 <td>
-                                                    <button class="btn btn-danger btn-sm destroyBtn" data-instanceid="{{instance.instance_id}}" data-deploymenttype="{{instance.deployment_type}}">Destroy</button>
+                                                    <button class="btn btn-danger btn-sm destroyBtn" style="font-size: 10px; padding: 2px 6px;" data-instanceid="{{instance.instance_id}}" data-deploymenttype="{{instance.deployment_type}}" data-deploymentid="{{instance.deployment_id}}">Destroy</button>
                                                 </td>
-                                                <!-- <td class="small "><button id="destroyEc2Btn" class="btn btn-danger btn-sm">Destroy</button></td> -->
-                                                <!-- <td class="small "><button id="destroyLightsailBtn" class="btn btn-danger btn-sm">Destroy</button></td> -->
                                             </tr>
                                             {% endfor %}
                                             </tbody>

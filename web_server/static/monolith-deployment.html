@@ -36,28 +36,10 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <!-- <div id="unique-instance-name">
-                                        <div class="form-group">
-                                            <label for="unique-instance">Unique Instance Name</label>
-                                            <input type="text" id="unique-instance" class="form-control" >
-                                        </input>
-                                        </div>
-                                    </div> -->
                                     <label for="aws-os">Operation System (OS)</label>
-                                    <!-- <select id="image" name="image" class="col-md-12 mt-2">
-                                        <option value="ami-04f5097681773b989">Ubuntu (Free tier)</option>
-                                        <option value="">macOS (Free tier)</option>
-                                        <option value="">Amazon Linux (Free tier)</option> -->
-                                        <!-- Add more options as needed -->
-                                    <!-- </select> -->
-                                    
-                                    
                                     <select id="aws-os" name="aws-os" class="col-md-12 mt-2">
                                         <option value="">Select Operation System</option>
                                         <option value="ubuntu">Ubuntu</option>
-                                        <option value="amazon-linux">Amazon Linux</option>
-                                        <option value="windows">Windows</option>
-                                        <!-- Add more OS options as needed -->
                                     </select>
                                 </div>
 
@@ -70,14 +52,8 @@
                                     <label for="instance-type">Instance Type</label>
                                     <select  id="instance-type" name="instance-type" class="col-md-12 mt-2">
                                         <option value="t2.micro">t2.micro (Free tier)</option>
-                                       
                                         <!-- Add more options as needed -->
                                     </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="key-pair">Key Pair Name</label>
-                                    <input type="text" class="form-control" id="key-pair" name="key-pair">
-                                    <small class="form-text text-muted">Choose "new" for new key pair or "existing" for existing key pair</small>
                                 </div>
                                 <div class="form-group">
                                     <label for="key-pair">Key Pair</label>
@@ -89,6 +65,7 @@
                                         <input class="form-check-input" type="radio" id="generate-new" name="key-pair-option" value="generate-new">
                                         <label class="form-check-label" for="generate-new">Generate New Key Pair</label>
                                     </div>
+                                    <small class="form-text text-muted">Choose "new" for new key pair or "existing" for existing key pair</small>
                                 </div>
                                 
                                 <div id="existing-key-pair-section" style="display: none;">
@@ -106,26 +83,51 @@
                                         <input type="text" class="form-control" id="new-key-pair-name" name="new-key-pair-name">
                                         <button type="button" id="generate-keypair-btn">Generate New Key Pair</button>
                                     </div>
-                                    <!-- <div id="generate-keypair-section" style="display: none;">
-                                        <button id="generate-keypair-btn" class="btn btn-primary">Generate New Key Pair</button>
-                                    </div> -->
-                                    
                                 </div>
-                                <!-- <div id="generate-keypair-section" style="display: none;">
-                                    <button id="generate-keypair-btn" class="btn btn-primary">Generate New Key Pair</button>
-                                </div> -->
-                                    
-                                
                                 <div class="form-group">
                                     <label>Security Group Settings:</label><br>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="allow-ssh" name="allow-ssh">
-                                        <label class="form-check-label" for="allow-ssh">Allow SSH</label>
+                                    <div class="form-group row">
+                                        <div class="col-sm-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="allow-ssh" name="allow-ssh">
+                                                <label class="form-check-label" for="allow-ssh">Allow SSH</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="allow-http" name="allow-http">
+                                                <label class="form-check-label" for="allow-http">Allow HTTP</label>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="allow-http" name="allow-http">
-                                        <label class="form-check-label" for="allow-http">Allow HTTP</label>
+                                    <div cclass="form-group">
+                                        <input type="radio" id="use-existing-sg-radio" name="sg-option" value="" >
+                                        <label for="use-existing-sg-radio" >Use Existing Security Group</label>
                                     </div>
+                                    
+                                    <div class="form-group">
+                                        <input type="radio" id="generate-new-sg-radio" name="sg-option" value="generate-new" >
+                                        <label for="generate-new-sg-radio" >Generate New Security Group</label>
+                                    </div>
+                                </div>
+                                
+                                <div id="existing-sg-section" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="existing-sg" >Existing Security Group</label>
+                                        <select id="existing-sg" >
+                                            <!-- Existing key pairs will be populated dynamically -->
+                                            <option value="" selected>Select the Security Group</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="new-sg-section" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="new-sg-name" >New Security Group Name</label>
+                                        <input type="text" id="new-sg-name" class="form-control mb-4" placeholder="Enter New Security Group Name">
+                                        <input type="text" id="new-sg-description" class="form-control mb-4" placeholder="Enter New Security Group Description" >
+                                        <button type="button" id="generate-sg-btn" class="btn btn-primary">Generate New Security Group</button>
+                                    </div>
+                                </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="ebs-storage">Storage in GiB for EBS (Elastic Block Store) Volume </label>
@@ -133,12 +135,12 @@
                                     <small class="form-text text-muted">Please enter the storage capacity in GiB. The value should be between 8 and 30 GiB to comply with the free tier usage limits.</small>
                                 </div>
                                 <div class="form-group">
-                                    <label for="db-type">DB Type</label>
-                                    <select id="db-type" name="db-type" class="col-md-12 mt-2" required>
-                                        <!-- <option value="" disabled selected>Select the type of database</option> -->
-                                        <option value="MySQL">MySQL</option>
-                                        <option value="PostgreSQL">PostgreSQL</option>
-                                        <option value="MariaDB">MariaDB</option>
+                                    <label for="database_type">DB Type</label>
+                                    <select id="database_type" name="database_type" class="col-md-12 mt-2" required>
+                                        <option value="" disabled selected>Select the type of database</option>
+                                        <option value="mysql">MySQL</option>
+                                        <!-- <option value="PostgreSQL">PostgreSQL</option> -->
+                                        <option value="mariadb">MariaDB</option>
                                         <!-- Add more database types as needed -->
                                     </select>
                                     <small class="form-text text-muted">Choose the type of database you intend to use with the WordPress installation.</small>
@@ -147,9 +149,9 @@
                                 <div class="form-group">
                                     <label for="php-version">PHP Version</label>
                                     <select id="php-version" name="php-version" class="col-md-12 mt-2" required>
+                                        <option value="" >Select PHP</option>
                                         <option value="7.4">PHP 7.4</option>
-                                        <option value="7.3">PHP 7.3</option>
-                                        <option value="7.2">PHP 7.2</option>
+                                        
                                         <!-- Add more PHP versions as needed -->
                                     </select>
                                     <small class="form-text text-muted">Choose the version of PHP you want to use for your application.</small>
@@ -157,23 +159,22 @@
                                 <div class="form-group">
                                     <label for="web-server">Web Server (Apache or Nginx)</label>
                                     <select id="web-server" name="web-server" class="col-md-12 mt-2" required>
-                                        <option value="Apache">Apache</option>
-                                        <option value="Nginx">Nginx</option>
+                                        <option value="" disabled>Select Web Server Engine</option>
+                                        <option value="apache2">Apache</option>
+                                        <option value="nginx">Nginx</option>
                                         <!-- Add more web server options as needed -->
                                     </select>
                                     <small class="form-text text-muted">Choose the web server software you want to use for hosting your application.</small>
-                                    <!-- <p class="text-muted">Choose the web server software you want to use for hosting your application.</p> -->
                                 </div>
-                                
-                                <!-- Add more input fields as needed -->
+                            </div>
+                            <div class="row justify-content-center">
+                                <!-- "Deploy" button -->
+                                <button type="submit" class="btn btn-primary">Deploy</button>
+                                <!-- "Cancel" button -->
+                                <button type="cancel" class="btn btn-primary ml-auto">Cancel</button>
                             </div>
                         </div>
-                        <div class="row justify-content-center">
-                            <!-- "Deploy" button -->
-                            <button type="submit" class="btn btn-primary">Deploy</button>
-                            <!-- "Cancel" button -->
-                            <button type="cancel" class="btn btn-primary ml-auto">Cancel</button>
-                        </div>
+                        
                     </form>
                 </div>
             </div>    
@@ -186,7 +187,7 @@
 </footer>
 
 <script src="monolith-deployment.js"></script>
-<script src="../static/client.js"></script>
+<!-- <script src="../static/client.js"></script> -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

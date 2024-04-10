@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment History</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .card {
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            transition: 0.3s;
+            border-radius: 10px;
+        }
+        .card:hover {
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+        }
+        .card-title {
+            font-size: 24px;
+            color: #333;
+        }
+        .table {
+            background-color: #fff;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .table th {
+            background-color: #f0f0f0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        .table td {
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="row justify-content-center mt-3 mb-3">
+        <div class="col-md-10 text-center">
+            <button id="backButton" class="btn btn-primary mr-2">Back</button>
+            <button id="downloadButton" class="btn btn-success mr-2">Download</button>
+            <button id="sendEmailButton" class="btn btn-info">Send Email</button>
+            <!-- Add any other links/buttons as needed -->
+        </div>
+    </div>
+
+    <!-- Email input fields -->
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="email1">Email Address 1:</label>
+                    <input type="email" id="email" class="form-control email-input" required>
+                </div>
+            </div>
+            <!-- Add more input fields as needed -->
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Deployment History</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped" id="historyTable">
+                                <thead>
+                                    <tr>
+                                        <th>Deployment Type</th>
+                                        <th>Created Time</th>
+                                        <th>Deleted Time</th>
+                                        <th>Availability Zone</th>
+                                        <th>Instance ID</th>
+                                        <th>Instance Region</th>
+                                        <th>Instance type</th>
+                                        <th>Project ID/Name</th>
+                                        <th>Status</th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <!-- Table rows will be populated dynamically using JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+     
+    
+
+<script src="report.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
