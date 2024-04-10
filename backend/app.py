@@ -147,24 +147,20 @@ def deploy_infrastructure():
 
         # Initialize Terraform
         init_output = subprocess.run(["terraform", "init"], cwd=high_terraform_dir, capture_output=True, text=True)
-        print(init_output.stdout)
+
         if init_output.returncode != 0:
-            print(init_output.stderr)
             raise Exception('Error initializing Terraform')
 
         # Plan Terraform
         plan_output = subprocess.run(["terraform", "plan"], cwd=high_terraform_dir, capture_output=True, text=True)
-        print(plan_output.stdout)
         if plan_output.returncode != 0:
-            print(plan_output.stderr)
             raise Exception('Error planning with Terraform')
 
-        return jsonify({'message': 'High deployed successfully!'})
+        return jsonify({'message': 'Highly available instance deployed successfully!'})
 
     except Exception as e:
-        # Log the error and save the 'failed' status if an exception is caught
 
-        return jsonify({'message': 'Error deploying High instance', 'error': str(e)}), 500
+        return jsonify({'message': 'Error deploying Highly available application instance', 'error': str(e)}), 500
 
 
 @app.route(f'{high_prefix}/destroy', methods=['POST'])
