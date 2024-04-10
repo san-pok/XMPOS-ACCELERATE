@@ -188,14 +188,13 @@ def destroy_infrastructure():
 @app.route(f'{high_prefix}/validate_form', methods=['POST'])
 def validate_form():
     try:
-        data = request.get_json()  # Get JSON data from request
+        data = request.get_json()
 
         # Perform form validations
         errors = {}
         for item in data:
             key = item.get('name')
             value = item.get('value')
-
 
             # Check for required fields
             if key in ['ami_type', 'instance_type', 'min_instances', 'max_instances', 'key_pair_selection', 'storage_size', 'db_engine', 'engine_version']:
@@ -362,7 +361,6 @@ def get_instance_types():
     try:
         region = request.form.get('region')
 
-        # Initialize AWS EC2 client
         ec2_client = boto3.client('ec2', region_name=region)
 
         # Get all instance types available in the region
@@ -441,6 +439,10 @@ def deployment_info():
         error_message = f'Error listing S3 objects: {str(e)}'
         return jsonify({'error': error_message}), 500
 
+
+#Highly Available Deployment Routes up to here
+
+#LightSail Routes starts from here
 
 def generate_ssh_key(user_input):
     # Use user_input in some form if needed, like a passphrase or to generate a unique key pair per user input.
