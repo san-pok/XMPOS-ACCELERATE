@@ -356,7 +356,6 @@ $(document).ready(function () {
         }
     });
 
-    // Function to create a new key pair (you can replace this with your actual API call)
     function createNewKeyPair(newKeyPairName) {
         event.preventDefault();
         $.ajax({
@@ -404,11 +403,10 @@ $(document).ready(function () {
     fetchRegionsAndPopulate();
 
     $('#deployForm').on('submit', function (event) {
-        event.preventDefault(); // Prevent the default form submission behavior
+        event.preventDefault();
 
         const formData = $(this).serializeArray();
 
-        // Manually replace values for dynamically populated inputs if they exist
         replaceFormDataValue(formData, 'ami_type', $('#search_ami_type').val());
         replaceFormDataValue(formData, 'instance_type', $('#search_instance_type').val());
         replaceFormDataValue(formData, 'db_engine', $('#search_db_engine').val());
@@ -417,23 +415,18 @@ $(document).ready(function () {
         // Convert formData to JSON format
         const jsonData = JSON.stringify(formData);
 
-        // Send an AJAX request to your API endpoint
-
         $.ajax({
             url: 'http://127.0.0.1:5000/highly/validate_form',
             method: 'POST',
             data: jsonData,
-            contentType: 'application/json', // Set the Content-Type header to JSON
+            contentType: 'application/json',
             success: function (response) {
                 alert('Form validation successful and infrastructure deployment triggered');
             },
             error: function (error) {
-                console.error('Error validating form:', error);
-                // You can handle the error response here, such as showing an error message to the user
                 alert('Error validating form. Please try again.');
             }
         });
-
     });
 
     function replaceFormDataValue(formData, key, value) {
