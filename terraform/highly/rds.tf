@@ -1,5 +1,5 @@
 resource "aws_security_group" "rds_sg" {
-  name        = "rds-security-group"
+  name     = "${var.namespace}-hrds-security-group"
   description = "Security group for RDS instance"
   vpc_id      =aws_vpc.xmop_vpc.id
 
@@ -22,13 +22,13 @@ resource "aws_security_group" "rds_sg" {
   }
 }
 
-resource "aws_db_instance" "example_rds" {
-  identifier           = var.identifier
+resource "aws_db_instance" "xmop_rds" {
+  identifier           = "${var.namespace}hrdsinstance"
   engine               = var.db_engine
   engine_version       = var.engine_version
   instance_class       = var.instance_class
-  allocated_storage    = 20
-  db_name              = var.identifier
+  allocated_storage    = var.rds_storage
+  db_name              = "${var.namespace}hrdsinstance"
   username             = var.db_username
   password             = var.db_password
   db_subnet_group_name = aws_db_subnet_group.xmop_db_subnet_group.name

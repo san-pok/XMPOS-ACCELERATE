@@ -4,23 +4,14 @@ variable "aws_region" {
 }
 #Singapore ap-southeast-1 ,Australia ap-southeast-2 ,North California us-west-1
 
-variable "vpc_name" {
-  default = "HighVPC"
-  description = "The name of the Virtual Private Cloud (VPC)."
+variable "namespace" {
+  default = "xmop"
+  description = "Namespace for project"
 }
 
 variable "vpc_cidr_block" {
   default = "10.0.0.0/16"
   description = "The CIDR block for the VPC."
-}
-
-variable "internet_gateway_name" {
-  default = "MainInternetGateway"
-  description = "The name of the Internet Gateway."
-}
-
-variable "instance_name" {
-  description = "The name of the EC2 instance."
 }
 
 variable "ami_id" {
@@ -73,14 +64,15 @@ variable "instance_class" {
   default     = "db.t3.micro"
 }
 
+variable "rds_storage" {
+  description = "The storage size for the RDS instance"
+  default     = "20"
+}
+
 variable "environment" {
   description = "The environment for RDS"
   default     = "Development"
   #Production or Development
-}
-
-variable "identifier" {
-  default     = "amirrdsinstance1"
 }
 
 variable "db_username" {

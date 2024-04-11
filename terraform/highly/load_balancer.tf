@@ -1,5 +1,5 @@
 resource "aws_security_group" "wordpress_lb_sg" {
-  name        = "wordpress_lb_sg"
+  name        = "${var.namespace}-hWordpress_lb_sg"
   description = "Security group for the WordPress load balancer"
   vpc_id      = aws_vpc.xmop_vpc.id
 
@@ -26,7 +26,7 @@ resource "aws_security_group" "wordpress_lb_sg" {
 }
 
 resource "aws_lb" "wordpress_lb" {
-  name               = "wordpress-lb"
+  name               = "${var.namespace}-hwordpress-lb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.wordpress_lb_sg.id]
@@ -41,7 +41,7 @@ resource "aws_lb" "wordpress_lb" {
 }
 
 resource "aws_lb_target_group" "wordpress_target_group" {
-  name     = "wordpress-target-group"
+  name     = "${var.namespace}-hwordpress-target-group"
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.xmop_vpc.id

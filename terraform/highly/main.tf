@@ -3,7 +3,7 @@ resource "aws_vpc" "xmop_vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
   tags = {
-    Name = var.vpc_name
+    Name = "${var.namespace}-hVPC"
   }
 }
 
@@ -11,7 +11,7 @@ resource "aws_internet_gateway" "xmop_internet_gateway" {
   vpc_id = aws_vpc.xmop_vpc.id
 
   tags = {
-    Name = var.internet_gateway_name
+    Name = "${var.namespace}-hInternetGateway"
   }
 }
 
@@ -74,8 +74,8 @@ resource "aws_route_table_association" "xmop_route_association_4" {
 }
 
 resource "aws_security_group" "xmop_wordpress_sg" {
-  name        = "wordpress_sg"
-  description = "Allow inbound traffic to WordPress"
+  name        = "${var.namespace}-hWordpress_SG"
+  description = "Security group allowing inbound traffic necessary for WordPress deployment and unrestricted outbound traffic"
   vpc_id      = aws_vpc.xmop_vpc.id
 
   ingress {
