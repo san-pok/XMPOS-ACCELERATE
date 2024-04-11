@@ -119,9 +119,9 @@ document.body.addEventListener('click', async function(event) {
             // const instanceId = this.dataset.instanceid;
             // const deploymentType = this.dataset.deploymenttype;
             // // console.log('Instance ID:', instanceId); // Check if instanceId is correctly extracted
-            alert(instanceId);
+            // alert(instanceId);
             alert(deploymentType);
-            alert(deploymentId);
+            // alert(deploymentId);
             // const row = this.closest('tr'); //Get closest table row
             // Displaying status message
             document.getElementById('statusMessage').textContent = `Destroying ${deploymentType} instance...`;

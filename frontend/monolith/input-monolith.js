@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             // Get the value of the new key pair name input
             const newKeyPairNameTrimmed = newKeyPairName.value.trim();
-            alert(newKeyPairName);
+            // alert(newKeyPairName);
             if (!newKeyPairNameTrimmed) {
                 // Handle case when the input is empty
                 alert('Please enter a name for the new key pair.');
@@ -308,9 +308,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 data[key] = value;
             });
 
-            alert(JSON.stringify(data));
+            // alert(JSON.stringify(data));
             const message = 'EC2 instance is being created.....'
-            alert(data);
+            // alert(data);
            
             // Redirect to the main page
             // window.location.href = 'http://127.0.0.1:8000/menu.html';
@@ -387,12 +387,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
 
             // Show generating message
-            const messageElement = document.getElementById('region-generation-message');
-            messageElement.textContent = `Generating potential operating systems for region ...`;
+            // const messageElement = document.getElementById('region-generation-message');
+            // messageElement.textContent = `Generating potential operating systems for region ...`;
 
-            // Apply green color
-            messageElement.style.color = '#008000'; // This is the hexadecimal value for green color
-            messageElement.style.fontSize = '14px'; // Font size 14px
+            // // Apply green color
+            // messageElement.style.color = '#008000'; // This is the hexadecimal value for green color
+            // messageElement.style.fontSize = '8px'; // Font size 14px
 
             // Start time
             const startTime = Date.now();
@@ -400,7 +400,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Update message with elapsed time every second
             timerInterval = setInterval(() => {
                 const elapsedTime = Math.floor((Date.now() - startTime) / 1000); // Calculate elapsed time in seconds
-                messageElement.textContent = `Generating potential operating systems for region ... (Elapsed time: ${elapsedTime} seconds)`;
+                // messageElement.textContent = `Generating potential operating systems for region ... (Elapsed time: ${elapsedTime} seconds)`;
             }, 1000); // Update every second
 
             // Check if AWS regions are already stored in session storage
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 clearInterval(timerInterval);
                 const endTime = Date.now();
                 elapsedTime = Math.floor((endTime-startTime) / 1000);
-                messageElement.textContent = `(Elapsed time: ${elapsedTime} seconds to fetch all OS )`;
+                // messageElement.textContent = `(Elapsed time: ${elapsedTime} seconds to fetch all OS )`;
 
                 return JSON.parse(storedRegions);
             }
@@ -438,7 +438,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Function to fetch AMIs based on selected region and OS
     async function fetchAMIs(region, osType) {
         try {
-            alert('I am in fetchAMIs');
+            // alert('I am in fetchAMIs');
             const response = await fetch(`${baseUrl}/monolith/amis?region=${region}&os_type=${osType}`);
             const data = await response.json();
             return data;
@@ -466,7 +466,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             const response = await fetch(`${baseUrl}/monolith/existing_key_pairs?region=${region}`);
             const data = await response.json();
-            alert(data);
+            // alert(data);
             return data.existing_key_pairs;
         } catch (error) {
             console.error('Error fetching existing key pairs: ', error);
@@ -558,17 +558,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Count the total number of AMIs
         const amiCount = amis.length;
         // Check if there's an existing paragraph displaying the count
-        const existingAmiCountParagraph = dropdown.parentNode.querySelector('.ami-count-paragraph');
-        if(existingAmiCountParagraph){
-            existingAmiCountParagraph.remove();
-        }
-        // Display the total count in a paragraph element
-        const amiCountParagraph = document.createElement('p');
-        amiCountParagraph.textContent = `Total available AMIs: ${amiCount}`;
-        amiCountParagraph.style.color = 'blue'; // Set color to blue
-        amiCountParagraph.style.fontSize = '14px'; // Set font size to smaller
-        amiCountParagraph.classList.add('ami-count-paragraph'); // Add a class for easy identification
-        dropdown.parentNode.insertBefore(amiCountParagraph, dropdown.nextSibling);
+        // const existingAmiCountParagraph = dropdown.parentNode.querySelector('.ami-count-paragraph');
+        // if(existingAmiCountParagraph){
+        //     existingAmiCountParagraph.remove();
+        // }
+        // // Display the total count in a paragraph element
+        // const amiCountParagraph = document.createElement('p');
+        // amiCountParagraph.textContent = `Total available AMIs: ${amiCount}`;
+        // amiCountParagraph.style.color = 'blue'; // Set color to blue
+        // amiCountParagraph.style.fontSize = '8px'; // Set font size to smaller
+        // amiCountParagraph.classList.add('ami-count-paragraph'); // Add a class for easy identification
+        // dropdown.parentNode.insertBefore(amiCountParagraph, dropdown.nextSibling);
         
         amis.forEach(ami => {
             // console.log(ami);
@@ -595,12 +595,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             existingTypeCountParagraph.remove();
         }
         // Display the total count in a paragraph element
-        const instanceTypeCountParagraph = document.createElement('p');
-        instanceTypeCountParagraph.textContent = `Total available InstanceTypes: ${instanceTypeCount}`;
-        instanceTypeCountParagraph.style.color = 'blue'; // Set color to blue
-        instanceTypeCountParagraph.style.fontSize = '14px'; // Set font size to smaller
-        instanceTypeCountParagraph.classList.add('instype-count-paragraph');
-        dropdown.parentNode.insertBefore(instanceTypeCountParagraph, dropdown.nextSibling);
+        // const instanceTypeCountParagraph = document.createElement('p');
+        // instanceTypeCountParagraph.textContent = `Total available InstanceTypes: ${instanceTypeCount}`;
+        // instanceTypeCountParagraph.style.color = 'blue'; // Set color to blue
+        // instanceTypeCountParagraph.style.fontSize = '14px'; // Set font size to smaller
+        // instanceTypeCountParagraph.classList.add('instype-count-paragraph');
+        // dropdown.parentNode.insertBefore(instanceTypeCountParagraph, dropdown.nextSibling);
 
         instanceTypes.forEach(type => {
             const optionElement = document.createElement('option');

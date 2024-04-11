@@ -1068,7 +1068,7 @@ def destroy_ec2():
 
         # Get instance data from S3 instance_data.json
         for instance in instance_data:
-            if instance['instance_id'] == instance_id:
+            if instance['deployment_id'] == deployment_id:
                 # Generate current timestamp
                 current_timestamp = generate_timestamp()
                 # Update deletion_time for destroying time
@@ -1083,7 +1083,7 @@ def destroy_ec2():
                 save_instance_data_to_s3(unwrapped_list, bucket_name, key_prefix_history)
         
         #delete instance details from S3
-        delete_instance_details_from_s3(instance_id)
+        delete_instance_details_from_s3(deployment_id)
         # return instance_data
         return 'EC2 instance destroyed successfully'
     except subprocess.CalledProcessError as e:
@@ -1091,7 +1091,7 @@ def destroy_ec2():
     finally:
         os.chdir(original_dir)
 
-def delete_instance_details_from_s3(instance_id):
+def delete_instance_details_from_s3(deployment_id):
     s3_client = boto3.client('s3')
     try:
         response = s3_client.get_object(Bucket=bucket_name, Key=key_prefix)
@@ -1102,7 +1102,7 @@ def delete_instance_details_from_s3(instance_id):
     
     #find and remove the instance with the provided instance ID
     for instance in instance_data:
-        if instance['instance_id'] == instance_id:
+        if instance['deployment_id'] == deployment_id:
             instance_data.remove(instance)
     # Update the instance_data.json file in S3 with the modified list
     try: 
@@ -1111,7 +1111,7 @@ def delete_instance_details_from_s3(instance_id):
             Key=key_prefix,
             Body=json.dumps(instance_data).encode('utf-8')
         )
-        print(f"Instance with Instance ID '{instance_id}' deleted from S3.")
+        print(f"Instance with Instance ID '{deployment_id}' deleted from S3.")
     except Exception as e:
         print(f"Error updating instance data in S3: {e}")
 
