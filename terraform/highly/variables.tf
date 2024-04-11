@@ -70,7 +70,7 @@ variable "engine_version" {
 
 variable "instance_class" {
   description = "The instance type for the RDS instance"
-  default     = "db.t2.micro"
+  default     = "db.t3.micro"
 }
 
 variable "environment" {
