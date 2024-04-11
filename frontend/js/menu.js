@@ -21,6 +21,14 @@ document.addEventListener('DOMContentLoaded', async function() {
   const monolithDeploymentLink = document.getElementById('monolith-deployment');
 
   // document.getElementById('instanceCount').innerText = 'Calculating...'
+  //   alert("Just entered menu.js");
+    // Call the function when the page is loaded
+    fetchLightsailInstanceCount();
+    fetchMonolithInstanceCount();
+
+    // Call the function to fetch and populate instance status data
+    fetchInstanceStatusData();
+});
 
   // Function to fetch instance count and update the UI
   function fetchLightsailInstanceCount() {
@@ -57,22 +65,6 @@ document.addEventListener('DOMContentLoaded', async function() {
           });
   }
 
-    //   alert("Just entered menu.js");
-    // Call the function when the page is loaded
-    fetchLightsailInstanceCount();
-    fetchMonolithInstanceCount();
-
-    // Call the function to fetch and populate instance status data
-    fetchInstanceStatusData();
-  
-  
-    document.addEventListener('DOMContentLoaded', function() {
-      const terraformOutput = document.getElementById('statusMessage').textContent;
-      console.log(terraformOutput); // Output the Terraform output to the console
-      // Additional JavaScript code to handle the Terraform output as needed
-    });
-
-});
 
 // Function to fetch instance status data from app.py
 function fetchInstanceStatusData() {
@@ -81,7 +73,7 @@ function fetchInstanceStatusData() {
     .then(data => {
         // Update the status message if needed
         // document.getElementById('statusMessage').textContent = 'Instance status data fetched successfully';
-
+        console.log(`data: ${data}`)
         // Populate the table with the received data
         const tableBody = document.getElementById('instanceStatusBody');
         tableBody.innerHTML = '';  // Clear previous content
@@ -97,6 +89,9 @@ function fetchInstanceStatusData() {
                     <td class="px-4 py-2">${instance.instance_region === "N/A" ? instance.availability_zone : instance.instance_region}</td>
                     <td class="px-4 py-2">${instance.instance_state === "N/A" ? "running" : instance.instance_state}</td>
                     <td class="px-4 py-2">${instance.public_ip}</td>
+                    <td class="px-4 py-2">${instance.database_type === "N/A" ? "Lightsail" : instance.database_type}</td>
+                    <td class="px-4 py-2">${instance.web_server_engine === "N/A" ? "Lightsail" : instance.web_server_engine}</td>
+                    <td class="px-4 py-2">${instance.newSecurityGroupName === "N/A" ? "Lightsail" : instance.newSecurityGroupName}</td>
                     <td class="px-4 py-2">
                         <button class="destroy-button hover:bg-red-600 text-white" data-instanceid="${instance.instance_id}" data-deploymenttype="${instance.deployment_type}" data-deploymentid="${instance.deployment_id}">Destroy</button>
                     </td>

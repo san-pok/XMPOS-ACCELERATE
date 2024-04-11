@@ -908,6 +908,12 @@ def submit_form_monolith():
         # Add timestamp to instance data
         output_data_of_ec2['creation_time'] = current_timestamp
         output_data_of_ec2['deletion_time'] = ''
+        output_data_of_ec2['newSecurityGroupName'] = newSecurityGroupName
+        output_data_of_ec2['allow_ssh'] = allow_ssh
+        output_data_of_ec2['allow_http'] = allow_http
+        output_data_of_ec2['storage_size_gb'] = storage_size_gb
+        output_data_of_ec2['database_type'] = database_type
+        output_data_of_ec2['web_server_engine'] = web_server_engine
 
         save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
 
@@ -1115,7 +1121,7 @@ def deployment_history():
     
     deployment_history_data = get_instance_data_from_s3(bucket_name, key_prefix_history )
     # print('Deployment History Data: \n', deployment_history_data)
-    sorted_deployment_history_data = sorted(deployment_history_data, key=itemgetter('creation_time'))
+    sorted_deployment_history_data = sorted(deployment_history_data, key=itemgetter('creation_time'), reverse=True)
     # print (sorted_deployment_history_data)
     return sorted_deployment_history_data
 
@@ -1254,6 +1260,9 @@ def submit_form_lightsail():
         current_timestamp = generate_timestamp()
         output_data_of_ec2['creation_time'] = current_timestamp
         output_data_of_ec2['deletion_time'] = ''
+        output_data_of_ec2['newSecurityGroupName'] = 'N/A'
+        output_data_of_ec2['database_type'] = 'N/A'
+        output_data_of_ec2['web_server_engine'] = 'N/A'
 
         save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
         # save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix_history)
@@ -1300,7 +1309,7 @@ def destroy_lightsail():
         
         # Get instance data from S3 instance_data.json
         for instance in instance_data:
-            if instance['instance_id'] == instance_id:
+            if instance['deployment_id'] == deployment_id:
                 # Generate current timestamp
                 current_timestamp = generate_timestamp()
                 # Update deletion_time for destroying time
@@ -1314,7 +1323,7 @@ def destroy_lightsail():
                     unwrapped_list.update(dictionary)
                 save_instance_data_to_s3(unwrapped_list, bucket_name, key_prefix_history)
         #delete instance details from S3
-        delete_instance_details_from_s3(instance_id)
+        delete_instance_details_from_s3(deployment_id)
         return 'Lightsail instance destroyed successfully'
     except subprocess.CalledProcessError as e:
         return f'Error destroying Lightsail instance : {e}'
@@ -1327,7 +1336,7 @@ if __name__ == '__main__':
     # Save the original directory
     original_dir = os.getcwd()
 
-    bucket_name = 'xmops-data-bucket-team2p'
+    bucket_name = 'xmops-data-bucket-team2'
     key_prefix = 'instance_record/instance_data.json' 
     key_prefix_history = 'instance_record/instance_data_history.json' 
     get_instance_data_from_s3(bucket_name, key_prefix)
