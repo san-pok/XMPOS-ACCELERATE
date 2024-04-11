@@ -29,6 +29,21 @@ resource "aws_subnet" "xmop_subnet_2" {
   map_public_ip_on_launch = true
 }
 
+//private subnet
+resource "aws_subnet" "xmop_subnet_3" {
+  vpc_id            = aws_vpc.xmop_vpc.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "${var.aws_region}a"
+  map_public_ip_on_launch = false
+}
+
+resource "aws_subnet" "xmop_subnet_4" {
+  vpc_id            = aws_vpc.xmop_vpc.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = "${var.aws_region}b"
+  map_public_ip_on_launch = false
+}
+
 resource "aws_route_table" "xmop_route_table" {
   vpc_id = aws_vpc.xmop_vpc.id
 
@@ -45,6 +60,16 @@ resource "aws_route_table_association" "xmop_route_association_1" {
 
 resource "aws_route_table_association" "xmop_route_association_2" {
   subnet_id      = aws_subnet.xmop_subnet_2.id
+  route_table_id = aws_route_table.xmop_route_table.id
+}
+
+resource "aws_route_table_association" "xmop_route_association_3" {
+  subnet_id      = aws_subnet.xmop_subnet_3.id
+  route_table_id = aws_route_table.xmop_route_table.id
+}
+
+resource "aws_route_table_association" "xmop_route_association_4" {
+  subnet_id      = aws_subnet.xmop_subnet_4.id
   route_table_id = aws_route_table.xmop_route_table.id
 }
 

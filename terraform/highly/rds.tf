@@ -7,7 +7,7 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 3306  # MySQL port
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.xmop_wordpress_sg.id]
   }
 
   egress {
@@ -31,7 +31,7 @@ resource "aws_db_instance" "example_rds" {
   db_name              = var.identifier
   username             = var.db_username
   password             = var.db_password
-  db_subnet_group_name = aws_db_subnet_group.example.name
+  db_subnet_group_name = aws_db_subnet_group.xmop_db_subnet_group.name
   skip_final_snapshot  = true
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
 
@@ -41,9 +41,9 @@ resource "aws_db_instance" "example_rds" {
 }
 
 
-resource "aws_db_subnet_group" "example" {
-  name       = "example-db-subnet-group"
-  subnet_ids = [aws_subnet.xmop_subnet_1.id, aws_subnet.xmop_subnet_2.id]
+resource "aws_db_subnet_group" "xmop_db_subnet_group" {
+  name       = "xmop-db-subnet-group"
+  subnet_ids = [aws_subnet.xmop_subnet_3.id, aws_subnet.xmop_subnet_4.id]  # Use private subnets only
 }
 
 # Create IAM role for EC2 instances
