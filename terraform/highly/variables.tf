@@ -9,11 +9,6 @@ variable "namespace" {
   description = "Namespace for project"
 }
 
-variable "vpc_cidr_block" {
-  default = "10.0.0.0/16"
-  description = "The CIDR block for the VPC."
-}
-
 variable "ami_id" {
   description = "The ID of the AMI to use for the EC2 instance."
 }
