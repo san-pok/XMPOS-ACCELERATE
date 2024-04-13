@@ -76,25 +76,25 @@ resource "aws_route_table_association" "xmop_route_association_4" {
 
 resource "aws_security_group" "xmop_wordpress_sg" {
   name        = "${var.namespace}-hWordpress_SG"
-  description = "Security group allowing inbound traffic necessary for WordPress deployment and unrestricted outbound traffic"
+  description = "Security group for WordPress deployment"
   vpc_id      = aws_vpc.xmop_vpc.id
 
   ingress {
-    from_port   = 80
+    from_port   = 80 // HTTP
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port   = 443
+    from_port   = 443 //HTTPS
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port = 22
+    from_port = 22 //SSH
     to_port = 22
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
