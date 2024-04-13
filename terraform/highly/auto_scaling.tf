@@ -54,6 +54,7 @@ resource "aws_autoscaling_group" "xmop_autoscaling_group" {
   desired_capacity            = var.desired_instances
   launch_configuration        = aws_launch_configuration.xmop_launch_configuration.name
   vpc_zone_identifier         = [
+    // Public subnets
     aws_subnet.xmop_subnet_1.id,
     aws_subnet.xmop_subnet_2.id
   ]
