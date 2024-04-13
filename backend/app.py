@@ -303,6 +303,7 @@ def get_all_regions():
     ec2_client = boto3.client('ec2')
 
     try:
+        # Retrieve information about all available AWS regions
         response = ec2_client.describe_regions()
 
         # Extract region names from the response
@@ -329,6 +330,7 @@ def get_amis_by_os():
     else:
         return jsonify({'error': 'Invalid OS type'}), 400
 
+    # Define filters to retrieve images
     filters = [
         {'Name': 'name', 'Values': [name_filter]},
         {'Name': 'architecture', 'Values': ['x86_64']},
@@ -338,13 +340,11 @@ def get_amis_by_os():
 
     ]
 
-    # Retrieve AMIs based on the filters
     try:
         response = ec2_client.describe_images(Filters=filters)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-    # Extract relevant information from the response
     ami_list = []
     for image in response['Images']:
         ami_list.append({
@@ -400,17 +400,21 @@ def list_db_engine_types():
 
 @app.route(f'{high_prefix}/db_engine_versions', methods=['POST'])
 def list_db_engine_versions():
-    region = request.form.get('region')
-    engine = request.form.get('engine')
+    try:
+        region = request.form.get('region')
+        engine = request.form.get('engine')
 
-    rds_client = boto3.client('rds',
-                              region_name=region)
+        rds_client = boto3.client('rds', region_name=region)
 
-    response = rds_client.describe_db_engine_versions(Engine=engine)
+        # Retrieve information about available database engine versions for the specified engine
+        response = rds_client.describe_db_engine_versions(Engine=engine)
 
-    mysql_versions = [version['EngineVersion'] for version in response['DBEngineVersions']]
+        # Extract engine versions from the response
+        versions = [version['EngineVersion'] for version in response['DBEngineVersions']]
 
-    return jsonify(mysql_versions)
+        return jsonify(versions)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route(f'{high_prefix}/deployment_info', methods=['GET'])
