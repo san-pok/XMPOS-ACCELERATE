@@ -2,7 +2,7 @@
 
 sudo apt update -y
 sudo apt upgrade -y
-sudo apt install nginx mariadb-server php7.4-fpm php7.4-mysql -y
+sudo apt install nginx mariadb-server php-fpm php-mysql -y
 
 # Secure MariaDB installation
 sudo mysql_secure_installation <<EOL
@@ -51,7 +51,7 @@ server {
 
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+        fastcgi_pass unix:/run/php/php-fpm.sock;
         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
