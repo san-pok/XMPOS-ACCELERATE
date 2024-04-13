@@ -69,6 +69,11 @@ variable "environment" {
   default     = "Development"
   #Production or Development
 }
+variable "enable_multi_az" {
+  description = "Enable or disable Multiple Availability zone of RDS"
+  default     = "true"
+
+}
 
 variable "db_username" {
   default     = "admin"

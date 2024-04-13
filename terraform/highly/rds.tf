@@ -7,6 +7,7 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 3306  # MySQL port
     to_port     = 3306
     protocol    = "tcp"
+    # Allow inbound traffic from WP Security Group
     security_groups = [aws_security_group.xmop_wordpress_sg.id]
   }
 
@@ -14,7 +15,8 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]  # Allow outbound traffic to any IP (adjust as needed)
+    # Allow outbound traffic to any IP
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
@@ -34,6 +36,7 @@ resource "aws_db_instance" "xmop_rds" {
   db_subnet_group_name = aws_db_subnet_group.xmop_db_subnet_group.name
   skip_final_snapshot  = true
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  multi_az = var.enable_multi_az
 
   tags = {
     Environment = var.environment
@@ -43,7 +46,7 @@ resource "aws_db_instance" "xmop_rds" {
 
 resource "aws_db_subnet_group" "xmop_db_subnet_group" {
   name       = "xmop-db-subnet-group"
-  subnet_ids = [aws_subnet.xmop_subnet_3.id, aws_subnet.xmop_subnet_4.id]  # Use private subnets only
+  subnet_ids = [aws_subnet.xmop_subnet_3.id, aws_subnet.xmop_subnet_4.id]
 }
 
 # Create IAM role for EC2 instances
