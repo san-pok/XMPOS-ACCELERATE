@@ -1,8 +1,9 @@
 resource "aws_launch_configuration" "xmop_launch_configuration" {
-  name                        = "xmop-launch-configuration"
+  name                        = "${var.namespace}-hXmop-launch-configuration"
   image_id                    = var.ami_id
   instance_type               = var.instance_type
   key_name                    = var.key_pair_name
+  # Associate Wordpress SG with the instances
   security_groups             = [aws_security_group.xmop_wordpress_sg.id]
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
@@ -31,10 +32,10 @@ resource "aws_launch_configuration" "xmop_launch_configuration" {
     sudo cp wp-config-sample.php wp-config.php
 
     # Update WordPress configuration to use RDS
-    sudo sed -i "s/database_name_here/${aws_db_instance.example_rds.db_name}/" wp-config.php
-    sudo sed -i "s/username_here/${aws_db_instance.example_rds.username}/" wp-config.php
-    sudo sed -i "s/password_here/${aws_db_instance.example_rds.password}/" wp-config.php
-    sudo sed -i "s/localhost/${aws_db_instance.example_rds.endpoint}/" wp-config.php
+    sudo sed -i "s/database_name_here/${aws_db_instance.xmop_rds.db_name}/" wp-config.php
+    sudo sed -i "s/username_here/${aws_db_instance.xmop_rds.username}/" wp-config.php
+    sudo sed -i "s/password_here/${aws_db_instance.xmop_rds.password}/" wp-config.php
+    sudo sed -i "s/localhost/${aws_db_instance.xmop_rds.endpoint}/" wp-config.php
     # Remove the index.html file if present
     sudo rm /var/www/html/index.html
 
@@ -47,7 +48,7 @@ resource "aws_launch_configuration" "xmop_launch_configuration" {
 
 
 resource "aws_autoscaling_group" "xmop_autoscaling_group" {
-  name                        = "xmop-autoscaling-group"
+  name                        = "${var.namespace}-hXmop-autoscaling-group"
   max_size                    = var.max_instances
   min_size                    = var.min_instances
   desired_capacity            = var.desired_instances
@@ -58,7 +59,7 @@ resource "aws_autoscaling_group" "xmop_autoscaling_group" {
   ]
   tag {
     key                       = "Name"
-    value                     = var.instance_name
+    value                     = "${var.namespace}-hConfInstances"
     propagate_at_launch      = true
   }
 
