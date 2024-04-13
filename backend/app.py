@@ -17,13 +17,17 @@ from handler import capture_ec2_and_lightsail_instance_output, generate_timestam
 
 
 from dotenv import load_dotenv
+import boto3
+import os
+
+
 
 load_dotenv()
 
-load_dotenv()
 
 highbucket_name = 'amirxmopbucket'
 region_name = 'ap-southeast-2'
+lightsail_client = boto3.client('lightsail', region_name='us-west-2')
 create_bucket_config = {
     'LocationConstraint': region_name
 }
@@ -1331,7 +1335,7 @@ if __name__ == '__main__':
     # Save the original directory
     original_dir = os.getcwd()
 
-    bucket_name = 'xmops-data-bucket-team2p'
+    bucket_name = 'xmops-data-bucket-team2'
     key_prefix = 'instance_record/instance_data.json' 
     key_prefix_history = 'instance_record/instance_data_history.json' 
     get_instance_data_from_s3(bucket_name, key_prefix)
