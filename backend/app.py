@@ -895,6 +895,7 @@ def submit_form_monolith():
         # specify path to the Terraform state file
         state_file_path = f'{state_file_dir}/{deployment_id}.terraform.tfstate'
         subprocess.run(['terraform', 'init',], check=True)
+        subprocess.run(['terraform', 'plan', f'-state={state_file_path}'], check=True)
         subprocess.run(['terraform', 'apply', '-auto-approve', f'-state={state_file_path}'], check=True)  
         
         output_data_of_ec2 = capture_ec2_and_lightsail_instance_output(state_file_path)
@@ -1062,6 +1063,7 @@ def destroy_ec2():
 
     # Run Terraform Command to destroy EC2 instance
     try:
+        subprocess.run(['terraform', 'plan', f'-state={state_file_path}'], check=True)
         subprocess.run(['terraform', 'destroy', '-auto-approve', f'-state={state_file_path}'], check=True)
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
@@ -1248,6 +1250,7 @@ def submit_form_lightsail():
         # specify path to the Terraform state file
         state_file_path = f'{state_file_dir}/{deployment_id}.terraform.tfstate'
         subprocess.run(['terraform', 'init',], check=True)
+        subprocess.run(['terraform', 'plan', f'-state={state_file_path}'], check=True)
         subprocess.run(['terraform', 'apply', '-auto-approve', f'-state={state_file_path}'], check=True)  
         
         output_data_of_ec2 = capture_ec2_and_lightsail_instance_output(state_file_path)
@@ -1303,6 +1306,7 @@ def destroy_lightsail():
         return f'Error: State file not found for deployment ID {deployment_id_tfstate}'
     
     try:
+        subprocess.run(['terraform', 'plan', f'-state={state_file_path}'], check=True)
         subprocess.run(['terraform', 'destroy', '-auto-approve', f'-state={state_file_path}'], check=True)
         instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
         print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
@@ -1336,7 +1340,7 @@ if __name__ == '__main__':
     # Save the original directory
     original_dir = os.getcwd()
 
-    bucket_name = 'xmops-data-bucket-team2'
+    bucket_name = 'xmops-data-bucket-team2p'
     key_prefix = 'instance_record/instance_data.json' 
     key_prefix_history = 'instance_record/instance_data_history.json' 
     get_instance_data_from_s3(bucket_name, key_prefix)

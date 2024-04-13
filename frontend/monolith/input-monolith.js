@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             clearInterval(timerInterval);
             const endTime = Date.now();
             elapsedTime = Math.floor((endTime-startTime)/1000);
-            messageElement.textContent = `(Elapsed time: ${elapsedTime} seconds to fetch all OS)`;
+            // messageElement.textContent = `(Elapsed time: ${elapsedTime} seconds to fetch all OS)`;
 
             return data.regions;
         } catch (error) {
