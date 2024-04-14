@@ -1,0 +1,11 @@
+aws_region = "ap-southeast-2"
+ami_id = "ami-0ce7edf3564b54498"
+instance_type = "a1.medium"
+key_name = "Hello"
+security_group_name = "undefined"
+security_group_description = "undefined"
+allow_ssh = true
+allow_http = true
+storage_size_gb = 9
+database_type = "mysql"
+web_server = "apache2"
