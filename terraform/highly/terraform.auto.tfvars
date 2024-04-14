@@ -1,0 +1,9 @@
+aws_region = "ap-southeast-2"
+ami_id = "ami-04f5097681773b989"
+instance_type = "t2.micro"
+key_pair_name = "tap"
+storage_size = "8"
+storage_type = "gp2"
+min_instances = 1
+max_instances = 4
+desired_instances = 2
