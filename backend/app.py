@@ -156,6 +156,14 @@ def deploy_infrastructure():
         if plan_output.returncode != 0:
             raise Exception('Error planning with Terraform')
 
+        # Apply Terraform
+        apply_output = subprocess.run(["terraform", "apply", "-auto-approve"], cwd=terraform_dir, capture_output=True,
+                                      text=True)
+        print(apply_output.stdout)
+        if apply_output.returncode != 0:
+            print(apply_output.stderr)
+            raise Exception('Error applying Terraform')
+
         return jsonify({'message': 'Highly available instance deployed successfully!'})
 
     except Exception as e:
