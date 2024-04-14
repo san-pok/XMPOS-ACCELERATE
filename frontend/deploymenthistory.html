@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="./css/menu.css">
+    
+    <style>
+        
+.theme-toggler{
+   
+   border: 2px solid var(--color-dark);
+   /* background: var(--color-dark);   */
+  
+   
+}
+.theme-toggler i{
+   color: var(--color-primary);
+   
+   color: black;
+   padding: 10px 14px;
+   
+   
+}
+main #dash-header{
+    color: var(--color-dark);
+}
+.dark-theme{
+    background-color: var(--color-light);
+}
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <h2>XMOPS</h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+            </div>
+            <div class="sidebar">
+                <a href="./menu.html" >
+                    <i class="fa-solid fa-grip"></i>
+                    <h3>Dashboard</h3>
+                </a>
+                <a href="">
+                    <i class="fa-solid fa-bolt"></i>
+                    <h3>Deploy Monolith</h3>
+                </a>
+                <a href="">
+                    <i class="fa-solid fa-clock"></i>
+                    <h3>Deploy Highly Available</h3>
+                </a>
+                <a href="./lightsail/index.html">
+                    <i class="fa-solid fa-microchip"></i>
+                    <h3>Deploy Lightsail</h3>
+                </a>
+                <a href="" class="active">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <h3>Deployment History</h3>
+                </a>
+                <a href="./reports.html">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <h3>Reports</h3>
+                </a>
+                <a href="">
+                    <i class="fa-solid fa-gear"></i>
+                    <h3>Settings</h3>
+                </a>
+                <a href="./index.html" id="signOut" >
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
+
+            </div>
+        </aside>
+
+
+        <main>
+            <h1 class="text-2xl font-bold" id="dash-header">Dashboard</h1>
+            <div class="date" style="background-color: var(--color-dark); color: var(--color-light);">
+                <input type="date" name="" id="currentDate" class="font-bold text-xl " style="color: var(--color-white);">
+            </div>
+
+
+            
+
+
+
+            <div class="recent-deployment">
+                <h2 style="font-size: 22px; margin:0 40%; width: 100%; margin-block: 30px;" id="dash-header">Deployment History</h2>
+
+
+                <div class="main-container flex justify-center items-center h-screen">
+                    <div class="container mx-auto max-w-4xl" >
+                        <table class="table-auto w-full mt-10" style="width: 65vw;">
+                            <thead>
+                                <tr class="bg-blue-500 text-white">
+                                    <th class="px-4 py-2" id="dash-header">S.No</th>
+                                    <th class="px-4 py-2" id="dash-header">Architecture</th>
+                                    <th class="px-4 py-2" id="dash-header">Timestamp</th>
+                                    <th class="px-4 py-2" id="dash-header">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deploymentHistoryTable">
+                                <!-- Deployment history rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+
+
+                <a href="#">Show All</a>
+            </div>
+        </main>
+        <!-- end of main  -->
+        <div class="right">
+            <div class="top">
+                <button id="menu-btn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="theme-toggler">
+                   
+                    <i class="active fa-solid fa-sun "></i>
+                    <i class="fa-solid fa-moon" style="color: white;"></i>
+                
+                </div>
+                <div class="profile">
+                    <div class="info">
+                        <p>Hi, <b> San</b></p>
+                        <small class="text-muted">Admin</small>
+                    </div>
+                    <div class="profile-photo">
+                        <img src="#" alt="profile photo">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    
+
+    </ul>
+    <script src="js/menu.js" defer></script>
+    <script src="js/main.js" defer></script>
+    <!-- <script src="js/login.js" defer></script>
+    <script src="js/signup.js" defer></script> -->
+    <script>
+        function fetchDeploymentHistory() {
+    fetch('http://127.0.0.1:5000/fetch-deployment-history')
+    .then(response => response.json())
+    .then(data => {
+        const tableBody = document.getElementById('deploymentHistoryTable');
+        tableBody.innerHTML = '';  // Clear previous content
+        data.forEach((deployment, index) => {
+            const row = `<tr>
+                            <td>${index + 1}</td>
+                            <td>Lightsail</td>
+                            <td>${deployment.timestamp}</td>
+                            <td>${deployment.status}</td>
+                         </tr>`;
+            tableBody.innerHTML += row;
+        });
+    })
+    .catch(error => console.error('Error:', error));
+}
+fetchDeploymentHistory();
+    </script>
+
+
+
+<script>
+    window.onload = function() {
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+        var yyyy = today.getFullYear();
+
+        today = yyyy + '-' + mm + '-' + dd;
+        document.getElementById("currentDate").value = today;
+    };
+</script>
+
+</body>
+</html>
