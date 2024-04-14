@@ -1,0 +1,140 @@
+.small-font {
+    font-size: 14px; /* Adjust the font size as needed */
+}
+
+/* Custom styles for the navigation bar */
+.navbar-custom {
+    background-color: #343a40; /* Dark background color */
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .navbar-nav .nav-link {
+    color: #ffffff; /* White text color */
+}
+
+.navbar-custom .navbar-toggler-icon {
+    background-color: #ffffff; /* White color for the toggler icon */
+}
+
+.user-profile {
+    color: #ffffff; /* White text color */
+}
+
+header {
+    background-color: #343a40;
+    color: #fff;
+    padding: 20px 0;
+    animation: fadeInDown 1s ease;
+
+}
+
+ /* @keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+} */
+
+.logo img {
+    width: 100px;
+}
+main {
+    padding: 20px;
+}
+section {
+    margin-bottom: 40px;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(30, 118, 190, 0.512);
+    animation: fadeInUp 1s ease;
+}
+
+/* @keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+} */
+
+footer {
+    background-color: #343a40;
+    color: #fff;
+    padding: 20px 0;
+    animation: fadeInUp 1s ease;
+}
+
+.footer-links a {
+    color: #fff;
+    text-decoration: none;
+    margin-right: 20px;
+    transition: color 0.3s;
+}
+.footer-links a:hover {
+    color: #ffd700;
+}
+
+.nav-link {
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: #343a40;
+    border-radius: 5px;
+}
+
+.nav-link:hover {
+    color: #ffd700 !important; /* Change text color on hover */
+}
+
+/* Custom CSS for select element */
+#lightsail-region, #region, #availability-zone, #image, #instance-type, #storage, #db-type, #php-version, #web-server, #lightsail-bundle {
+    padding: 10px; /* Adjust padding as needed */
+    border-radius: 5px; /* Add border-radius for rounded corners */
+    border: 1px solid #ced4da; /* Add border for frame */
+    font-size: 16px; /* Adjust font size */
+    letter-spacing: 1px; /* Add letter spacing */
+    width: 100%; /* Make the select element full width */
+}
+
+.table-smaller th,
+.table-smaller td {
+    padding: 0.25rem; /* Adjust the padding as needed */
+}
+
+.destroying {
+    background-color: #f8d7da; /* Initial background color (red) */
+    transition: background-color 0.5s ease, transform 0.5s ease; /* Transition background color and size */
+    transform: scale(1); /* Initial size */
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.destroying.active {
+    animation: blink 1s infinite; /* Apply the blink animation */
+    background-color: #ffffff; /* New background color (white) */
+    /* transform: scale(1.2); Increase size by 20% */
+}
+
+#lightsailInstanceCount, #MonolithInstanceCount {
+    font-size: 24px; /* Larger font size */
+    font-weight: bold; /* Bold text */
+    color: #e8c963; /* Nice blue color */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    margin-left: 15px;
+}
