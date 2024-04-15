@@ -143,7 +143,7 @@ def menu():
 def deploy_infrastructure():
     try:
 
-        high_terraform_dir = "../../terraform/highly"
+        high_terraform_dir = "../terraform/highly"
 
         # Initialize Terraform
         init_output = subprocess.run(["terraform", "init"], cwd=high_terraform_dir, capture_output=True, text=True)
@@ -157,7 +157,7 @@ def deploy_infrastructure():
             raise Exception('Error planning with Terraform')
 
         # Apply Terraform
-        apply_output = subprocess.run(["terraform", "apply", "-auto-approve"], cwd=terraform_dir, capture_output=True,
+        apply_output = subprocess.run(["terraform", "apply", "-auto-approve"], cwd=high_terraform_dir, capture_output=True,
                                       text=True)
         print(apply_output.stdout)
         if apply_output.returncode != 0:
@@ -174,15 +174,14 @@ def deploy_infrastructure():
 @app.route(f'{high_prefix}/destroy', methods=['POST'])
 def destroy_infrastructure():
     try:
-        # Check if the destroy.sh script exists
-        script_path = '../../terraform/highly/destroy.sh'
-        print("Absolute path of script:", os.path.abspath(script_path))  # Debugging line
-        if not os.path.exists(script_path):
-            error_message = 'Error: destroy.sh script not found'
-            return jsonify({'error': error_message}), 500
-
-        # Execute the destroy.sh script
-        subprocess.run([script_path], check=True)
+        high_terraform_dir = "../terraform/highly"
+        # Apply Terraform
+        apply_output = subprocess.run(["terraform", "destroy", "-auto-approve"], cwd=high_terraform_dir, capture_output=True,
+                                      text=True)
+        print(apply_output.stdout)
+        if apply_output.returncode != 0:
+            print(apply_output.stderr)
+            raise Exception('Error applying Terraform')
 
         return jsonify({'message': 'Infrastructure destruction triggered successfully by py'}), 200
     except subprocess.CalledProcessError as e:
@@ -428,27 +427,17 @@ def list_db_engine_versions():
 @app.route(f'{high_prefix}/deployment_info', methods=['GET'])
 def deployment_info():
     try:
-
         s3_client = boto3.client('s3', region_name=region_name)
+        bucket_name = 'xmops-data-bucket-team2'
+        file_key = 'highly_available_history.json'
 
-        # List objects in the specified bucket
-        response = s3_client.list_objects_v2(Bucket=highbucket_name)
+        # Retrieve the content of the specific JSON file
+        obj_response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+        obj_content = obj_response['Body'].read().decode('utf-8')
 
-        # Extract object keys from the response
-        object_keys = []
-        if 'Contents' in response:
-            object_keys = [obj['Key'] for obj in response['Contents']]
-
-        # Retrieve and extract content of each object
-        object_contents = []
-        for key in object_keys:
-            obj_response = s3_client.get_object(Bucket=highbucket_name, Key=key)
-            obj_content = obj_response['Body'].read().decode('utf-8')
-            object_contents.append(json.loads(obj_content))
-
-        return jsonify({'objects': object_contents}), 200
+        return jsonify({'object': json.loads(obj_content)}), 200
     except Exception as e:
-        error_message = f'Error listing S3 objects: {str(e)}'
+        error_message = f'Error retrieving S3 object: {str(e)}'
         return jsonify({'error': error_message}), 500
 
 
