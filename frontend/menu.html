@@ -165,6 +165,36 @@
                     </table>
                 </div>
             </div>
+            <div class="recent-deployment">
+                <h2 style="font-size: 22px;color: var(--color-dark);margin-block: 10px; margin-left: 45%;">Highly Available Instances Status</h2>
+                <div class="table-responsive">
+                    <table class="w-full table-auto mt-10">
+                        <thead class="bg-blue-500 text-white">
+                            <tr style="color: var(--color-dark);">
+                                <th class="px-4 py-2">S.No</th>
+                                <th class="px-4 py-2">Architecture</th>
+                                <th class="px-4 py-2">DNS</th>
+                                <th class="px-4 py-2">Timestamp</th>
+                                <th class="px-4 py-2">Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="HihlyTable">
+                            <!-- Deployment history rows will be inserted here -->
+                            <tr>
+                                <td>1</td>
+                                <td>Highly Available</td>
+                                <td ><a href="http://xmop-hwordpress-lb-1961636245.ap-southeast-2.elb.amazonsaws.com">http://xmop-hwordpress-lb-1961636245.ap-southeast-2.elb.amazonsaws.com</a></td>
+                                <td>2024-04-15 09:00</td>
+                                <td>Running</td>
+                                <td><button style="background-color: red; border-radius: 8px; padding: 10px 14px;">Destroy</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- <a href="#" style="margin-left: 50%; margin-top: 20%;">Show All</a> -->
+          
 
             <div class="recent-deployment">
                 <h2 style="font-size: 22px;color: var(--color-dark);margin-block: 10px; margin-left: 45%;">Lightsail Instances Status</h2>
@@ -184,7 +214,7 @@
                     </table>
                 </div>
             </div>
-            <a href="#" style="margin-left: 50%; margin-top: 20%;">Show All</a>
+            <!-- <a href="#" style="margin-left: 50%; margin-top: 20%;">Show All</a> -->
           
         </main>
         <!-- end of main  -->

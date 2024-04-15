@@ -36,7 +36,7 @@ main #dash-header{
     width: 96%;
     margin: 0 auto;
     gap: 3rem;
-    grid-template-columns: 14rem auto 18rem;
+    grid-template-columns: 14rem auto 12rem;
 }
     </style>
 </head>
@@ -232,7 +232,7 @@ main #dash-header{
                         <div >
                             <div >
                                 <h5 class="card-title text-center font-bold text-2xl m-10">Deployment History</h5>
-                                <div class="table-responsive p-10" >
+                                <div class="table-responsive p-10 w-[100%]" style="padding-left: 20px;">
                                     <table class="px-8"  id="historyTable">
                                         <thead>
                                             <tr class="text-xl">
@@ -330,9 +330,10 @@ window.onload = function() {
     document.getElementById("currentDate").value = today;
 };
 </script>
-<script src="js/menu.js" defer></script>
+<!-- <script src="js/menu.js" defer></script> -->
 <script src="js/main.js" defer></script>
 <script src="js/reports.js"></script>
+<script src=""></script>
 
 </body>
 </html>
