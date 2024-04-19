@@ -496,3 +496,8 @@ main .instance-status-container table {
     100% { transform: rotate(360deg); }
 }
 
+.selectable-content td {
+    user-select: text;
+}
+
+

@@ -73,3 +73,4 @@ sudo nginx -t && sudo systemctl restart nginx
 
 # # Display the content of cloud-init-output.log and follow it in real-time
 # tail -f /var/log/cloud-init-output.log
+echo "MariaDB and Nginx script execution completed."

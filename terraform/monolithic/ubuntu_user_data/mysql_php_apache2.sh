@@ -39,4 +39,4 @@ sudo systemctl restart apache2
 echo "Wordpress installation script has completed. "
 
 # Output a message indicating the script has completed
-echo "MySQL script execution completed."
+echo "MySQL and Apache2 script execution completed."

@@ -93,7 +93,10 @@ function fetchInstanceStatusData() {
                     <td class="px-4 py-2">${instance.web_server_engine === "N/A" ? "Lightsail" : instance.web_server_engine}</td>
                     <td class="px-4 py-2">${instance.newSecurityGroupName === "N/A" ? "Lightsail" : instance.newSecurityGroupName}</td>
                     <td class="px-4 py-2">
-                        <button class="destroy-button hover:bg-red-600 text-white" data-instanceid="${instance.instance_id}" data-deploymenttype="${instance.deployment_type}" data-deploymentid="${instance.deployment_id}">Destroy</button>
+                        <button class="destroy-button hover:bg-red-600 text-white" 
+                                                        data-instanceid="${instance.instance_id}" 
+                                                        data-deploymenttype="${instance.deployment_type}" 
+                                                        data-deploymentid="${instance.deployment_id}">Destroy</button>
                     </td>
                 </tr>`;
             tableBody.innerHTML += row;

@@ -164,6 +164,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
              // Prevent the default form submission behavior
             event.preventDefault();
+            showDeploymentProgressPopup();
             // // Gather the form data
             const formData = new FormData(form);
             // // Convert FormData to JSON object
@@ -174,7 +175,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             alert(JSON.stringify(data));
             
             // Redirect to the main page
-            window.location.href = 'http://127.0.0.1:8000/menu.html';
+            // window.location.href = 'http://127.0.0.1:8000/menu.html';
             // Reload the page after a short delay
            
             // Send the form data to the server
@@ -186,15 +187,59 @@ document.addEventListener('DOMContentLoaded', async function() {
                 body: JSON.stringify(data)
                 
             })
+            .then(handleResponse)
+            .then(showSuccessPopup)
+            .catch(handleError);
             // Reload the page after a short delay
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000); // Refresh after 1 seconds (adjust as needed)
+            // setTimeout(() => {
+            //     window.location.reload();
+            // }, 1000); // Refresh after 1 seconds (adjust as needed)
         } catch (error){
             console.error('Error on submitting forms for Monolith deployment ', error);
         }
 
     });
+    function showDeploymentProgressPopup() {
+        const popup = document.getElementById('deploymentProgressPopup');
+        if (popup) {
+            popup.style.display = 'flex';
+        }
+    }
+    function showSuccessPopup(data) {
+        const successPopup = document.getElementById('deploymentSuccessPopup');
+        const successMessage = document.getElementById('successMessage');
+        if (successPopup && successMessage) {
+            successMessage.innerHTML = `Deployment successful! <a href="${data.wordpressInstallationUrl}" target="_blank">Access your site</a>.`;
+            successPopup.style.display = 'flex';
+        }
+    }
+
+    function closeSuccessPopup() {
+        const successPopup = document.getElementById('deploymentSuccessPopup');
+        if (successPopup) {
+            successPopup.style.display = 'none';
+            window.location.href = '../../menu.html';
+        }
+    }
+
+    function handleResponse(response) {
+        if (!response.ok) {
+            return response.json().then(error => Promise.reject(error));
+        }
+        return response.json();
+    }
+
+    function handleError(error) {
+        console.error('Error:', error);
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorMessage) {
+            errorMessage.textContent = error.message || 'An error occurred during deployment';
+        }
+        const progressPopup = document.getElementById('deploymentProgressPopup');
+        if (progressPopup) {
+            progressPopup.style.display = 'none';
+        }
+    }
 
     // Function to update status message in index.html
     function updateStatusMessage(message) {

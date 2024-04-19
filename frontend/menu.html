@@ -59,7 +59,7 @@
                     <i class="fa-solid fa-microchip"></i>
                     <h3>Deploy Lightsail</h3>
                 </a>
-                <a href="./lightsail_bb/lightsail-deployment.html">
+                <a href="./lightsail_bb/index.html">
                     <i class="fa-solid fa-microchip"></i>
                     <h3>Lightsail BB</h3>
                 </a>
@@ -143,7 +143,7 @@
             <div class="instance-status-container">
                 <h2 style="font-size: 22px;">Instance Status</h2>
                 <p id="statusMessage" class="text-sm text-gray-600"></p>
-                <div class="table-responsive">
+                <div class="overflow-x-auto">
                     <table id="instanceStatusTable" class="w-full table-auto">
                         <thead class="bg-blue-500 text-white">
                             <tr>
@@ -162,7 +162,7 @@
                                 <th class="px-4 py-2">Destroy</th>
                             </tr>
                         </thead>
-                        <tbody id="instanceStatusBody">
+                        <tbody id="instanceStatusBody" class="selectable-content">
                             <!-- Table rows will be dynamically populated here -->
                         </tbody>
                     </table>

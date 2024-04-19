@@ -61,7 +61,7 @@ resource "aws_instance" "EC2-create-from-button" {
       var.database_type == "mariadb" && var.web_server == "nginx" ? data.local_file.mariadb_nginx_template_file.content :
       ""}
 
-    echo "${var.database_type} setup script has been executed successfully..."
+    echo "${var.database_type} and ${var.web_server} setup script has been executed successfully..."
 
   EOF
 }
