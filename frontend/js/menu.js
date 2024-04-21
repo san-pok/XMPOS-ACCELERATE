@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Call the function when the page is loaded
     fetchLightsailInstanceCount();
     fetchMonolithInstanceCount();
+    fetchHighlyInstanceCount();
 
     // Call the function to fetch and populate instance status data
     fetchInstanceStatusData();
@@ -64,6 +65,22 @@ document.addEventListener('DOMContentLoaded', async function() {
             //   document.getElementById('loadingSpinner').style.display = 'none';
           });
   }
+  // Function to fetch instance count and update the UI
+  function fetchHighlyInstanceCount() {
+    // Show the loading spinner
+  //   document.getElementById('loadingSpinnerMono').style.display = 'inline-block';
+    fetch(`${baseUrl}/count-running-ec2-instances`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('highlyInstanceCount').innerText = data.running_instances;
+        })
+        .catch(error => console.error('Error fetching instance count:', error))
+        
+        .finally(() => {
+            // Hide the loading spinner regardless of the outcome
+          //   document.getElementById('loadingSpinner').style.display = 'none';
+        });
+}
 
 
 // Function to fetch instance status data from app.py
@@ -78,8 +95,21 @@ function fetchInstanceStatusData() {
         const tableBody = document.getElementById('instanceStatusBody');
         tableBody.innerHTML = '';  // Clear previous content
         data.forEach(instance => {
+            // Determine the class to add based on the deployment type
+            var rowClass = '';
+            if (instance.deployment_type === 'Lightsail') {
+                rowClass = 'lightsail-row';
+                textClass = 'lightsail-text';
+            } else if (instance.deployment_type === 'Monolith') {
+                rowClass = 'monolith-row';
+                textClass = 'monolith-text';
+            } else if (instance.deployment_type === 'HighlyAvailable') {
+                rowClass = 'highlyAvailable-row';
+                textClass = 'highlyAvailable-text';
+            }
+            
             const row = `
-                <tr>
+                <tr class="${rowClass}">
                     <td class="px-4 py-2">${instance.deployment_id}</td>
                     <td class="px-4 py-2">${instance.creation_time}</td>
                     <td class="px-4 py-2">${instance.deployment_type}</td>
@@ -128,10 +158,13 @@ document.body.addEventListener('click', async function(event) {
             // const row = this.closest('tr'); //Get closest table row
             // Displaying status message
             document.getElementById('statusMessage').textContent = `Destroying ${deploymentType} instance...`;
+            // Add flashing class to status message
+            statusMessage.classList.add('flashing');
 
+            
             // Apply visual indication to the table row
             // const tableRow = this.closest('tr');
-            // tableRow.classList.add('destroying');
+            // tableRow.classList.add('blinking-background');
 
             let destroyRoute;
             if (deploymentType === 'Monolith') {
@@ -141,8 +174,9 @@ document.body.addEventListener('click', async function(event) {
             } else if (deploymentType === 'Lightsail') {
                 destroyRoute = `${baseUrl}/destroy-lightsail?instance_id=${instanceId}&&deployment_id=${deploymentId}`;
                 // print('Deployment type is :', deploymentType)
+            } else if (deploymentType === 'HighlyAvailable') { // Assuming 'HighlyAvailable' is the deployment type for highly available deployments
+                destroyRoute = `${baseUrl}/monolith/destroy-highly-available?instance_id=${instanceId}&deployment_id=${deploymentId}`;
             }
-
             // Sending request to server to trigger destroy route
             const response = await fetch(destroyRoute);
             if (!response.ok) {
@@ -159,9 +193,9 @@ document.body.addEventListener('click', async function(event) {
                 window.location.reload();
             }, 2000); // Refresh after 2 seconds (adjust as needed)
         } catch (error) {
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            // setTimeout(() => {
+            //     window.location.reload();
+            // }, 1000);
             console.error(`Error in destroying ${deploymentType} instance progress.`, error);
             // Update status message upon failure
             document.getElementById('statusMessage').textContent = `Failed to destroy ${deploymentType} instance.`;

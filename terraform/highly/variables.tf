@@ -1,3 +1,8 @@
+variable "region" {
+  default = "ap-southeast-2"
+  description = "The AWS region where the resources will be provisioned."
+}
+
 variable "aws_region" {
   default = "ap-southeast-2"
   description = "The AWS region where the resources will be provisioned."
@@ -41,6 +46,36 @@ variable "max_instances" {
 
 variable "desired_instances" {
   description = "The desired number of  EC2 instance to launch."
+}
+variable "os_type" {
+  description = "OS type."
+}
+variable "ami_type" {
+  description = "AMI type."
+}
+variable "selected_instance_type" {
+  description = "AMI type."
+}
+variable "key_pair_selection" {
+  description = "AMI type."
+}
+variable "new_key_pair_name" {
+  description = "AMI type."
+}
+variable "existing_key_pair" {
+  description = "AMI type."
+}
+variable "vcpus" {
+  description = "AMI type."
+}
+variable "memory_capacity" {
+  description = "AMI type."
+}
+variable "storage_capacity" {
+  description = "AMI type."
+}
+variable "multi_az" {
+  description = "AMI type."
 }
 
 variable "key_pair_name" {

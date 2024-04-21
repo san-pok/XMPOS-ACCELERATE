@@ -166,6 +166,7 @@ def deploy_infrastructure():
 @app.route(f'{high_prefix}/destroy', methods=['POST'])
 def destroy_infrastructure():
     try:
+        print("in this function destroy_infrastructure",)  # Debugging line
         # Check if the destroy.sh script exists
         script_path = '../../terraform/highly/destroy.sh'
         print("Absolute path of script:", os.path.abspath(script_path))  # Debugging line
@@ -189,6 +190,7 @@ def destroy_infrastructure():
 def validate_form():
     try:
         data = request.get_json()
+        print (f'data from submit: ${data}')
 
         # Perform form validations
         errors = {}
@@ -247,12 +249,15 @@ def validate_form():
                     # If the variable doesn't exist, append it to the content
                     existing_content.append(new_line)
 
+            
+
             # Write updated content back to terraform.auto.tfvars
             with open('../terraform/highly/terraform.auto.tfvars', 'w') as f:
                 f.writelines(existing_content)
 
             # Trigger infrastructure deployment
-            # response = deploy_infrastructure()
+            response = deploy_infrastructure()
+            print (f'response data from deployment: ${response}')
 
             # if response[1] == 200:  # Check the status code
             return jsonify({'message': 'Form validation successful and infrastructure deployment triggered'}), 200
@@ -1333,6 +1338,185 @@ def destroy_lightsail():
         return f'Error destroying Lightsail instance : {e}'
     finally:
         os.chdir(original_dir)
+
+@app.route(f'{mono_prefix}/deploy-high-available', methods=['POST'])
+def submit_form_high_available():
+    os.chdir('../terraform/highly')
+   
+    try: 
+        # Create an empty dictionary to store extracted values
+        extracted_values = {}
+
+        # Iterate over each dictionary in the list
+        for item in request.json:
+            # Extract the 'name' and 'value' from each dictionary
+            name = item.get('name')
+            value = item.get('value')
+            # Add the extracted value to the dictionary
+            extracted_values[name] = value
+
+            # Now 'extracted_values' contains all the extracted values from the incoming data
+        # print(f'extracted_values: {extracted_values}')
+    
+        aws_region = extracted_values.get('region')
+        ami_id = extracted_values.get('ami_type')
+        instance_type = extracted_values.get('instance_type')
+        os_type = extracted_values.get('os_type')
+        ami_type = extracted_values.get('ami_type')
+        key_pair = extracted_values.get('key_pair_selection')
+        selected_instance_type = extracted_values.get('selected_instance_type')
+        min_instances = extracted_values.get('min_instances')
+        max_instances = extracted_values.get('max_instances')
+        storage_size = extracted_values.get('storage_size')
+        web_server_engine = extracted_values.get('db_engine')
+        engine_version = extracted_values.get('engine_version')
+        environment = extracted_values.get('environment')
+        vcpus = extracted_values.get('vcpus')
+        memory_capacity = extracted_values.get('memory_capacity')
+        storage_capacity = extracted_values.get('storage_capacity')
+        multi_az = extracted_values.get('multi_az')
+        existing_key_pair = extracted_values.get('existing_key_pair')
+        new_key_pair_name =extracted_values.get('new_key_pair_name')
+
+        print("Received data:")
+        print("AWS Region:", aws_region)
+        print("AMI ID:", ami_id)
+        print("Instance Type:", instance_type)
+        print("Key Pair:", key_pair)
+        print("selected_instance_type:", selected_instance_type)
+        print("min_instances:", min_instances)
+        print("max_instances:", max_instances)
+        print("storage_size:", storage_size)
+        print("web_server_engine:", web_server_engine)
+
+
+        # Generate unique identifier for the deployment 
+        deployment_id = generate_unique_id()
+        print(f'deployment_id: {deployment_id}')
+
+        # Get the absolute path to terraform.auto.tfvars for debugging
+        tfvars_file = os.path.abspath('terraform.auto.tfvars')
+        print("Absolute path to terraform.auto.tfvars:", tfvars_file)
+
+        # Write the user-submitted values to a TFVars file
+        # with open('./terraform/wordpress-ec2/terraform.auto.tfvars', 'w') as f:
+        with open('terraform.auto.tfvars', 'w') as f:
+            f.write(f'aws_region = "{aws_region}"\n')
+            f.write(f'ami_id = "{ami_id}"\n')
+            f.write(f'instance_type = "{instance_type}"\n')
+            f.write(f'min_instances = "{min_instances}"\n')
+            f.write(f'max_instances = "{max_instances}"\n')
+            f.write(f'os_type = "{os_type}"\n')
+            f.write(f'key_pair_selection = "{key_pair}"\n')
+            f.write(f'ami_type = "{ami_type}"\n')
+            f.write(f'selected_instance_type = "{selected_instance_type}"\n')
+            f.write(f'vcpus = {vcpus}\n')
+            f.write(f'memory_capacity = {memory_capacity}\n')
+            f.write(f'storage_capacity = {storage_capacity}\n')
+            f.write(f'multi_az = "{multi_az}"\n')
+            f.write(f'db_engine = "{web_server_engine}"\n')
+            f.write(f'existing_key_pair = "{existing_key_pair}"\n')
+            f.write(f'new_key_pair_name = "{new_key_pair_name}"\n')
+            # f.write(f'db_engine = "{web_server_engine}"\n')
+
+        #define directory path for the deployment's state file
+        state_file_dir = f'state_files'
+    
+        # specify path to the Terraform state file
+        state_file_path = f'{state_file_dir}/{deployment_id}.terraform.tfstate'
+        subprocess.run(['terraform', 'init',], check=True)
+        subprocess.run(['terraform', 'plan', f'-state={state_file_path}'], check=True)
+        subprocess.run(['terraform', 'apply', '-auto-approve', f'-state={state_file_path}'], check=True)  
+        
+        output_data_of_ec2 = capture_ec2_and_lightsail_instance_output(state_file_path)
+        print('incoming data from creation ec2 \n', output_data_of_ec2)
+        # Generate current timestamp
+        current_timestamp = generate_timestamp()
+        print ('Output of current time', current_timestamp)
+        # Add deployment type to instance data
+        output_data_of_ec2['deployment_id'] = deployment_id
+        output_data_of_ec2['deployment_type'] = 'HighlyAvailable'
+        # Add timestamp to instance data
+        output_data_of_ec2['creation_time'] = current_timestamp
+        output_data_of_ec2['deletion_time'] = ''
+        output_data_of_ec2['newSecurityGroupName'] = 'Highly Available'
+        output_data_of_ec2['allow_ssh'] = 'Highly Available'
+        output_data_of_ec2['allow_http'] = 'Highly Available'
+        output_data_of_ec2['storage_size_gb'] = storage_capacity
+        output_data_of_ec2['database_type'] = 'Mysql'
+        output_data_of_ec2['web_server_engine'] = "Apache2"
+
+        save_instance_data_to_s3(output_data_of_ec2, bucket_name, key_prefix)
+
+        instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+        # print("Instance data retrieved from S3:", instance_data)
+        # Add the new entry to the deployment history for instance creation
+       
+        # refresh_page()
+        return jsonify(instance_data), 200, {'message': 'Wordpress on EC2 is deployed successfully.'}
+        # return render_template('index.html')
+
+    except Exception as e:
+        error_message = str(e)
+        logging.error(f'Error occurred: {error_message}')  # Log the error
+        return f'Error: {error_message}', 500 # Return an error response with status code 500
+    finally:
+        os.chdir(original_dir)
+
+@app.route(f'{mono_prefix}/destroy-highly-available')
+def destroy_highly_available():
+    os.chdir('../terraform/highly')
+    instance_id = request.args.get('instance_id')
+    deployment_id = request.args.get('deployment_id')
+    # print (f'deployment_id: {deployment_id}')
+
+    deployment_id_tfstate = deployment_id + ".terraform.tfstate"
+    print (f'deployment_id_tfstate:, {deployment_id_tfstate}')
+    # Construct the path to the state_files folder
+    state_files_folder = 'state_files'
+
+    # Iterate through the files in the state_files directory
+    for filename in os.listdir(state_files_folder):
+        if filename.startswith(deployment_id_tfstate):
+            state_file_path = os.path.abspath(os.path.join(state_files_folder, filename))
+            print(f'Found state file for deployment ID {deployment_id_tfstate}: {state_file_path}')
+            break
+    else:
+        return f'Error: State file not found for deployment ID {deployment_id_tfstate}'
+
+    # Run Terraform Command to destroy EC2 instance
+    try:
+        subprocess.run(['terraform', 'plan', f'-state={state_file_path}'], check=True)
+        subprocess.run(['terraform', 'destroy', '-auto-approve', f'-state={state_file_path}'], check=True)
+        instance_data = get_instance_data_from_s3(bucket_name, key_prefix)
+        print("Instance data retrieved from S3 when instance is being destroyed:", instance_data)
+
+        # Get instance data from S3 instance_data.json
+        for instance in instance_data:
+            if instance['deployment_id'] == deployment_id:
+                # Generate current timestamp
+                current_timestamp = generate_timestamp()
+                # Update deletion_time for destroying time
+                instance['deletion_time'] = current_timestamp
+                instance['instance_state'] = 'Destroyed'
+
+                # Save the updated instance data back to S3
+                print("Instance data retrieved from S3 when instance is being destroyed to be saved:", instance_data)
+                unwrapped_list = {}
+                for dictionary in instance_data:
+                    unwrapped_list.update(dictionary)
+                save_instance_data_to_s3(unwrapped_list, bucket_name, key_prefix_history)
+        
+        #delete instance details from S3
+        delete_instance_details_from_s3(deployment_id)
+        # return instance_data
+        return 'EC2 instance destroyed successfully'
+    except subprocess.CalledProcessError as e:
+        return f'Error destroying EC2 instance : {e}'
+    finally:
+        os.chdir(original_dir)
+
+
 
 
 

@@ -9,7 +9,7 @@ ami_id = "ami-04f5097681773b989"
 #singapore ami-0eb4694aa6f249c52 ,  Australia ami-04f5097681773b989
 
 instance_type = "t2.micro"
-key_pair_name = "tap"
+key_pair_name = "wordpress_server"
 storage_size = 8
 storage_type = "gp3"
 

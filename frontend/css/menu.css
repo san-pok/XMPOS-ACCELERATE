@@ -387,14 +387,11 @@ main table tbody tr td{
 }
 .theme-toggler i{
     color: var(--color-primary);
-    
     color: black;
     padding: 10px 14px;
-    
-    
 }
 
-#lightsailInstanceCount, #MonolithInstanceCount {
+#lightsailInstanceCount, #MonolithInstanceCount, #highlyInstanceCount {
     font-size: 25px; /* Larger font size */
     font-weight: bold; /* Bold text */
     color: #5f8da9; /* Nice blue color */
@@ -500,4 +497,71 @@ main .instance-status-container table {
     user-select: text;
 }
 
+.lightsail-row {
+    background-color: #b4cdd4; /* Light gray background color for Lightsail rows */
+    color: rgb(228, 0, 0); /* Text color for Lightsail rows */
+}
 
+.monolith-row {
+    background-color: #d5eed7; /* Lighter gray background color for Monolith rows */
+    color: rgb(229, 7, 7); /* Text color for Monolith rows */
+}
+.highlyAvailable-row {
+    background-color: #e5da9d; /* Lighter gray background color for Monolith rows */
+    color: rgb(229, 7, 7); /* Text color for Monolith rows */
+}
+
+
+
+/* CSS for table headers */
+th {
+    background-color: #d1f6f2; /* Green background color */
+    color: rgb(0, 0, 0); /* White text color */
+    font-family: serif; /* Font family */
+    font-weight: bold; /* Bold font weight */
+    font-size: 14px; /* Font size */
+    padding: 10px; /* Padding */
+    vertical-align: middle; /* Vertically center content */
+    text-align: center;
+}
+td {
+    color: rgb(212, 185, 5); /* White text color */
+    font-size: 8; /* Font size */
+    padding-top: 2px; /* Padding */
+    padding-bottom: 2px; /* Padding */
+}
+
+.blinking-background {
+    animation: blink-background 1s infinite;
+}
+@keyframes blink-background {
+    0% { background-color: #f8d7da; } /* Initial background color (red) */
+    50% { background-color: transparent; } /* Halfway through animation, make it transparent */
+    100% { background-color: #f8d7da; } /* Back to initial color (red) */
+}
+
+/* Define animation for flashing */
+@keyframes flash {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Apply animation to status message */
+.flashing {
+    animation: flash 0.5s infinite;
+}
+.text-lg {
+    font-size: 20px; /* Adjust font size as needed */
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.text-red-600 {
+    color: #dc2626; /* Change color to red (#dc2626) */
+}
+
+
+  

@@ -28,7 +28,7 @@ def capture_ec2_and_lightsail_instance_output(state_file_path):
 
     output = subprocess.check_output(['terraform', 'output', '-json', f'-state={state_file_path}']).decode('utf-8')
     output_json = json.loads(output)
-    # print(f'output_json: {output}')
+    print(f'output_json: {output}')
 
     # Extracting values with graceful handling of missing keys
     received_data = {

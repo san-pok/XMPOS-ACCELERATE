@@ -55,13 +55,13 @@
                     <i class="fa-solid fa-clock"></i>
                     <h3>Deploy Highly Available</h3>
                 </a>
-                <a href="./lightsail/index.html">
+                <!-- <a href="./lightsail/index.html">
                     <i class="fa-solid fa-microchip"></i>
                     <h3>Deploy Lightsail</h3>
-                </a>
+                </a> -->
                 <a href="./lightsail_bb/index.html">
                     <i class="fa-solid fa-microchip"></i>
-                    <h3>Lightsail BB</h3>
+                    <h3>Deploy Lightsail BB</h3>
                 </a>
                 <a href="./deploymenthistory.html">
                     <i class="fa-solid fa-clock-rotate-left"></i>
@@ -114,6 +114,11 @@
                         </div>
                     </div>
                     <small class="text-muted">Hihly Available Arch</small>
+                    <p class="card-text" id="total-running-instances">Total Running: 
+                        <span id="highlyInstanceCount" class="">
+                            <span class="spinner"></span>
+                        </span>
+                    </p>
                 </div>
                 <!-- highly available ends here  -->
                 
@@ -142,7 +147,7 @@
             <br>
             <div class="instance-status-container">
                 <h2 style="font-size: 22px;">Instance Status</h2>
-                <p id="statusMessage" class="text-sm text-gray-600"></p>
+                <p id="statusMessage" class="text-lg font-bold text-red-600 flashing" ></p>
                 <div class="overflow-x-auto">
                     <table id="instanceStatusTable" class="w-full table-auto">
                         <thead class="bg-blue-500 text-white">

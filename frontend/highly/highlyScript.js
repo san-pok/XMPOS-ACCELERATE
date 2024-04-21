@@ -407,16 +407,28 @@ $(document).ready(function () {
 
         const formData = $(this).serializeArray();
 
+        alert (`formData: ${formData} `);
+
         replaceFormDataValue(formData, 'ami_type', $('#search_ami_type').val());
         replaceFormDataValue(formData, 'instance_type', $('#search_instance_type').val());
         replaceFormDataValue(formData, 'db_engine', $('#search_db_engine').val());
         replaceFormDataValue(formData, 'engine_version', $('#search_engine_version').val());
 
+
+
         // Convert formData to JSON format
         const jsonData = JSON.stringify(formData);
+        // Parse the raw data into a JSON object
+        // var data = JSON.parse(jsonData);
+        // // Construct the dictionary
+        // var dictionary = {};
+        // data.forEach(function(item) {
+        //     dictionary[item.name] = item.value;
+        // });
+        alert (jsonData);
 
         $.ajax({
-            url: 'http://127.0.0.1:5000/highly/validate_form',
+            url: 'http://127.0.0.1:5000/monolith/deploy-high-available',
             method: 'POST',
             data: jsonData,
             contentType: 'application/json',
@@ -424,7 +436,8 @@ $(document).ready(function () {
                 alert('Form validation successful and infrastructure deployment triggered');
             },
             error: function (error) {
-                alert('Error validating form. Please try again.');
+                console.error(error);
+                alert('Error validating form. Please try again.', error);
             }
         });
     });
