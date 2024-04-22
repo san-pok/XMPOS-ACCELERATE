@@ -1,0 +1,27 @@
+# Ignore compiled Python files
+*.pyc
+
+# Ignore the virtual environment directory
+venv/
+
+# Ignore log files
+*.log
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+
+#Ignore terraform state files 
+.terraform
+.terraform.lock.hcl
+
+#Ignore the states file
+terraform.tfstate
+terraform.tfstate.backup
+
+
+.DS_Store
+terraform.auto.tfvars
+state_files/
+
+
