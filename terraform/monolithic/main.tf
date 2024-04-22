@@ -49,7 +49,7 @@ resource "aws_instance" "EC2-create-from-button" {
   }
 
   tags = { 
-    Name = "bimba.ec2instance"
+    Name = "xmop.ec2instance"
   }
   vpc_security_group_ids = [aws_security_group.sg_name.id]
   user_data = <<-EOF

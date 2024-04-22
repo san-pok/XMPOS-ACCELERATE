@@ -18,10 +18,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Add event listeners to the buttons
-    document.getElementById('backButton').addEventListener('click', function() {
-        // Go back to the previous page
-        window.history.back();
-    });
 
     document.getElementById('downloadButton').addEventListener('click', async function() {
       
@@ -29,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         try{
             // Fetch history Json data from the server
             const response = await fetch(`${baseUrl}/get-deployment-history`);
-            alert (response);
+         //   alert (response);
             console.log('Deployment history: ', response);
            
             if(!response){

@@ -231,7 +231,7 @@ def menu():
 def deploy_infrastructure():
     try:
 
-        high_terraform_dir = "../../terraform/highly"
+        high_terraform_dir = "../terraform/highly"
 
         # Initialize Terraform
         init_output = subprocess.run(["terraform", "init"], cwd=high_terraform_dir, capture_output=True, text=True)
@@ -244,6 +244,14 @@ def deploy_infrastructure():
         if plan_output.returncode != 0:
             raise Exception('Error planning with Terraform')
 
+        # Apply Terraform
+        apply_output = subprocess.run(["terraform", "apply", "-auto-approve"], cwd=high_terraform_dir, capture_output=True,
+                                      text=True)
+        print(apply_output.stdout)
+        if apply_output.returncode != 0:
+            print(apply_output.stderr)
+            raise Exception('Error applying Terraform')
+
         return jsonify({'message': 'Highly available instance deployed successfully!'})
 
     except Exception as e:
@@ -254,15 +262,14 @@ def deploy_infrastructure():
 @app.route(f'{high_prefix}/destroy', methods=['POST'])
 def destroy_infrastructure():
     try:
-        # Check if the destroy.sh script exists
-        script_path = '../../terraform/highly/destroy.sh'
-        print("Absolute path of script:", os.path.abspath(script_path))  # Debugging line
-        if not os.path.exists(script_path):
-            error_message = 'Error: destroy.sh script not found'
-            return jsonify({'error': error_message}), 500
-
-        # Execute the destroy.sh script
-        subprocess.run([script_path], check=True)
+        high_terraform_dir = "../terraform/highly"
+        # Apply Terraform
+        apply_output = subprocess.run(["terraform", "destroy", "-auto-approve"], cwd=high_terraform_dir, capture_output=True,
+                                      text=True)
+        print(apply_output.stdout)
+        if apply_output.returncode != 0:
+            print(apply_output.stderr)
+            raise Exception('Error applying Terraform')
 
         return jsonify({'message': 'Infrastructure destruction triggered successfully by py'}), 200
     except subprocess.CalledProcessError as e:
@@ -508,27 +515,17 @@ def list_db_engine_versions():
 @app.route(f'{high_prefix}/deployment_info', methods=['GET'])
 def deployment_info():
     try:
-
         s3_client = boto3.client('s3', region_name=region_name)
+        bucket_name = 'xmops-data-bucket-team2'
+        file_key = 'highly_available_history.json'
 
-        # List objects in the specified bucket
-        response = s3_client.list_objects_v2(Bucket=highbucket_name)
+        # Retrieve the content of the specific JSON file
+        obj_response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+        obj_content = obj_response['Body'].read().decode('utf-8')
 
-        # Extract object keys from the response
-        object_keys = []
-        if 'Contents' in response:
-            object_keys = [obj['Key'] for obj in response['Contents']]
-
-        # Retrieve and extract content of each object
-        object_contents = []
-        for key in object_keys:
-            obj_response = s3_client.get_object(Bucket=highbucket_name, Key=key)
-            obj_content = obj_response['Body'].read().decode('utf-8')
-            object_contents.append(json.loads(obj_content))
-
-        return jsonify({'objects': object_contents}), 200
+        return jsonify({'object': json.loads(obj_content)}), 200
     except Exception as e:
-        error_message = f'Error listing S3 objects: {str(e)}'
+        error_message = f'Error retrieving S3 object: {str(e)}'
         return jsonify({'error': error_message}), 500
 
 
@@ -720,16 +717,7 @@ def get_all_regions_monolith():
             # Create an EC2 client for the specific region
             ec2_client = boto3.client('ec2', region_name=region_name)
 
-            try:
-                # Get all EC2 instances in the current region
-                instances_response = ec2_client.describe_instances()
-                region['DisplayName'] += ' (******* Access *******)'
-                authorized_regions.append(region)
-                
-            except botocore.exceptions.ClientError as e:
-                if e.response['Error']['Code'] == 'UnauthorizedOperation':
-                    # Append "No Access" to regions with UnauthorizedOperation errors
-                    region['DisplayName'] += ' (No Access)'
+
             
         # Store AWS regions in the session
         session['aws_regions'] = all_regions
@@ -946,16 +934,16 @@ def submit_form_monolith():
         # print ('Selected SG to pass ', selectedSG_to_pass)
         
 
-        print("Received data:")
-        print("AWS Region:", aws_region)
-        print("AMI ID:", ami_id)
-        print("Instance Type:", instance_type)
-        print("Key Pair:", key_pair)
-        print("Created SG Name:", newSecurityGroupName)
-        print("SG id:", selectedSGId)
-        print("storage_size_gb:", storage_size_gb)
-        print("database_type:", database_type)
-        print("web_server_engine:", web_server_engine)
+#         print("Received data:")
+#         print("AWS Region:", aws_region)
+#         print("AMI ID:", ami_id)
+#         print("Instance Type:", instance_type)
+#         print("Key Pair:", key_pair)
+#         print("Created SG Name:", newSecurityGroupName)
+#         print("SG id:", selectedSGId)
+#         print("storage_size_gb:", storage_size_gb)
+#         print("database_type:", database_type)
+#         print("web_server_engine:", web_server_engine)
 
 
         # Generate unique identifier for the deployment 
@@ -1162,7 +1150,7 @@ def destroy_ec2():
                 instance['instance_state'] = 'Destroyed'
 
                 # Save the updated instance data back to S3
-                print("Instance data retrieved from S3 when instance is being destroyed to be saved:", instance_data)
+#                 print("Instance data retrieved from S3 when instance is being destroyed to be saved:", instance_data)
                 unwrapped_list = {}
                 for dictionary in instance_data:
                     unwrapped_list.update(dictionary)
@@ -1197,7 +1185,7 @@ def delete_instance_details_from_s3(instance_id):
             Key=key_prefix,
             Body=json.dumps(instance_data).encode('utf-8')
         )
-        print(f"Instance with Instance ID '{instance_id}' deleted from S3.")
+#         print(f"Instance with Instance ID '{instance_id}' deleted from S3.")
     except Exception as e:
         print(f"Error updating instance data in S3: {e}")
 

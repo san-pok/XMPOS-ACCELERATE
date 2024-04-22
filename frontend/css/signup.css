@@ -14,7 +14,7 @@ body{
     min-height: 100vh;
     background: rgb(8,7,25);
 background: linear-gradient(90deg, rgba(8,7,25,1) 0%, rgba(2,19,84,1) 35%, rgba(45,6,136,1) 100%);
-   
+
     /* background-color: #2d1e6b; */
 
 }
@@ -46,7 +46,6 @@ background: linear-gradient(90deg, rgba(8,7,25,1) 0%, rgba(2,19,84,1) 35%, rgba(
     #ff0055, #ff0000, #ffff00, #00ff00, #0099ff, #001aff, #a200ff
     );
     background-size: 300%;
-    animation: border 20s linear infinite;
 }
 .container::after{
     filter: blur(50px);

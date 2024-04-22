@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu</title>
+    <title>Highly Available Deployment</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="../css/menu.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -64,11 +64,11 @@
                 <i class="fa-solid fa-grip"></i>
                 <h3>Dashboard</h3>
             </a>
-            <a href="">
+            <a href="../monolith/index.html">
                 <i class="fa-solid fa-bolt"></i>
                 <h3>Deploy Monolith</h3>
             </a>
-            <a href="">
+            <a href="#" class="active">
                 <i class="fa-solid fa-clock"></i>
                 <h3>Deploy Highly Available</h3>
             </a>
@@ -76,18 +76,11 @@
                 <i class="fa-solid fa-microchip"></i>
                 <h3>Deploy Lightsail</h3>
             </a>
-            <a href="#" class="active">
+            <a href="../reports.html">
                 <i class="fa-solid fa-clock-rotate-left"></i>
                 <h3>Deployment History</h3>
             </a>
-            <a href="">
-                <i class="fa-solid fa-file-pdf"></i>
-                <h3>Reports</h3>
-            </a>
-            <a href="">
-                <i class="fa-solid fa-gear"></i>
-                <h3>Settings</h3>
-            </a>
+
             <a href="./index.html" id="signOut" >
                 <i class="fa-solid fa-right-from-bracket"></i>
                 Logout
@@ -109,7 +102,7 @@
 
                 <div class="container mx-auto max-w-[100%] flex justify-center items-center h-full ">
 
-                    <form id="deployForm" class="flex flex-col items-start justify-center p-10 bg-slate-100 shadow-lg rounded-lg px-20 mx-auto  ">
+                    <form id="deployForm" class="flex flex-col items-start justify-center p-10 bg-slate-500 shadow-lg rounded-lg px-20 mx-auto  ">
                         <h1 class=" p-5 mb-4 font-bold uppercase text-center text-xl">Deploy Highly Available Instance</h1>
 
                         <label for="region" class="py-4 w-64 uppercase font-bold">Select a Region:</label>
@@ -175,7 +168,7 @@
                         <label for="storage_size" class="py-4 uppercase font-bold"> Storage Size :</label>
                         <input type="text" id="storage_size" name="storage_size" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
 
-                        <label for="storage_type" class="py-4 w-64 uppercase font-bold">Select OS:</label>
+                        <label for="storage_type" class="py-4 w-64 uppercase font-bold">Select Storage Configuration:</label>
                         <select id="storage_type" name="storage_type" class="w-[100%] p-1 py-2 rounded-lg shadow-md px-6 mb-4">
                             <option value="gp2">gp2</option>
                             <option value="gp3">gp3</option>
@@ -207,11 +200,11 @@
                             <option value="development">Development</option>
                         </select>
 
-                        <label for="vcpus" class="py-4 uppercase font-bold"> Number of vCPUs :</label>
-                        <input type="text" id="vcpus" name="vcpus" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
+<!--                        <label for="vcpus" class="py-4 uppercase font-bold"> Number of vCPUs :</label>-->
+<!--                        <input type="text" id="vcpus" name="vcpus" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">-->
 
-                        <label for="memory_capacity" class="py-4 uppercase font-bold">Memory Capacity (GB):</label>
-                        <input type="text" id="memory_capacity" name="memory_capacity" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
+<!--                        <label for="memory_capacity" class="py-4 uppercase font-bold">Memory Capacity (GB):</label>-->
+<!--                        <input type="text" id="memory_capacity" name="memory_capacity" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">-->
 
                         <label for="storage_capacity" class="py-4 uppercase font-bold">Storage Capacity (GB):</label>
                         <input type="text" id="storage_capacity" name="storage_capacity" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
@@ -247,7 +240,7 @@
             </div>
             <div class="profile">
                 <div class="info">
-                    <p>Hi, <b> San</b></p>
+                    <p>Hi, <b> Amir</b></p>
                     <small class="text-muted">Admin</small>
                 </div>
                 <div class="profile-photo">

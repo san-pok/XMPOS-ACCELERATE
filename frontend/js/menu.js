@@ -158,9 +158,9 @@ document.body.addEventListener('click', async function(event) {
             // const instanceId = this.dataset.instanceid;
             // const deploymentType = this.dataset.deploymenttype;
             // // console.log('Instance ID:', instanceId); // Check if instanceId is correctly extracted
-            alert(instanceId);
-            alert(deploymentType);
-            alert(deploymentId);
+           // alert(instanceId);
+           // alert(deploymentType);
+            //alert(deploymentId);
             // const row = this.closest('tr'); //Get closest table row
             // Displaying status message
             document.getElementById('statusMessage').textContent = `Destroying ${deploymentType} instance...`;
@@ -185,7 +185,7 @@ document.body.addEventListener('click', async function(event) {
                 throw new Error(`Failed to destroy ${deploymentType} instance.`);
             }
             const data = await response.text();
-            alert(data);
+           // alert(data);
 
             // Update status message upon successful destruction
             document.getElementById('statusMessage').textContent = `${deploymentType} instance is destroyed successfully.`;

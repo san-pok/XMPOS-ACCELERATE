@@ -192,11 +192,11 @@ main #dash-header{
                     <i class="fa-solid fa-grip"></i>
                     <h3 >Dashboard</h3>
                 </a>
-                <a href="">
+                <a href="../monolith/index.html">
                     <i class="fa-solid fa-bolt"></i>
                     <h3>Deploy Monolith</h3>
                 </a>
-                <a href="">
+                <a href="../highly/index.html">
                     <i class="fa-solid fa-clock"></i>
                     <h3>Deploy Highly Available</h3>
                 </a>
@@ -204,18 +204,11 @@ main #dash-header{
                     <i class="fa-solid fa-microchip"></i>
                     <h3>Deploy Lightsail</h3>
                 </a>
-                <a href="../deploymenthistory.html">
+                <a href="../reports.html">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <h3>Deployment History</h3>
                 </a>
-                <a href="">
-                    <i class="fa-solid fa-file-pdf"></i>
-                    <h3>Reports</h3>
-                </a>
-                <a href="">
-                    <i class="fa-solid fa-gear"></i>
-                    <h3>Settings</h3>
-                </a>
+
                 <a href="./index.html" id="signOut" >
                     <i class="fa-solid fa-right-from-bracket"></i>
                     Logout
@@ -245,6 +238,7 @@ main #dash-header{
                 <div class="form-input flex flex-col">
                     <label for="continent" class="py-4 uppercase font-bold">Select a Continent:</label>
                     <select id="continent" name="continent" class="w-[300px] p-1 py-2 rounded-lg shadow-md px-4 mb-4">
+                        <option value="Asia">Select</option>
                         <option value="Asia">Asia</option>
                         <option value="US">US</option>
                         <option value="Europe">Europe</option>
@@ -262,7 +256,7 @@ main #dash-header{
                     <!-- Add more blueprints as needed -->
                 </select>
         
-                <label for="sshKey" class="py-4 uppercase font-bold"> Public SSH Key/Default SSH Key:</label>
+                <label for="sshKey" class="py-4 uppercase font-bold"> Public SSH Key/Default SSH Key (OPTIONAL):</label>
                 <input type="text" id="sshKey" name="sshKey" class="py-2 px-6 w-[100%] rounded-lg shadow-md mb-4">
         
                 <label for="instanceSize" class="py-4 uppercase font-bold" >Choose your instance plan (Instance Size):</label>
@@ -309,7 +303,7 @@ main #dash-header{
                 </div>
                 <div class="profile">
                     <div class="info">
-                        <p>Hi, <b> San</b></p>
+                        <p>Hi, <b> Amir</b></p>
                         <small class="text-muted">Admin</small>
                     </div>
                     <div class="profile-photo">

@@ -4,6 +4,6 @@ output "instance_public_ip" {
 }
 
 output "wordpress_setup_url" {
-  value       = "http://${aws_lightsail_instance.wordpress_instance.public_ip_address}/wp-admin/install.php"
+  value       = "http://${aws_lightsail_instance.wordpress_instance.public_ip_address}/wp-admin"
   description = "URL to set up the WordPress instance."
 }

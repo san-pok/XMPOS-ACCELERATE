@@ -421,7 +421,7 @@ $(document).ready(function () {
             data: jsonData,
             contentType: 'application/json',
             success: function (response) {
-                alert('Form validation successful and infrastructure deployment triggered');
+                alert('Successfully deployed HighlyAvailable Deployment');
             },
             error: function (error) {
                 alert('Error validating form. Please try again.');

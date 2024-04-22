@@ -7,23 +7,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="./css/menu.css">
-    
+
     <style>
-              
+
 .theme-toggler{
-   
+
    border: 2px solid var(--color-dark);
    /* background: var(--color-dark);   */
-  
-   
+
+
 }
 .theme-toggler i{
    color: var(--color-primary);
-   
+
    color: black;
    padding: 10px 14px;
-   
-   
+
+
 }
 main #dash-header{
     color: var(--color-dark);
@@ -36,22 +36,22 @@ main #dash-header{
     width: 96%;
     margin: 0 auto;
     gap: 3rem;
-    grid-template-columns: 14rem auto 18rem;
+    grid-template-columns: 14rem auto 12rem;
 }
     </style>
 </head>
 <body>
-<!--     
+<!--
     <div class="row justify-content-center mt-3 mb-3">
         <div class="col-md-10 text-center">
             <button id="backButton" class="btn btn-primary mr-2">Back</button>
             <button id="downloadButton" class="btn btn-success mr-2">Download</button>
             <button id="sendEmailButton" class="btn btn-info">Send Email</button>
-            
+
         </div>
     </div>
 
-    
+
     <div class="container mt-4">
         <div class="row justify-content-center">
             <div class="col-md-6">
@@ -60,7 +60,7 @@ main #dash-header{
                     <input type="email" id="email" class="form-control email-input" required>
                 </div>
             </div>
-          
+
         </div>
     </div>
 
@@ -87,7 +87,7 @@ main #dash-header{
                                     </tr>
                                 </thead>
                                 <tbody id="historyTableBody">
-                                   
+
                                 </tbody>
                             </table>
                         </div>
@@ -97,7 +97,7 @@ main #dash-header{
         </div>
     </div>
       -->
-    
+
 
 
 <!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -157,11 +157,11 @@ main #dash-header{
                 <i class="fa-solid fa-grip"></i>
                 <h3>Dashboard</h3>
             </a>
-            <a href="">
+            <a href="./monolith/index.html">
                 <i class="fa-solid fa-bolt"></i>
                 <h3>Deploy Monolith</h3>
             </a>
-            <a href="">
+            <a href="./highly/index.html">
                 <i class="fa-solid fa-clock"></i>
                 <h3>Deploy Highly Available</h3>
             </a>
@@ -169,18 +169,11 @@ main #dash-header{
                 <i class="fa-solid fa-microchip"></i>
                 <h3>Deploy Lightsail</h3>
             </a>
-            <a href="./deploymenthistory.html" >
+            <a href="" class="active" >
                 <i class="fa-solid fa-clock-rotate-left"></i>
                 <h3>Deployment History</h3>
             </a>
-            <a href="" class="active">
-                <i class="fa-solid fa-file-pdf"></i>
-                <h3>Reports</h3>
-            </a>
-            <a href="">
-                <i class="fa-solid fa-gear"></i>
-                <h3>Settings</h3>
-            </a>
+
             <a href="./index.html" id="signOut" >
                 <i class="fa-solid fa-right-from-bracket"></i>
                 Logout
@@ -197,7 +190,7 @@ main #dash-header{
         </div>
 
 
-        
+
 
 
 
@@ -205,34 +198,34 @@ main #dash-header{
             <div class="row justify-content-center mt-3 mb-3">
                 <div class="flex justify-center gap-10">
                     <!-- <button class="bg-slate-600">Back</button> -->
-                    <button class="bg-green-700 text-white font-bold px-8 py-3 rounded-lg shadow-lg">Download</button>
-                    <button class="bg-blue-700 text-white font-bold px-8 py-3 rounded-lg shadow-lg">Send Email</button>
-                    
+                    <button class="bg-green-700 text-white font-bold px-8 py-3 rounded-lg shadow-lg" id="downloadButton">Download</button>
+                    <button class="bg-blue-700 text-white font-bold px-8 py-3 rounded-lg shadow-lg" id="sendEmailButton">Send Email</button>
+
                     <!-- Add any other links/buttons as needed -->
                 </div>
                 <div class="form-group flex justify-center m-10">
-                    <label for="email1" style="padding:7px;" class="text-xl">Email Address:</label>
+                    <label for="email" style="padding:7px;" class="text-xl" >Email Address:</label>
                     <input type="email" id="email" class="form-control email-input" required style="padding:7px; border: 2px blue solid;">
                 </div>
             </div>
-        
+
             <!-- Email input fields -->
             <div class="container mt-4">
                 <div class="row justify-content-center">
                     <div class="col-md-6">
-                        
+
                     </div>
                     <!-- Add more input fields as needed -->
                 </div>
             </div>
-        
+
             <div >
                 <div >
                     <div >
                         <div >
                             <div >
                                 <h5 class="card-title text-center font-bold text-2xl m-10">Deployment History</h5>
-                                <div class="table-responsive p-10" >
+                                <div class="table-responsive p-10 w-[100%]" style="padding-left: 20px;">
                                     <table class="px-8"  id="historyTable">
                                         <thead>
                                             <tr class="text-xl">
@@ -245,7 +238,7 @@ main #dash-header{
                                                 <th>Instance type</th>
                                                 <th>Project ID/Name</th>
                                                 <th>Status</th>
-                                                
+
                                             </tr>
                                         </thead>
                                         <tbody id="historyTableBody">
@@ -258,7 +251,7 @@ main #dash-header{
                     </div>
                 </div>
             </div>
-             
+
         </div>
     </main>
     <!-- end of main  -->
@@ -268,14 +261,14 @@ main #dash-header{
                 <i class="fa-solid fa-bars"></i>
             </button>
             <div class="theme-toggler">
-               
+
                 <i class="active fa-solid fa-sun "></i>
                 <i class="fa-solid fa-moon" style="color: white;"></i>
-            
+
             </div>
             <div class="profile">
                 <div class="info">
-                    <p>Hi, <b> San</b></p>
+                    <p>Hi, <b> Amir</b></p>
                     <small class="text-muted">Admin</small>
                 </div>
                 <div class="profile-photo">
@@ -295,27 +288,6 @@ main #dash-header{
 </ul>
 
 
-<script>
-    function fetchDeploymentHistory() {
-fetch('http://127.0.0.1:5000/fetch-deployment-history')
-.then(response => response.json())
-.then(data => {
-    const tableBody = document.getElementById('deploymentHistoryTable');
-    tableBody.innerHTML = '';  // Clear previous content
-    data.forEach((deployment, index) => {
-        const row = `<tr>
-                        <td>${index + 1}</td>
-                        <td>Lightsail</td>
-                        <td>${deployment.timestamp}</td>
-                        <td>${deployment.status}</td>
-                     </tr>`;
-        tableBody.innerHTML += row;
-    });
-})
-.catch(error => console.error('Error:', error));
-}
-fetchDeploymentHistory();
-</script>
 
 
 

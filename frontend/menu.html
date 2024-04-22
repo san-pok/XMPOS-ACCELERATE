@@ -8,19 +8,19 @@
     <link rel="stylesheet" href="./css/menu.css">
     <style>
         .theme-toggler{
-        
+
         border: 2px solid var(--color-dark);
         /* background: var(--color-dark);   */
-        
-        
+
+
         }
         .theme-toggler i{
         color: var(--color-primary);
-        
+
         color: black;
         padding: 10px 14px;
-        
-        
+
+
         }
         main #dash-header{
             color: var(--color-dark);
@@ -63,18 +63,12 @@
                     <i class="fa-solid fa-microchip"></i>
                     <h3>Lightsail BB</h3>
                 </a> -->
-                <a href="./deploymenthistory.html">
+                <a href="reports.html">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <h3>Deployment History</h3>
                 </a>
-                <a href="reports.html">
-                    <i class="fa-solid fa-file-pdf"></i>
-                    <h3>Reports</h3>
-                </a>
-                <a href="">
-                    <i class="fa-solid fa-gear"></i>
-                    <h3>Settings</h3>
-                </a>
+
+
                 <a href="./index.html" id="signOut" >
                     <i class="fa-solid fa-right-from-bracket"></i>
                     Logout
@@ -94,11 +88,11 @@
                     <i class="fa-solid fa-bolt"></i>
                     <div class="middle">
                         <div class="left">
-                            <h3>Monolithic</h3>
+                            <h3>Monolith</h3>
                         </div>
                     </div>
-                    <small class="text-muted">Monolithic Arch</small>
-                    <p class="card-text" id="total-running-instances">Total Running: 
+                    <small class="text-muted">Monolith Arch</small>
+                    <p class="card-text" id="total-running-instances">Total Running:
                         <span id="MonolithInstanceCount" class="">
                             <span class="spinner"></span>
                         </span>
@@ -113,10 +107,15 @@
                             <h3>Highly Available</h3>
                         </div>
                     </div>
-                    <small class="text-muted">Hihly Available Arch</small>
+                    <small class="text-muted">Highly Available Arch</small>
+                    <p class="card-text" >Total Running:
+                        <span id="HighlyCount">
+                         <span  > 1</span>
+                        </span>
+                    </p>
                 </div>
                 <!-- highly available ends here  -->
-                
+
                 <div class="lightsail">
                     <i class="fa-solid fa-bolt"></i>
                     <div class="middle">
@@ -125,7 +124,7 @@
                         </div>
                     </div>
                     <small class="text-muted">Lightsail Arch</small>
-                    <p class="card-text" >Total Running: 
+                    <p class="card-text" >Total Running:
                         <span id="lightsailInstanceCount">
                             <span id="loaderLightsail" class="" role="status" >
                                 <!-- <span>Fetching</span> -->
@@ -141,7 +140,7 @@
             <hr>
             <br>
             <div class="instance-status-container">
-                <h2 style="font-size: 22px;color: var(--color-dark); margin-block: 10px; margin-left: 45%;">Monolith Instances Status</h2>
+                <h2 style="font-size: 22px;color: var(--color-dark); margin-block: 10px; margin-left: 30%;">Monolith Instances Status</h2>
                 <p id="statusMessage" class="text-sm text-gray-600"></p>
                 <div class="table-responsive">
                     <table id="instanceStatusTable" class="w-full table-auto">
@@ -165,9 +164,39 @@
                     </table>
                 </div>
             </div>
+            <div class="recent-deployment">
+                <h2 style="font-size: 22px;color: var(--color-dark);margin-block: 10px; margin-left: 30%;">Highly Available Instances Status</h2>
+                <div class="table-responsive">
+                    <table class="w-full table-auto mt-10">
+                        <thead class="bg-blue-500 text-white">
+                            <tr style="color: var(--color-dark);">
+                                <th class="px-4 py-2">S.No</th>
+                                <th class="px-4 py-2">Architecture</th>
+                                <th class="px-4 py-2">DNS</th>
+                                <th class="px-4 py-2">Timestamp</th>
+                                <th class="px-4 py-2">Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="HihlyTable">
+                            <!-- Deployment history rows will be inserted here -->
+                            <tr>
+                                <td>1</td>
+                                <td>Highly Available</td>
+                                <td ><a href="http://xmop-hwordpress-lb-624529044.ap-southeast-2.elb.amazonaws.com" target="_blank">http://xmop-hwordpress-lb-624529044.ap-southeast-2.elb.amazonaws.com</a></td>
+                                <td>2024-04-22 01:00</td>
+                                <td>Running</td>
+                                <td><button style="background-color: red; border-radius: 8px; padding: 10px 14px;">Destroy</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- <a href="#" style="margin-left: 50%; margin-top: 20%;">Show All</a> -->
+
 
             <div class="recent-deployment">
-                <h2 style="font-size: 22px;color: var(--color-dark);margin-block: 10px; margin-left: 45%;">Lightsail Instances Status</h2>
+                <h2 style="font-size: 22px;color: var(--color-dark);margin-block: 10px; margin-left: 30%;">Lightsail Instances Status</h2>
                 <div class="table-responsive">
                     <table class="w-full table-auto mt-10">
                         <thead class="bg-blue-500 text-white">
@@ -176,6 +205,7 @@
                                 <th class="px-4 py-2">Architecture</th>
                                 <th class="px-4 py-2">Timestamp</th>
                                 <th class="px-4 py-2">Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="deploymentHistoryTable">
@@ -184,8 +214,8 @@
                     </table>
                 </div>
             </div>
-            <a href="#" style="margin-left: 50%; margin-top: 20%;">Show All</a>
-          
+            <!-- <a href="#" style="margin-left: 50%; margin-top: 20%;">Show All</a> -->
+
         </main>
         <!-- end of main  -->
         <div class="right">
@@ -194,14 +224,14 @@
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div class="theme-toggler">
-                   
+
                     <i class="active fa-solid fa-sun "></i>
                     <i class="fa-solid fa-moon" style="color: white;"></i>
-                
+
                 </div>
                 <div class="profile">
                     <div class="info">
-                        <p>Hi, <b> San</b></p>
+                        <p>Hi, <b> Amir</b></p>
                         <small class="text-muted">Admin</small>
                     </div>
                     <div class="profile-photo">
@@ -223,7 +253,7 @@
         <li><a href="#" id="deployLightsail">Deploy Lightsail</a></li>
         <li><a href="#" id="deploymentHistory">Deployment History</a></li>
         Add this inside the body, preferably at the bottom or where it fits your layout -->
-  
+
   <!--
         <button id="signOut">Sign Out</button> -->
 
@@ -253,6 +283,7 @@
                             <td>Lightsail</td>
                             <td>${deployment.timestamp}</td>
                             <td>${deployment.status}</td>
+                            <td><button style="background-color: red; border-radius: 8px; padding: 10px 14px;">Destroy</button></td>
                          </tr>`;
             tableBody.innerHTML += row;
         });

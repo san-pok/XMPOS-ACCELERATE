@@ -138,3 +138,11 @@ footer {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     margin-left: 15px;
 }
+
+#highInstanceCount {
+    font-size: 24px; /* Larger font size */
+    font-weight: bold; /* Bold text */
+    color: #e8c963; /* Nice blue color */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin-left: 15px;
+}

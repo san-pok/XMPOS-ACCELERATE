@@ -394,7 +394,7 @@ main table tbody tr td{
     
 }
 
-#lightsailInstanceCount, #MonolithInstanceCount {
+#lightsailInstanceCount, #MonolithInstanceCount,#HighlyCount {
     font-size: 25px; /* Larger font size */
     font-weight: bold; /* Bold text */
     color: #5f8da9; /* Nice blue color */
@@ -488,6 +488,21 @@ main .instance-status-container table {
     }
 
     .spinner--hidden {
+    display: none;
+}
+
+.spinner1 {
+
+    display: inline-block; /* Ensure the spinner behaves like an inline element */
+    border: 4px solid #f3f3f3; /* Light grey */
+    border-top: 4px solid #dbbc34; /* Blue */
+    border-radius: 50%;
+    width: 25px; /* Adjust the width to make it smaller */
+    height: 25px; /* Adjust the height to make it smaller */
+
+}
+
+.spinner--hidden {
     display: none;
 }
 
